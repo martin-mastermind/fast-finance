@@ -7,8 +7,6 @@ import { accountsRouter } from './routes/accounts'
 import { transactionsRouter } from './routes/transactions'
 import { categoriesRouter } from './routes/categories'
 
-await runMigrations()
-
 const app = new Elysia()
   .use(
     cors({
@@ -22,7 +20,10 @@ const app = new Elysia()
   .use(accountsRouter)
   .use(transactionsRouter)
   .use(categoriesRouter)
-  .listen(process.env.PORT || 3001)
+
+await runMigrations()
+
+app.listen(process.env.PORT || 3001)
 
 console.log(`Backend running at http://localhost:${app.server?.port}`)
 
