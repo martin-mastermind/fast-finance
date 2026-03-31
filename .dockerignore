@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+dist
+.env
+.env.local
+*.tsbuildinfo
+.git
+.gitignore
+.claude
+.claude-flow
+spec.md

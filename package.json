@@ -1,0 +1,18 @@
+{
+  "name": "fast-finance",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "build": "bun run --filter '*' build",
+    "dev": "bun run --filter '*' dev",
+    "lint": "bun run --filter '*' lint",
+    "test": "bun run --filter '*' test",
+    "db:push": "bun run --cwd packages/db push",
+    "db:migrate": "bun run --cwd packages/db migrate",
+    "db:studio": "bun run --cwd packages/db studio",
+    "db:seed": "bun run --cwd packages/db seed"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
