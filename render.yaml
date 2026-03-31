@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: api-backend
+    name: fast-finance-backend
     runtime: docker
     dockerContext: .
     dockerfilePath: apps/backend/Dockerfile
@@ -16,7 +16,7 @@ services:
       - key: FRONTEND_URL
         sync: false
   - type: web
-    name: tma-frontend
+    name: fast-finance-frontend
     runtime: static
     buildCommand: npm install -g bun && bun install && cd apps/frontend && bun run build
     staticPublishPath: apps/frontend/out
@@ -29,6 +29,6 @@ services:
         - packages/shared/**
 
 databases:
-  - name: finance-db
+  - name: fast-finance-db
     plan: free
     databaseName: fast_finance
