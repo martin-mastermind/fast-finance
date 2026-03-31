@@ -1,40 +1,24 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test'
-
-// Mock DB before importing the router
-type MockDb = {
-  select: ReturnType<typeof mock>
-  insert: ReturnType<typeof mock>
-  update: ReturnType<typeof mock>
-  delete: ReturnType<typeof mock>
-  from: ReturnType<typeof mock>
-  where: ReturnType<typeof mock>
-  values: ReturnType<typeof mock>
-  set: ReturnType<typeof mock>
-  returning: ReturnType<typeof mock>
-}
-
-const mockDb: MockDb = {
-  select: mock(() => mockDb),
-  insert: mock(() => mockDb),
-  update: mock(() => mockDb),
-  delete: mock(() => mockDb),
-  from: mock(() => mockDb),
-  where: mock(() => mockDb),
-  values: mock(() => mockDb),
-  set: mock(() => mockDb),
-  returning: mock(() => Promise.resolve([])),
-}
-
-mock.module('@fast-finance/db', () => ({
-  db: mockDb,
-  transactions: { id: 'id', userId: 'user_id', date: 'date' },
-  accounts: { id: 'id', userId: 'user_id', name: 'name', balance: 'balance' },
-}))
-
-// Import after mocking
-const { accountsRouter } = await import('../../routes/accounts')
 import { Elysia } from 'elysia'
 
+const mockGetAccounts = mock(async () => [] as any[])
+const mockCreateAccount = mock(async () => ({ id: 3, userId: 1, name: 'Вклад', balance: 0 }))
+const mockUpdateAccount = mock(async () => ({ id: 1, userId: 1, name: 'Обновлено', balance: 0 }))
+const mockDeleteAccount = mock(async () => undefined)
+
+mock.module('../../domain/account.service', () => ({
+  AccountService: {
+    getAccounts: mockGetAccounts,
+    createAccount: mockCreateAccount,
+    updateAccount: mockUpdateAccount,
+    deleteAccount: mockDeleteAccount,
+  },
+  NotFoundError: class NotFoundError extends Error {
+    constructor(message = 'Not found') { super(message); this.name = 'NotFoundError' }
+  },
+}))
+
+const { accountsRouter } = await import('../../routes/accounts')
 const app = new Elysia().use(accountsRouter)
 
 function makeRequest(method: string, path: string, opts: { userId?: number; body?: unknown } = {}) {
@@ -53,13 +37,7 @@ function makeRequest(method: string, path: string, opts: { userId?: number; body
 
 describe('GET /accounts', () => {
   beforeEach(() => {
-    mockDb.select.mockReset()
-    mockDb.from.mockReset()
-    mockDb.where.mockReset()
-
-    mockDb.select.mockReturnValue(mockDb)
-    mockDb.from.mockReturnValue(mockDb)
-    mockDb.where.mockResolvedValue([
+    mockGetAccounts.mockResolvedValue([
       { id: 1, userId: 1, name: 'Карта', balance: 5000 },
       { id: 2, userId: 1, name: 'Наличные', balance: 1000 },
     ])
@@ -74,9 +52,7 @@ describe('GET /accounts', () => {
   })
 
   it('returns 401 without x-user-id header', async () => {
-    const res = await app.handle(
-      new Request('http://localhost/accounts', { method: 'GET' }),
-    )
+    const res = await app.handle(new Request('http://localhost/accounts', { method: 'GET' }))
     expect(res.status).toBe(401)
     const data = await res.json()
     expect(data.error).toBe('Unauthorized')
@@ -85,13 +61,7 @@ describe('GET /accounts', () => {
 
 describe('POST /accounts', () => {
   beforeEach(() => {
-    mockDb.insert.mockReset()
-    mockDb.values.mockReset()
-    mockDb.returning.mockReset()
-
-    mockDb.insert.mockReturnValue(mockDb)
-    mockDb.values.mockReturnValue(mockDb)
-    mockDb.returning.mockResolvedValue([{ id: 3, userId: 1, name: 'Вклад', balance: 0 }])
+    mockCreateAccount.mockResolvedValue({ id: 3, userId: 1, name: 'Вклад', balance: 0 })
   })
 
   it('creates account and returns it', async () => {
@@ -114,10 +84,40 @@ describe('POST /accounts', () => {
   })
 })
 
+describe('PATCH /accounts/:id', () => {
+  beforeEach(() => {
+    mockUpdateAccount.mockResolvedValue({ id: 1, userId: 1, name: 'Обновлено', balance: 9999 })
+  })
+
+  it('updates account and returns it', async () => {
+    const res = await makeRequest('PATCH', '/accounts/1', { body: { name: 'Обновлено' } })
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.name).toBe('Обновлено')
+  })
+
+  it('returns 404 when account not found', async () => {
+    const { NotFoundError } = await import('../../domain/account.service')
+    mockUpdateAccount.mockRejectedValue(new NotFoundError('Account not found'))
+    const res = await makeRequest('PATCH', '/accounts/999', { body: { name: 'x' } })
+    expect(res.status).toBe(404)
+  })
+
+  it('returns 401 without user id', async () => {
+    const res = await app.handle(
+      new Request('http://localhost/accounts/1', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: 'x' }),
+      }),
+    )
+    expect(res.status).toBe(401)
+  })
+})
+
 describe('DELETE /accounts/:id', () => {
   beforeEach(() => {
-    mockDb.delete.mockReturnValue(mockDb)
-    mockDb.where.mockResolvedValue([])
+    mockDeleteAccount.mockResolvedValue(undefined)
   })
 
   it('deletes account and returns success', async () => {
@@ -125,5 +125,12 @@ describe('DELETE /accounts/:id', () => {
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.success).toBe(true)
+  })
+
+  it('returns 404 when account not found', async () => {
+    const { NotFoundError } = await import('../../domain/account.service')
+    mockDeleteAccount.mockRejectedValue(new NotFoundError('Account not found'))
+    const res = await makeRequest('DELETE', '/accounts/999')
+    expect(res.status).toBe(404)
   })
 })

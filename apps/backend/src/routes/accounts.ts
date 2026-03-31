@@ -1,23 +1,18 @@
 import { Elysia, t } from 'elysia'
-import { db, accounts } from '@fast-finance/db'
-import { eq, and } from 'drizzle-orm'
+import { AccountService, NotFoundError } from '../domain/account.service'
 
 export const accountsRouter = new Elysia({ prefix: '/accounts' })
   .get('/', async ({ headers, set }) => {
     const userId = parseInt(headers['x-user-id'] || '0')
     if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
-    return db.select().from(accounts).where(eq(accounts.userId, userId))
+    return AccountService.getAccounts(userId)
   })
   .post(
     '/',
     async ({ body, headers, set }) => {
       const userId = parseInt(headers['x-user-id'] || '0')
       if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
-      const [account] = await db
-        .insert(accounts)
-        .values({ userId, name: body.name, balance: body.balance ?? 0 })
-        .returning()
-      return account
+      return AccountService.createAccount(userId, body.name, body.balance)
     },
     { body: t.Object({ name: t.String(), balance: t.Optional(t.Number()) }) },
   )
@@ -26,24 +21,23 @@ export const accountsRouter = new Elysia({ prefix: '/accounts' })
     async ({ params, body, headers, set }) => {
       const userId = parseInt(headers['x-user-id'] || '0')
       if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
-      const [updated] = await db
-        .update(accounts)
-        .set({
-          ...(body.name !== undefined && { name: body.name }),
-          ...(body.balance !== undefined && { balance: body.balance }),
-        })
-        .where(and(eq(accounts.id, parseInt(params.id)), eq(accounts.userId, userId)))
-        .returning()
-      if (!updated) { set.status = 404; return { error: 'Account not found' } }
-      return updated
+      try {
+        return await AccountService.updateAccount(userId, parseInt(params.id), body)
+      } catch (e) {
+        if (e instanceof NotFoundError) { set.status = 404; return { error: e.message } }
+        throw e
+      }
     },
     { body: t.Object({ name: t.Optional(t.String()), balance: t.Optional(t.Number()) }) },
   )
   .delete('/:id', async ({ params, headers, set }) => {
     const userId = parseInt(headers['x-user-id'] || '0')
     if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
-    await db.delete(accounts).where(
-      and(eq(accounts.id, parseInt(params.id)), eq(accounts.userId, userId)),
-    )
-    return { success: true }
+    try {
+      await AccountService.deleteAccount(userId, parseInt(params.id))
+      return { success: true }
+    } catch (e) {
+      if (e instanceof NotFoundError) { set.status = 404; return { error: e.message } }
+      throw e
+    }
   })
