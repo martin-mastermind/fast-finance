@@ -3,11 +3,11 @@ import { eq, and } from 'drizzle-orm'
 import type { Account } from '@fast-finance/db'
 
 export class AccessDeniedError extends Error {
-  constructor(message = 'Access denied') { super(message) }
+  constructor(message = 'Access denied') { super(message); this.name = 'AccessDeniedError' }
 }
 
 export class NotFoundError extends Error {
-  constructor(message = 'Not found') { super(message) }
+  constructor(message = 'Not found') { super(message); this.name = 'NotFoundError' }
 }
 
 export const AccountService = {
@@ -38,8 +38,10 @@ export const AccountService = {
   },
 
   async deleteAccount(userId: number, id: number): Promise<void> {
-    await db
+    const [deleted] = await db
       .delete(accounts)
       .where(and(eq(accounts.id, id), eq(accounts.userId, userId)))
+      .returning()
+    if (!deleted) throw new NotFoundError('Account not found')
   },
 }

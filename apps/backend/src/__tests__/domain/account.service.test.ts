@@ -87,10 +87,18 @@ describe('AccountService.updateAccount', () => {
 describe('AccountService.deleteAccount', () => {
   beforeEach(() => {
     mockDb.delete.mockReturnValue(mockDb)
-    mockDb.where.mockResolvedValue([])
+    mockDb.where.mockReturnValue(mockDb)
+    mockDb.returning.mockResolvedValue([{ id: 1, userId: 1, name: 'Карта', balance: 5000 }])
   })
 
-  it('resolves without error', async () => {
+  it('resolves without error when account exists', async () => {
     await expect(AccountService.deleteAccount(1, 1)).resolves.toBeUndefined()
+  })
+
+  it('throws NotFoundError when account not found', async () => {
+    mockDb.delete.mockReturnValue(mockDb)
+    mockDb.where.mockReturnValue(mockDb)
+    mockDb.returning.mockResolvedValue([])
+    await expect(AccountService.deleteAccount(1, 99)).rejects.toThrow(NotFoundError)
   })
 })
