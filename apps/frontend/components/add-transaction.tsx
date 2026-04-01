@@ -68,95 +68,136 @@ export function AddTransaction({ userId }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <motion.div
+      className="space-y-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ staggerChildren: 0.1, delayChildren: 0.1 }}
+    >
       {/* Smart Input */}
-      <div className="rounded-2xl bg-card p-4 shadow-sm">
-        <label className="mb-2 block text-sm font-medium text-hint">Быстрый ввод</label>
+      <motion.div
+        className="premium-card p-5"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <label className="mb-3 block text-sm font-semibold text-primary">Быстрый ввод</label>
         <div className="flex gap-2">
-          <input
+          <motion.input
             type="text"
             value={smartInput}
             onChange={(e) => setSmartInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSmartParse()}
             placeholder="500 кофе или зарплата 50000"
-            className="flex-1 rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+            className="flex-1 rounded-xl border border-border/50 bg-input smooth-input px-4 py-3 text-sm text-foreground placeholder-muted-foreground"
+            whileFocus={{ scale: 1.02 }}
           />
-          <button
+          <motion.button
             onClick={handleSmartParse}
-            className="flex items-center gap-1 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground"
+            className="btn-primary flex items-center gap-2 px-4"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Zap size={16} />
-          </button>
+            <Zap size={18} />
+            <span className="hidden sm:inline">Парсить</span>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Parsed Result */}
       {parsed && (
         <motion.div
-          className="rounded-2xl bg-card p-4 shadow-sm space-y-3"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+          className="premium-card p-5 space-y-4"
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 100, damping: 15 }}
         >
-          <div className="flex justify-between">
-            <span className="text-sm text-hint">Сумма</span>
-            <span className={`font-bold ${parsed.amount > 0 ? 'text-green-500' : 'text-red-500'}`}>
+          {/* Amount Display */}
+          <motion.div
+            className="flex items-center justify-between rounded-2xl bg-secondary/50 p-4 border border-border/50"
+            whileHover={{ backgroundColor: 'rgba(46, 41, 78, 0.7)' }}
+          >
+            <span className="text-sm font-medium text-hint">Сумма</span>
+            <motion.span
+              className={`text-2xl font-bold tabular-nums ${
+                parsed.amount > 0 ? 'text-emerald-400' : 'text-rose-400'
+              }`}
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 150 }}
+            >
               {parsed.amount > 0 ? '+' : ''}{parsed.amount.toFixed(2)}
-            </span>
-          </div>
+            </motion.span>
+          </motion.div>
 
           {/* Account selector */}
-          <div>
-            <label className="mb-1 block text-sm text-hint">Счёт</label>
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+            <label className="mb-2 block text-sm font-semibold text-primary">Счёт</label>
             <select
               value={selectedAccountId ?? ''}
               onChange={(e) => setSelectedAccountId(Number(e.target.value))}
-              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-border/50 bg-input smooth-input px-4 py-3 text-sm text-foreground"
             >
               <option value="">Выберите счёт</option>
               {accounts?.map(a => (
                 <option key={a.id} value={a.id}>{a.name}</option>
               ))}
             </select>
-          </div>
+          </motion.div>
 
           {/* Category selector */}
-          <div>
-            <label className="mb-1 block text-sm text-hint">Категория</label>
-            <div className="flex flex-wrap gap-2">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
+            <label className="mb-3 block text-sm font-semibold text-primary">Категория</label>
+            <motion.div className="flex flex-wrap gap-2" layout>
               {categories
                 ?.filter(c => c.type === parsed.type)
                 .map(c => (
-                  <button
+                  <motion.button
                     key={c.id}
                     onClick={() => setSelectedCategoryId(c.id)}
-                    className={`rounded-xl px-3 py-1.5 text-sm transition-colors ${
+                    className={`rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${
                       selectedCategoryId === c.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-secondary text-foreground'
+                        ? 'bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg shadow-primary/30'
+                        : 'bg-secondary text-foreground hover:bg-secondary/80 border border-border/50'
                     }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    layout
                   >
                     {c.name}
-                  </button>
+                  </motion.button>
                 ))}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          <button
+          {/* Submit button */}
+          <motion.button
             onClick={handleSubmit}
             disabled={!selectedAccountId || !selectedCategoryId || createMutation.isPending}
-            className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+            className="btn-primary w-full py-4 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
           >
-            {createMutation.isPending ? 'Сохранение...' : 'Сохранить'}
-          </button>
+            <motion.span animate={{ opacity: createMutation.isPending ? 0.6 : 1 }}>
+              {createMutation.isPending ? 'Сохранение...' : 'Сохранить операцию'}
+            </motion.span>
+          </motion.button>
         </motion.div>
       )}
 
       {/* No accounts hint */}
       {accounts?.length === 0 && (
-        <div className="rounded-2xl bg-card p-4 text-center text-sm text-hint">
-          Сначала создайте счёт в настройках
-        </div>
+        <motion.div
+          className="premium-card p-6 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <p className="text-2xl mb-2">⚙️</p>
+          <p className="text-sm font-medium text-hint">Сначала создайте счёт в настройках</p>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   )
 }

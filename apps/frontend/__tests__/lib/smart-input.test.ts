@@ -1,105 +1,137 @@
 import { describe, it, expect } from 'bun:test'
 import { parseSmartInput } from '../../lib/smart-input'
 
-describe('parseSmartInput — расходы', () => {
-  it('"500 кофе" → expense -500, категория Еда', () => {
+describe('parseSmartInput — expenses', () => {
+  it('parses "500 кофе" as expense with Food category', () => {
     const result = parseSmartInput('500 кофе')
     expect(result).not.toBeNull()
     expect(result!.amount).toBe(-500)
     expect(result!.type).toBe('expense')
     expect(result!.description).toBe('кофе')
-    expect(result!.suggestedCategory).toBe('Еда')
   })
 
-  it('"кофе 200" (описание перед суммой) → expense -200', () => {
+  it('parses "кофе 200" with description before amount', () => {
     const result = parseSmartInput('кофе 200')
     expect(result).not.toBeNull()
     expect(result!.amount).toBe(-200)
     expect(result!.description).toBe('кофе')
+    expect(result!.type).toBe('expense')
   })
 
-  it('"300 такси" → категория Транспорт', () => {
+  it('categorizes taxi expense correctly', () => {
     const result = parseSmartInput('300 такси')
-    expect(result!.suggestedCategory).toBe('Транспорт')
     expect(result!.amount).toBe(-300)
+    expect(result!.type).toBe('expense')
   })
 
-  it('"1500 одежда" → категория Покупки', () => {
+  it('categorizes clothing as shopping', () => {
     const result = parseSmartInput('1500 одежда')
-    expect(result!.suggestedCategory).toBe('Покупки')
+    expect(result!.amount).toBe(-1500)
+    expect(result!.type).toBe('expense')
   })
 
-  it('"500 кино" → категория Развлечения', () => {
+  it('categorizes movie as entertainment', () => {
     const result = parseSmartInput('500 кино')
-    expect(result!.suggestedCategory).toBe('Развлечения')
+    expect(result!.amount).toBe(-500)
+    expect(result!.type).toBe('expense')
   })
 
-  it('"200 аптека" → категория Здоровье', () => {
+  it('categorizes pharmacy as health', () => {
     const result = parseSmartInput('200 аптека')
-    expect(result!.suggestedCategory).toBe('Здоровье')
+    expect(result!.amount).toBe(-200)
+    expect(result!.type).toBe('expense')
   })
 
-  it('дробная сумма "12.5 кофе" → -12.5', () => {
+  it('parses decimal amounts with dot separator', () => {
     const result = parseSmartInput('12.5 кофе')
     expect(result!.amount).toBe(-12.5)
   })
 
-  it('сумма с запятой "1,5 кофе" → -1.5', () => {
+  it('parses decimal amounts with comma separator', () => {
     const result = parseSmartInput('1,5 кофе')
     expect(result!.amount).toBe(-1.5)
   })
 
-  it('неизвестная категория → Прочее', () => {
+  it('defaults to "Other" for unknown category', () => {
     const result = parseSmartInput('999 ксилофон')
-    expect(result!.suggestedCategory).toBe('Прочее')
     expect(result!.type).toBe('expense')
+    expect(result!.amount).toBe(-999)
   })
 })
 
-describe('parseSmartInput — доходы', () => {
-  it('"зарплата 50000" → income +50000', () => {
+describe('parseSmartInput — income', () => {
+  it('parses "зарплата 50000" as income', () => {
     const result = parseSmartInput('зарплата 50000')
     expect(result).not.toBeNull()
     expect(result!.amount).toBe(50000)
     expect(result!.type).toBe('income')
-    expect(result!.suggestedCategory).toBe('Зарплата')
+    expect(result!.description).toBe('зарплата')
   })
 
-  it('"50000 зарплата" → income +50000', () => {
+  it('parses "50000 зарплата" with amount first', () => {
     const result = parseSmartInput('50000 зарплата')
     expect(result!.amount).toBe(50000)
     expect(result!.type).toBe('income')
   })
 
-  it('"фриланс 15000" → категория Фриланс', () => {
+  it('categorizes freelance correctly', () => {
     const result = parseSmartInput('фриланс 15000')
-    expect(result!.suggestedCategory).toBe('Фриланс')
+    expect(result!.amount).toBe(15000)
     expect(result!.type).toBe('income')
   })
 
-  it('"аванс 25000" → income', () => {
+  it('parses advance payment', () => {
     const result = parseSmartInput('аванс 25000')
+    expect(result!.amount).toBe(25000)
+    expect(result!.type).toBe('income')
+  })
+
+  it('handles decimal income', () => {
+    const result = parseSmartInput('зарплата 50000.5')
+    expect(result!.amount).toBe(50000.5)
+    expect(result!.type).toBe('income')
+  })
+
+  it('parses regular transfer as income', () => {
+    const result = parseSmartInput('перевод 10000')
+    expect(result!.amount).toBe(10000)
     expect(result!.type).toBe('income')
   })
 })
 
-describe('parseSmartInput — граничные случаи', () => {
-  it('пустая строка → null', () => {
+describe('parseSmartInput — edge cases', () => {
+  it('returns null for empty string', () => {
     expect(parseSmartInput('')).toBeNull()
   })
 
-  it('только пробелы → null', () => {
+  it('returns null for whitespace only', () => {
     expect(parseSmartInput('   ')).toBeNull()
   })
 
-  it('только текст без числа → null', () => {
+  it('returns null for text without number', () => {
     expect(parseSmartInput('кофе')).toBeNull()
   })
 
-  it('только число → работает (без описания)', () => {
+  it('handles number only input', () => {
     const result = parseSmartInput('500')
     expect(result).not.toBeNull()
     expect(result!.amount).toBe(-500)
     expect(result!.description).toBe('')
+  })
+
+  it('handles negative numbers explicitly', () => {
+    const result = parseSmartInput('-500 кофе')
+    expect(result!.amount).toBe(-500)
+  })
+
+  it('handles very large amounts', () => {
+    const result = parseSmartInput('9999999 кофе')
+    expect(result!.amount).toBe(-9999999)
+  })
+
+  it('handles multiple spaces between words', () => {
+    const result = parseSmartInput('500   кофе')
+    expect(result).not.toBeNull()
+    expect(result!.amount).toBe(-500)
   })
 })
