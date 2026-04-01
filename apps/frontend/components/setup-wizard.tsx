@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle } from 'lucide-react'
+import { MdCheckCircle } from 'react-icons/md'
 
 interface Props {
   userId: number
@@ -65,7 +65,7 @@ export function SetupWizard({ userId }: Props) {
             </p>
             <motion.button
               onClick={() => setStep('create')}
-              className="w-full rounded-2xl bg-primary py-4 text-sm font-semibold text-primary-foreground"
+              className="btn-primary w-full py-4 text-sm font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -110,19 +110,21 @@ export function SetupWizard({ userId }: Props) {
             <motion.button
               onClick={handleCreate}
               disabled={!accountName.trim() || createMutation.isPending}
-              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className="btn-primary w-full py-3 text-sm font-medium disabled:opacity-50"
+              whileHover={{ scale: !(!accountName.trim() || createMutation.isPending) ? 1.02 : 1 }}
+              whileTap={{ scale: !(!accountName.trim() || createMutation.isPending) ? 0.98 : 1 }}
             >
               {createMutation.isPending ? 'Создание...' : 'Создать счёт'}
             </motion.button>
 
-            <button
+            <motion.button
               onClick={() => setStep('welcome')}
-              className="w-full rounded-xl border border-input py-3 text-sm font-medium text-foreground"
+              className="btn-secondary w-full py-3 text-sm font-medium"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               Назад
-            </button>
+            </motion.button>
           </motion.div>
         )}
 
@@ -139,8 +141,9 @@ export function SetupWizard({ userId }: Props) {
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 100 }}
+              className="flex justify-center"
             >
-              <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
+              <MdCheckCircle size={80} className="text-green-500" />
             </motion.div>
 
             <div>
@@ -159,7 +162,7 @@ export function SetupWizard({ userId }: Props) {
 
             <motion.button
               onClick={() => window.location.reload()}
-              className="w-full rounded-2xl bg-primary py-4 text-sm font-semibold text-primary-foreground"
+              className="btn-primary w-full py-4 text-sm font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ delay: 0.6 }}

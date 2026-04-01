@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X } from 'lucide-react'
+import { MdDeleteOutline } from 'react-icons/md'
 
 interface Props {
   userId: number
@@ -115,7 +115,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.85 }}
               >
-                <X size={18} strokeWidth={2.5} />
+                <MdDeleteOutline size={20} />
               </motion.button>
             </div>
           </motion.div>

@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { parseSmartInput } from '@fast-finance/shared'
 import { motion } from 'framer-motion'
-import { Sparkles } from 'lucide-react'
+import { MdAutoFixHigh } from 'react-icons/md'
 
 interface Props {
   userId: number
@@ -97,7 +97,7 @@ export function AddTransaction({ userId }: Props) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Sparkles size={20} />
+            <MdAutoFixHigh size={22} />
             <span>Анализ</span>
           </motion.button>
         </div>

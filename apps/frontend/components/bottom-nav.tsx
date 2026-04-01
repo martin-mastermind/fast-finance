@@ -1,13 +1,13 @@
 'use client'
 
 import { useFinanceStore } from '@/store/finance'
-import { LayoutDashboard, Plus, Clock } from 'lucide-react'
+import { MdHome, MdAddBox, MdHistory } from 'react-icons/md'
 import { motion } from 'framer-motion'
 
 const tabs = [
-  { id: 'dashboard' as const, icon: LayoutDashboard, label: 'Главная' },
-  { id: 'add' as const, icon: Plus, label: 'Добавить' },
-  { id: 'history' as const, icon: Clock, label: 'История' },
+  { id: 'dashboard' as const, icon: MdHome, label: 'Главная' },
+  { id: 'add' as const, icon: MdAddBox, label: 'Добавить' },
+  { id: 'history' as const, icon: MdHistory, label: 'История' },
 ]
 
 export function BottomNav() {
@@ -44,8 +44,7 @@ export function BottomNav() {
               className="relative z-10 mb-1"
             >
               <Icon
-                size={24}
-                strokeWidth={activeTab === id ? 2.5 : 2}
+                size={28}
                 className={`transition-all duration-300 ${
                   activeTab === id
                     ? 'text-primary drop-shadow-lg'
