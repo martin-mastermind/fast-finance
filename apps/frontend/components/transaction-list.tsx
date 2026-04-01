@@ -64,9 +64,9 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { type: 'spring', stiffness: 100, damping: 12 },
+      transition: { type: 'spring' as const, stiffness: 100, damping: 12 },
     },
-  }
+  } as const
 
   return (
     <motion.div

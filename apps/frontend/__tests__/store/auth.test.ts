@@ -17,7 +17,8 @@ const { useAuthStore } = await import('../../store/auth')
 
 describe('useAuthStore', () => {
   beforeEach(() => {
-    useAuthStore.setState({ user: null, isLoading: false, error: null })
+    const store = useAuthStore.getState()
+    store.logout()
     mockTelegramAuth.mockResolvedValue({
       user: { id: 1, telegramId: '123456789', username: 'alice', currency: 'RUB' },
     })

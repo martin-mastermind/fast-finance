@@ -1,7 +1,10 @@
 {
   "name": "fast-finance",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "build": "bun run --filter '*' build",
     "dev": "bun run --filter '*' dev",
@@ -13,6 +16,6 @@
     "db:seed": "bun run --cwd packages/db seed"
   },
   "devDependencies": {
-    "typescript": "^5.4.0"
+    "typescript": "^6.0.2"
   }
 }

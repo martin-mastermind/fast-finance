@@ -3,7 +3,9 @@ import { useFinanceStore } from '../../store/finance'
 
 describe('useFinanceStore', () => {
   beforeEach(() => {
-    useFinanceStore.setState({ activeTab: 'dashboard', selectedAccountId: null })
+    const store = useFinanceStore.getState()
+    store.setActiveTab('dashboard')
+    store.setSelectedAccountId(null)
   })
 
   it('initial activeTab is dashboard', () => {
