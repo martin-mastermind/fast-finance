@@ -8,7 +8,8 @@ const config: Config = {
   ],
   theme: {
     fontFamily: {
-      sans: ['Roboto', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'sans-serif'],
+      sans: ['Outfit', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+      display: ['DM Serif Display', 'Georgia', 'serif'],
     },
     extend: {
       colors: {
@@ -36,12 +37,13 @@ const config: Config = {
         ring: 'hsl(var(--ring))',
         hint: 'var(--tg-theme-hint-color, hsl(var(--muted-foreground)))',
         link: 'var(--tg-theme-link-color, hsl(var(--primary)))',
+        income: 'hsl(var(--income))',
+        expense: 'hsl(var(--expense))',
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
-        '3xl': '1.5rem',
       },
     },
   },

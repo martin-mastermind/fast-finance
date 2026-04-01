@@ -8,18 +8,20 @@ interface Props {
 
 export function AuthScreen({ error }: Props) {
   return (
-    <div className="flex h-screen items-center justify-center bg-background p-6">
+    <div className="flex h-screen items-center justify-center bg-background px-6">
       <motion.div
         className="text-center"
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
       >
-        <div className="mb-4 text-6xl">{error ? '⚠️' : '💸'}</div>
-        <h1 className="mb-2 text-2xl font-bold">Fast Finance</h1>
+        <h1 className="text-3xl font-display italic text-foreground mb-3">
+          Fast Finance
+        </h1>
         {error ? (
-          <p className="text-sm text-red-500">{error}</p>
+          <p className="text-sm text-expense">{error}</p>
         ) : (
-          <p className="text-hint">Откройте приложение через Telegram</p>
+          <p className="text-sm text-hint">Откройте приложение через Telegram</p>
         )}
       </motion.div>
     </div>

@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { parseSmartInput } from '@fast-finance/shared'
 import { motion } from 'framer-motion'
-import { MdAutoFixHigh } from 'react-icons/md'
+import { MdAutoFixHigh, MdCheck } from 'react-icons/md'
 
 interface Props {
   userId: number
@@ -38,7 +38,6 @@ export function AddTransaction({ userId }: Props) {
       setSmartInput('')
       setParsed(null)
 
-      // Haptic feedback
       if (typeof window !== 'undefined' && window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success')
       }
@@ -69,36 +68,35 @@ export function AddTransaction({ userId }: Props) {
 
   return (
     <motion.div
-      className="space-y-4"
+      className="space-y-5"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ staggerChildren: 0.1, delayChildren: 0.1 }}
     >
       {/* Smart Input */}
       <motion.div
-        className="premium-card p-5"
-        initial={{ opacity: 0, y: 20 }}
+        className="surface p-5"
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       >
-        <label className="mb-3 block text-sm font-semibold text-primary">Быстрый ввод</label>
+        <label className="block text-xs font-medium uppercase tracking-widest text-hint mb-3">
+          Быстрый ввод
+        </label>
         <div className="flex gap-2">
-          <motion.input
+          <input
             type="text"
             value={smartInput}
             onChange={(e) => setSmartInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSmartParse()}
             placeholder="500 кофе или зарплата 50000"
-            className="flex-1 rounded-xl border border-border/50 bg-input smooth-input px-4 py-3 text-sm text-foreground placeholder-muted-foreground"
-            whileFocus={{ scale: 1.02 }}
+            className="input-field flex-1"
           />
           <motion.button
             onClick={handleSmartParse}
-            className="btn-primary flex items-center gap-2 px-5 font-medium"
-            whileHover={{ scale: 1.05 }}
+            className="btn-primary px-4"
             whileTap={{ scale: 0.95 }}
           >
-            <MdAutoFixHigh size={22} />
-            <span>Анализ</span>
+            <MdAutoFixHigh size={20} />
           </motion.button>
         </div>
       </motion.div>
@@ -106,36 +104,41 @@ export function AddTransaction({ userId }: Props) {
       {/* Parsed Result */}
       {parsed && (
         <motion.div
-          className="premium-card p-5 space-y-4"
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+          className="surface p-5 space-y-5"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         >
-          {/* Amount Display */}
-          <motion.div
-            className="flex items-center justify-between rounded-2xl bg-secondary/50 p-4 border border-border/50"
-            whileHover={{ backgroundColor: 'rgba(46, 41, 78, 0.7)' }}
-          >
-            <span className="text-sm font-medium text-hint">Сумма</span>
+          {/* Amount */}
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs font-medium uppercase tracking-widest text-hint">Сумма</span>
             <motion.span
-              className={`text-2xl font-bold tabular-nums ${
-                parsed.amount > 0 ? 'text-emerald-400' : 'text-rose-400'
+              className={`text-3xl font-display italic tabular-nums ${
+                parsed.amount > 0 ? 'text-income' : 'text-expense'
               }`}
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 150 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 20 }}
             >
               {parsed.amount > 0 ? '+' : ''}{parsed.amount.toFixed(2)}
             </motion.span>
-          </motion.div>
+          </div>
+
+          <div className="divider" />
 
           {/* Account selector */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-            <label className="mb-2 block text-sm font-semibold text-primary">Счёт</label>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.05 }}
+          >
+            <label className="block text-xs font-medium uppercase tracking-widest text-hint mb-2">
+              Счёт
+            </label>
             <select
               value={selectedAccountId ?? ''}
               onChange={(e) => setSelectedAccountId(Number(e.target.value))}
-              className="w-full rounded-xl border border-border/50 bg-input smooth-input px-4 py-3 text-sm text-foreground"
+              className="input-field"
             >
               <option value="">Выберите счёт</option>
               {accounts?.map(a => (
@@ -145,56 +148,58 @@ export function AddTransaction({ userId }: Props) {
           </motion.div>
 
           {/* Category selector */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
-            <label className="mb-3 block text-sm font-semibold text-primary">Категория</label>
-            <motion.div className="flex flex-wrap gap-2.5" layout>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <label className="block text-xs font-medium uppercase tracking-widest text-hint mb-3">
+              Категория
+            </label>
+            <div className="flex flex-wrap gap-2">
               {categories
                 ?.filter(c => c.type === parsed.type)
-                .map(c => (
+                .map((c, idx) => (
                   <motion.button
                     key={c.id}
                     onClick={() => setSelectedCategoryId(c.id)}
-                    className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-300 border ${
+                    className={`rounded-lg px-3.5 py-2 text-sm font-medium border transition-all duration-150 ${
                       selectedCategoryId === c.id
-                        ? 'bg-gradient-to-br from-primary to-accent text-primary-foreground border-primary shadow-lg shadow-primary/30'
-                        : 'bg-secondary text-foreground hover:bg-secondary/80 border-border/50 hover:border-primary/30'
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-secondary text-secondary-foreground border-border hover:border-muted-foreground'
                     }`}
-                    whileHover={{ scale: 1.08, y: -2 }}
-                    whileTap={{ scale: 0.95, y: 0 }}
-                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.12 + idx * 0.03 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     {c.name}
                   </motion.button>
                 ))}
-            </motion.div>
+            </div>
           </motion.div>
 
-          {/* Submit button */}
+          <div className="divider" />
+
+          {/* Submit */}
           <motion.button
             onClick={handleSubmit}
             disabled={!selectedAccountId || !selectedCategoryId || createMutation.isPending}
-            className="btn-primary w-full py-4 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            whileHover={{ scale: !(!selectedAccountId || !selectedCategoryId || createMutation.isPending) ? 1.02 : 1 }}
-            whileTap={{ scale: !(!selectedAccountId || !selectedCategoryId || createMutation.isPending) ? 0.98 : 1 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            className="btn-primary w-full py-3.5"
+            whileTap={{ scale: !(!selectedAccountId || !selectedCategoryId || createMutation.isPending) ? 0.97 : 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15 }}
           >
             {createMutation.isPending ? (
-              <>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                >
-                  ✓
-                </motion.div>
-                <span>Сохранение...</span>
-              </>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+              >
+                <MdCheck size={20} />
+              </motion.div>
             ) : (
-              <>
-                <span>💾</span>
-                <span>Сохранить операцию</span>
-              </>
+              <span>Сохранить</span>
             )}
           </motion.button>
         </motion.div>
@@ -203,12 +208,11 @@ export function AddTransaction({ userId }: Props) {
       {/* No accounts hint */}
       {accounts?.length === 0 && (
         <motion.div
-          className="premium-card p-6 text-center"
-          initial={{ opacity: 0, y: 20 }}
+          className="surface p-6 text-center"
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <p className="text-2xl mb-2">⚙️</p>
-          <p className="text-sm font-medium text-hint">Сначала создайте счёт в настройках</p>
+          <p className="text-sm text-hint">Сначала создайте счёт в настройках</p>
         </motion.div>
       )}
     </motion.div>
