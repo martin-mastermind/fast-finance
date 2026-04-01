@@ -7,6 +7,9 @@ const config: Config = {
     './lib/**/*.{ts,tsx}',
   ],
   theme: {
+    fontFamily: {
+      sans: ['Roboto', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'sans-serif'],
+    },
     extend: {
       colors: {
         background: 'var(--tg-theme-bg-color, hsl(var(--background)))',

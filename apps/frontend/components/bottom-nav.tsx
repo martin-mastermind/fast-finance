@@ -1,13 +1,13 @@
 'use client'
 
 import { useFinanceStore } from '@/store/finance'
-import { Home, PlusCircle, History } from 'lucide-react'
+import { LayoutDashboard, Plus, Clock } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const tabs = [
-  { id: 'dashboard' as const, icon: Home, label: 'Главная' },
-  { id: 'add' as const, icon: PlusCircle, label: 'Добавить' },
-  { id: 'history' as const, icon: History, label: 'История' },
+  { id: 'dashboard' as const, icon: LayoutDashboard, label: 'Главная' },
+  { id: 'add' as const, icon: Plus, label: 'Добавить' },
+  { id: 'history' as const, icon: Clock, label: 'История' },
 ]
 
 export function BottomNav() {
@@ -15,47 +15,54 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t border-primary/10 glass">
-      <div className="flex px-2 pb-1" style={{ paddingBottom: 'calc(1rem + var(--tg-safe-area-inset-bottom, 0px))' }}>
+      <div className="flex px-1 pb-1" style={{ paddingBottom: 'calc(1rem + var(--tg-safe-area-inset-bottom, 0px))' }}>
         {tabs.map(({ id, icon: Icon, label }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
-            className="relative flex flex-1 flex-col items-center py-3.5 text-xs rounded-xl transition-colors hover:text-primary"
+            className="relative flex flex-1 flex-col items-center justify-center py-4 rounded-2xl transition-all duration-300 group hover:bg-primary/5 active:bg-primary/10"
           >
             {activeTab === id && (
               <motion.div
-                className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/20 to-accent/10"
+                className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/15 to-accent/5"
                 layoutId="activeTab"
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 35 }}
+              />
+            )}
+
+            {activeTab === id && (
+              <motion.div
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-t-full bg-gradient-to-r from-primary/0 via-primary to-accent/0"
+                layoutId="activeIndicator"
+                transition={{ type: 'spring', stiffness: 350, damping: 35 }}
               />
             )}
 
             <motion.div
-              animate={{ scale: activeTab === id ? 1.15 : 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="relative z-10"
+              animate={{ scale: activeTab === id ? 1.2 : 1 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+              className="relative z-10 mb-1"
             >
-              {activeTab === id && (
-                <motion.div
-                  className="absolute inset-0 bg-primary/20 rounded-xl blur-lg -z-10"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-              )}
               <Icon
-                size={22}
-                className={`transition-colors duration-300 ${
-                  activeTab === id ? 'text-primary drop-shadow-lg' : 'text-muted-foreground'
+                size={24}
+                strokeWidth={activeTab === id ? 2.5 : 2}
+                className={`transition-all duration-300 ${
+                  activeTab === id
+                    ? 'text-primary drop-shadow-lg'
+                    : 'text-muted-foreground group-hover:text-primary/70'
                 }`}
               />
             </motion.div>
 
             <motion.span
-              className={`mt-1.5 text-xs font-semibold transition-colors duration-300 relative z-10 ${
+              className={`text-xs font-medium transition-colors duration-300 relative z-10 tracking-tight ${
                 activeTab === id ? 'text-primary' : 'text-muted-foreground'
               }`}
-              animate={{ scale: activeTab === id ? 1 : 0.9, opacity: activeTab === id ? 1 : 0.8 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              animate={{
+                scale: activeTab === id ? 1 : 0.9,
+                opacity: activeTab === id ? 1 : 0.75,
+              }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
             >
               {label}
             </motion.span>

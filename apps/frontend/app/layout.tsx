@@ -6,6 +6,7 @@ import { Providers } from '@/components/providers'
 export const metadata: Metadata = {
   title: 'Fast Finance',
   description: 'Быстрый учёт финансов в Telegram',
+  manifest: '/manifest.json',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

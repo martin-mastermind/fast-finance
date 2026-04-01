@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { parseSmartInput } from '@fast-finance/shared'
 import { motion } from 'framer-motion'
-import { Zap } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 
 interface Props {
   userId: number
@@ -93,12 +93,12 @@ export function AddTransaction({ userId }: Props) {
           />
           <motion.button
             onClick={handleSmartParse}
-            className="btn-primary flex items-center gap-2 px-4"
+            className="btn-primary flex items-center gap-2 px-5 font-medium"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Zap size={18} />
-            <span className="hidden sm:inline">Парсить</span>
+            <Sparkles size={20} />
+            <span>Анализ</span>
           </motion.button>
         </div>
       </motion.div>
@@ -147,20 +147,20 @@ export function AddTransaction({ userId }: Props) {
           {/* Category selector */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
             <label className="mb-3 block text-sm font-semibold text-primary">Категория</label>
-            <motion.div className="flex flex-wrap gap-2" layout>
+            <motion.div className="flex flex-wrap gap-2.5" layout>
               {categories
                 ?.filter(c => c.type === parsed.type)
                 .map(c => (
                   <motion.button
                     key={c.id}
                     onClick={() => setSelectedCategoryId(c.id)}
-                    className={`rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                    className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-300 border ${
                       selectedCategoryId === c.id
-                        ? 'bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg shadow-primary/30'
-                        : 'bg-secondary text-foreground hover:bg-secondary/80 border border-border/50'
+                        ? 'bg-gradient-to-br from-primary to-accent text-primary-foreground border-primary shadow-lg shadow-primary/30'
+                        : 'bg-secondary text-foreground hover:bg-secondary/80 border-border/50 hover:border-primary/30'
                     }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.08, y: -2 }}
+                    whileTap={{ scale: 0.95, y: 0 }}
                     layout
                   >
                     {c.name}
@@ -173,16 +173,29 @@ export function AddTransaction({ userId }: Props) {
           <motion.button
             onClick={handleSubmit}
             disabled={!selectedAccountId || !selectedCategoryId || createMutation.isPending}
-            className="btn-primary w-full py-4 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            className="btn-primary w-full py-4 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            whileHover={{ scale: !(!selectedAccountId || !selectedCategoryId || createMutation.isPending) ? 1.02 : 1 }}
+            whileTap={{ scale: !(!selectedAccountId || !selectedCategoryId || createMutation.isPending) ? 0.98 : 1 }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <motion.span animate={{ opacity: createMutation.isPending ? 0.6 : 1 }}>
-              {createMutation.isPending ? 'Сохранение...' : 'Сохранить операцию'}
-            </motion.span>
+            {createMutation.isPending ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                >
+                  ✓
+                </motion.div>
+                <span>Сохранение...</span>
+              </>
+            ) : (
+              <>
+                <span>💾</span>
+                <span>Сохранить операцию</span>
+              </>
+            )}
           </motion.button>
         </motion.div>
       )}

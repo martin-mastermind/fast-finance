@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trash2 } from 'lucide-react'
+import { X } from 'lucide-react'
 
 interface Props {
   userId: number
@@ -100,7 +100,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
               <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{tx.description || 'Без описания'}</p>
               <p className="text-xs text-hint mt-1">{formatDate(tx.date)}</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <motion.span
                 className={`font-bold text-base tabular-nums ${
                   tx.amount > 0 ? 'text-emerald-400' : 'text-rose-400'
@@ -111,11 +111,11 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
               </motion.span>
               <motion.button
                 onClick={() => deleteMutation.mutate(tx.id)}
-                className="rounded-lg p-2 text-hint transition-all duration-300 hover:text-destructive hover:bg-destructive/10 active:scale-90"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                className="rounded-lg p-2 text-hint transition-all duration-300 hover:text-destructive hover:bg-destructive/15 active:scale-90"
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.85 }}
               >
-                <Trash2 size={16} />
+                <X size={18} strokeWidth={2.5} />
               </motion.button>
             </div>
           </motion.div>
