@@ -48,15 +48,39 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
     )
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+        delayChildren: 0.1,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 12 },
+    },
+  }
+
   return (
-    <div className="space-y-2">
+    <motion.div
+      className="space-y-2"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <AnimatePresence>
         {data.items.map((tx: any) => (
           <motion.div
             key={tx.id}
-            className="flex items-center justify-between rounded-xl bg-card p-4 shadow-sm"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between rounded-xl bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+            variants={itemVariants}
             exit={{ opacity: 0, x: -100 }}
             layout
           >
@@ -78,6 +102,6 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
           </motion.div>
         ))}
       </AnimatePresence>
-    </div>
+    </motion.div>
   )
 }

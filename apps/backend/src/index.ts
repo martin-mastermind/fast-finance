@@ -6,6 +6,7 @@ import { authRouter } from './routes/auth'
 import { accountsRouter } from './routes/accounts'
 import { transactionsRouter } from './routes/transactions'
 import { categoriesRouter } from './routes/categories'
+import { botRouter } from './routes/bot'
 
 const app = new Elysia()
   .use(
@@ -20,6 +21,7 @@ const app = new Elysia()
   .use(accountsRouter)
   .use(transactionsRouter)
   .use(categoriesRouter)
+  .use(botRouter)
 
 await runMigrations()
 
