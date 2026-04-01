@@ -31,9 +31,9 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="skeleton h-14" />
+          <div key={i} className="skeleton" style={{ height: '3.5rem' }} />
         ))}
       </div>
     )
@@ -42,12 +42,12 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
   if (!data?.items?.length) {
     return (
       <motion.div
-        className="py-16 text-center"
+        style={{ padding: '3rem 0', textAlign: 'center' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <p className="text-hint text-sm">Транзакций пока нет</p>
-        <p className="text-muted-foreground text-xs mt-1">Добавьте первую операцию</p>
+        <p className="text-hint" style={{ fontSize: '0.875rem' }}>Транзакций пока нет</p>
+        <p style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))', marginTop: '0.25rem' }}>Добавьте первую операцию</p>
       </motion.div>
     )
   }
@@ -62,32 +62,56 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
         {data.items.map((tx: any, idx: number) => (
           <motion.div
             key={tx.id}
-            className="group flex items-center justify-between py-3.5 border-b border-border/50 last:border-0"
+            className="group"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.875rem 0',
+              borderBottom: '1px solid hsl(var(--border))',
+            }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: -60 }}
             transition={{ delay: idx * 0.035, type: 'spring', stiffness: 300, damping: 28 }}
             layout
           >
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--foreground))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {tx.description || 'Без описания'}
               </p>
-              <p className="text-xs text-hint mt-0.5">{formatDate(tx.date)}</p>
+              <p className="text-hint" style={{ fontSize: '0.7rem', marginTop: '0.15rem' }}>
+                {formatDate(tx.date)}
+              </p>
             </div>
 
-            <div className="flex items-center gap-2 pl-3">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.75rem' }}>
               <span
-                className={`text-sm font-display italic tabular-nums ${
-                  tx.amount > 0 ? 'text-income' : 'text-expense'
-                }`}
+                className="font-display"
+                style={{
+                  fontStyle: 'italic',
+                  fontSize: '0.875rem',
+                  fontVariantNumeric: 'tabular-nums',
+                  color: tx.amount > 0 ? 'hsl(var(--income))' : 'hsl(var(--expense))',
+                }}
               >
                 {tx.amount > 0 ? '+' : ''}{formatCurrency(tx.amount, currency)}
               </span>
 
               <motion.button
                 onClick={() => deleteMutation.mutate(tx.id)}
-                className="rounded-md p-1.5 text-hint opacity-0 group-hover:opacity-100 transition-opacity duration-150 hover:text-expense hover:bg-expense/10"
+                style={{
+                  borderRadius: '0.375rem',
+                  padding: '0.375rem',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'hsl(var(--hint))',
+                  opacity: 0.5,
+                  transition: 'opacity 150ms ease, color 150ms ease',
+                  WebkitAppearance: 'none',
+                }}
+                whileHover={{ opacity: 1 }}
                 whileTap={{ scale: 0.85 }}
               >
                 <MdClose size={14} />

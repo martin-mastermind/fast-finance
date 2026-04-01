@@ -47,17 +47,27 @@ export function BalanceCard({ userId, currency }: Props) {
       transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.1 }}
     >
       {/* Accent top line */}
-      <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-primary to-transparent opacity-40" />
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: '1.5rem',
+          right: '1.5rem',
+          height: '1px',
+          background: 'linear-gradient(to right, transparent, hsl(76 100% 66% / 0.4), transparent)',
+        }}
+      />
 
-      <p className="text-xs font-medium uppercase tracking-widest text-hint mb-3">
+      <p className="text-hint" style={{ fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.75rem' }}>
         Общий баланс
       </p>
 
       {isLoading ? (
-        <div className="skeleton h-12 w-48" />
+        <div className="skeleton" style={{ height: '3rem', width: '12rem' }} />
       ) : (
         <motion.p
-          className="font-display italic text-5xl tracking-tight text-foreground leading-none"
+          className="font-display"
+          style={{ fontStyle: 'italic', fontSize: '2.75rem', letterSpacing: '-0.02em', lineHeight: 1, color: 'hsl(var(--foreground))' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15, duration: 0.4 }}
@@ -69,7 +79,8 @@ export function BalanceCard({ userId, currency }: Props) {
       {/* Account pills */}
       {accounts && accounts.length > 0 && (
         <motion.div
-          className="mt-5 flex gap-2 overflow-x-auto pb-1 -mx-6 px-6 scrollbar-hide"
+          className="no-scrollbar"
+          style={{ marginTop: '1.25rem', display: 'flex', gap: '0.5rem', overflowX: 'auto' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.25 }}
@@ -77,13 +88,23 @@ export function BalanceCard({ userId, currency }: Props) {
           {accounts.map((account, idx) => (
             <motion.div
               key={account.id}
-              className="flex-shrink-0 rounded-lg border border-border bg-secondary px-3 py-2 transition-colors duration-200 hover:border-muted-foreground"
+              style={{
+                flexShrink: 0,
+                borderRadius: '0.5rem',
+                border: '1px solid hsl(var(--border))',
+                backgroundColor: 'hsl(var(--secondary))',
+                padding: '0.5rem 0.75rem',
+              }}
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + idx * 0.05, type: 'spring', stiffness: 300, damping: 25 }}
             >
-              <p className="text-[10px] font-medium uppercase tracking-wider text-hint">{account.name}</p>
-              <p className="text-sm font-display italic text-foreground mt-0.5">{formatCurrency(account.balance, currency)}</p>
+              <p className="text-hint" style={{ fontSize: '0.6rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                {account.name}
+              </p>
+              <p className="font-display" style={{ fontStyle: 'italic', fontSize: '0.875rem', color: 'hsl(var(--foreground))', marginTop: '0.15rem' }}>
+                {formatCurrency(account.balance, currency)}
+              </p>
             </motion.div>
           ))}
         </motion.div>

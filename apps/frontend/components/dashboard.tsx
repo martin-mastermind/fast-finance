@@ -8,11 +8,10 @@ import { AddTransaction } from './add-transaction'
 import { BottomNav } from './bottom-nav'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const pageTransition = {
+const pageVariants = {
   initial: { opacity: 0, y: 6 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -4 },
-  transition: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] as const },
 }
 
 export function Dashboard() {
@@ -20,25 +19,30 @@ export function Dashboard() {
   const { activeTab } = useFinanceStore()
 
   return (
-    <div className="flex h-screen flex-col bg-background safe-top overflow-hidden">
+    <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'hsl(var(--background))' }}>
       <AnimatePresence mode="wait">
         {activeTab === 'dashboard' && (
           <motion.div
             key="dashboard"
-            className="flex-1 overflow-y-auto safe-bottom px-5 pt-8 pb-2"
-            {...pageTransition}
+            className="safe-bottom no-scrollbar"
+            style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.25rem 0.5rem' }}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ duration: 0.2 }}
           >
             {/* Greeting */}
             <motion.div
-              className="mb-8"
+              style={{ marginBottom: '1.5rem' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.05 }}
             >
-              <p className="text-hint text-sm mb-1">
+              <p className="text-hint" style={{ fontSize: '0.8rem', marginBottom: '0.25rem' }}>
                 {user?.username || 'Пользователь'}
               </p>
-              <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'hsl(var(--foreground))', letterSpacing: '-0.02em' }}>
                 Мои финансы
               </h1>
             </motion.div>
@@ -46,12 +50,12 @@ export function Dashboard() {
             <BalanceCard userId={user!.id} currency={user?.currency || 'RUB'} />
 
             <motion.div
-              className="mt-8"
+              style={{ marginTop: '2rem' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <h2 className="mb-4 text-xs font-medium uppercase tracking-widest text-hint">
+              <h2 className="text-hint" style={{ marginBottom: '1rem', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
                 Последние операции
               </h2>
               <TransactionList userId={user!.id} currency={user?.currency || 'RUB'} limit={10} />
@@ -62,11 +66,16 @@ export function Dashboard() {
         {activeTab === 'add' && (
           <motion.div
             key="add"
-            className="flex-1 overflow-y-auto safe-bottom px-5 pt-8 pb-2"
-            {...pageTransition}
+            className="safe-bottom no-scrollbar"
+            style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.25rem 0.5rem' }}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ duration: 0.2 }}
           >
             <motion.h1
-              className="mb-6 text-2xl font-semibold text-foreground tracking-tight"
+              style={{ marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 600, color: 'hsl(var(--foreground))', letterSpacing: '-0.02em' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
@@ -79,11 +88,16 @@ export function Dashboard() {
         {activeTab === 'history' && (
           <motion.div
             key="history"
-            className="flex-1 overflow-y-auto safe-bottom px-5 pt-8 pb-2"
-            {...pageTransition}
+            className="safe-bottom no-scrollbar"
+            style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.25rem 0.5rem' }}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ duration: 0.2 }}
           >
             <motion.h1
-              className="mb-6 text-2xl font-semibold text-foreground tracking-tight"
+              style={{ marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 600, color: 'hsl(var(--foreground))', letterSpacing: '-0.02em' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >

@@ -66,34 +66,39 @@ export function AddTransaction({ userId }: Props) {
     })
   }
 
+  const isSubmitDisabled = !selectedAccountId || !selectedCategoryId || createMutation.isPending
+
   return (
     <motion.div
-      className="space-y-5"
+      style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
       {/* Smart Input */}
       <motion.div
-        className="surface p-5"
+        className="surface"
+        style={{ padding: '1.25rem' }}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       >
-        <label className="block text-xs font-medium uppercase tracking-widest text-hint mb-3">
+        <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.75rem' }}>
           Быстрый ввод
         </label>
-        <div className="flex gap-2">
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
           <input
             type="text"
             value={smartInput}
             onChange={(e) => setSmartInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSmartParse()}
             placeholder="500 кофе или зарплата 50000"
-            className="input-field flex-1"
+            className="input-field"
+            style={{ flex: 1 }}
           />
           <motion.button
             onClick={handleSmartParse}
-            className="btn-primary px-4"
+            className="btn-primary"
+            style={{ padding: '0.875rem 1rem', flexShrink: 0 }}
             whileTap={{ scale: 0.95 }}
           >
             <MdAutoFixHigh size={20} />
@@ -104,18 +109,25 @@ export function AddTransaction({ userId }: Props) {
       {/* Parsed Result */}
       {parsed && (
         <motion.div
-          className="surface p-5 space-y-5"
+          className="surface"
+          style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         >
           {/* Amount */}
-          <div className="flex items-baseline justify-between">
-            <span className="text-xs font-medium uppercase tracking-widest text-hint">Сумма</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <span className="text-hint" style={{ fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+              Сумма
+            </span>
             <motion.span
-              className={`text-3xl font-display italic tabular-nums ${
-                parsed.amount > 0 ? 'text-income' : 'text-expense'
-              }`}
+              className="font-display"
+              style={{
+                fontStyle: 'italic',
+                fontSize: '1.75rem',
+                fontVariantNumeric: 'tabular-nums',
+                color: parsed.amount > 0 ? 'hsl(var(--income))' : 'hsl(var(--expense))',
+              }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: 'spring', stiffness: 200, damping: 20 }}
@@ -127,12 +139,8 @@ export function AddTransaction({ userId }: Props) {
           <div className="divider" />
 
           {/* Account selector */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.05 }}
-          >
-            <label className="block text-xs font-medium uppercase tracking-widest text-hint mb-2">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}>
+            <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
               Счёт
             </label>
             <select
@@ -148,34 +156,42 @@ export function AddTransaction({ userId }: Props) {
           </motion.div>
 
           {/* Category selector */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            <label className="block text-xs font-medium uppercase tracking-widest text-hint mb-3">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+            <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.75rem' }}>
               Категория
             </label>
-            <div className="flex flex-wrap gap-2">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {categories
                 ?.filter(c => c.type === parsed.type)
-                .map((c, idx) => (
-                  <motion.button
-                    key={c.id}
-                    onClick={() => setSelectedCategoryId(c.id)}
-                    className={`rounded-lg px-3.5 py-2 text-sm font-medium border transition-all duration-150 ${
-                      selectedCategoryId === c.id
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-secondary text-secondary-foreground border-border hover:border-muted-foreground'
-                    }`}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.12 + idx * 0.03 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {c.name}
-                  </motion.button>
-                ))}
+                .map((c, idx) => {
+                  const isSelected = selectedCategoryId === c.id
+                  return (
+                    <motion.button
+                      key={c.id}
+                      onClick={() => setSelectedCategoryId(c.id)}
+                      style={{
+                        borderRadius: '0.5rem',
+                        padding: '0.5rem 0.875rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        fontFamily: "'Outfit', sans-serif",
+                        border: '1px solid',
+                        borderColor: isSelected ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+                        backgroundColor: isSelected ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
+                        color: isSelected ? 'hsl(var(--primary-foreground))' : 'hsl(var(--secondary-foreground))',
+                        cursor: 'pointer',
+                        transition: 'all 150ms ease',
+                        WebkitAppearance: 'none',
+                      }}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.12 + idx * 0.03 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {c.name}
+                    </motion.button>
+                  )
+                })}
             </div>
           </motion.div>
 
@@ -184,9 +200,10 @@ export function AddTransaction({ userId }: Props) {
           {/* Submit */}
           <motion.button
             onClick={handleSubmit}
-            disabled={!selectedAccountId || !selectedCategoryId || createMutation.isPending}
-            className="btn-primary w-full py-3.5"
-            whileTap={{ scale: !(!selectedAccountId || !selectedCategoryId || createMutation.isPending) ? 0.97 : 1 }}
+            disabled={isSubmitDisabled}
+            className="btn-primary"
+            style={{ width: '100%', padding: '0.875rem' }}
+            whileTap={{ scale: isSubmitDisabled ? 1 : 0.97 }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
@@ -208,11 +225,12 @@ export function AddTransaction({ userId }: Props) {
       {/* No accounts hint */}
       {accounts?.length === 0 && (
         <motion.div
-          className="surface p-6 text-center"
+          className="surface"
+          style={{ padding: '1.5rem', textAlign: 'center' }}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <p className="text-sm text-hint">Сначала создайте счёт в настройках</p>
+          <p className="text-hint" style={{ fontSize: '0.875rem' }}>Сначала создайте счёт в настройках</p>
         </motion.div>
       )}
     </motion.div>

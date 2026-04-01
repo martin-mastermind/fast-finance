@@ -14,47 +14,78 @@ export function BottomNav() {
   const { activeTab, setActiveTab } = useFinanceStore()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-xl border-t border-border/50">
-      <div
-        className="flex items-center"
-        style={{ paddingBottom: 'calc(0.5rem + var(--tg-safe-area-inset-bottom, 0px))' }}
-      >
-        {tabs.map(({ id, icon: Icon, label }) => (
-          <button
-            key={id}
-            onClick={() => setActiveTab(id)}
-            className="relative flex flex-1 flex-col items-center pt-3 pb-2 transition-colors duration-150"
-          >
-            <motion.div
-              animate={{
-                color: activeTab === id ? 'hsl(76 100% 66%)' : 'hsl(260 4% 40%)',
+    <nav style={{
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: 'hsla(240, 8%, 5%, 0.85)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderTop: '1px solid hsl(var(--border))',
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        paddingBottom: 'calc(0.5rem + var(--tg-safe-area-inset-bottom, 0px))',
+      }}>
+        {tabs.map(({ id, icon: Icon, label }) => {
+          const isActive = activeTab === id
+          return (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                paddingTop: '0.75rem',
+                paddingBottom: '0.5rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                position: 'relative',
+                WebkitAppearance: 'none',
               }}
-              transition={{ duration: 0.15 }}
             >
-              <Icon size={24} />
-            </motion.div>
+              {/* Active indicator line */}
+              {isActive && (
+                <motion.div
+                  layoutId="navIndicator"
+                  style={{
+                    position: 'absolute',
+                    top: '-1px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '1.5rem',
+                    height: '2px',
+                    borderRadius: '1px',
+                    backgroundColor: 'hsl(var(--primary))',
+                  }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                />
+              )}
 
-            <motion.span
-              className="text-[10px] font-medium mt-1 tracking-wide"
-              animate={{
-                color: activeTab === id ? 'hsl(76 100% 66%)' : 'hsl(260 4% 40%)',
-                opacity: activeTab === id ? 1 : 0.6,
-              }}
-              transition={{ duration: 0.15 }}
-            >
-              {label}
-            </motion.span>
-
-            {/* Active dot indicator */}
-            {activeTab === id && (
-              <motion.div
-                className="absolute -top-px left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary"
-                layoutId="navIndicator"
-                transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+              <Icon
+                size={22}
+                color={isActive ? 'hsl(76, 100%, 66%)' : 'hsl(260, 4%, 40%)'}
+                style={{ transition: 'color 150ms ease' }}
               />
-            )}
-          </button>
-        ))}
+              <span style={{
+                fontSize: '0.6rem',
+                fontWeight: 500,
+                marginTop: '0.25rem',
+                letterSpacing: '0.04em',
+                color: isActive ? 'hsl(76, 100%, 66%)' : 'hsl(260, 4%, 40%)',
+                opacity: isActive ? 1 : 0.7,
+                transition: 'color 150ms ease, opacity 150ms ease',
+              }}>
+                {label}
+              </span>
+            </button>
+          )
+        })}
       </div>
     </nav>
   )

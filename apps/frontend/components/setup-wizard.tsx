@@ -41,32 +41,33 @@ export function SetupWizard({ userId }: Props) {
   }
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center bg-background safe-top px-5">
+    <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'hsl(var(--background))', padding: '0 1.25rem' }}>
       <AnimatePresence mode="wait">
         {/* Welcome */}
         {step === 'welcome' && (
           <motion.div
             key="welcome"
-            className="w-full max-w-sm space-y-8 text-center"
+            style={{ width: '100%', maxWidth: '24rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '2rem' }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
             <div>
-              <h1 className="text-4xl font-display italic text-foreground mb-3">
+              <h1 className="font-display" style={{ fontSize: '2.25rem', fontStyle: 'italic', color: 'hsl(var(--foreground))', marginBottom: '0.75rem' }}>
                 Fast Finance
               </h1>
-              <p className="text-sm text-hint">Быстрый учёт личных финансов</p>
+              <p className="text-hint" style={{ fontSize: '0.875rem' }}>Быстрый учёт личных финансов</p>
             </div>
 
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', lineHeight: 1.6 }}>
               Создайте счёт и начните отслеживать свои расходы прямо здесь или через бота.
             </p>
 
             <motion.button
               onClick={() => setStep('create')}
-              className="btn-primary w-full"
+              className="btn-primary"
+              style={{ width: '100%' }}
               whileTap={{ scale: 0.97 }}
             >
               Начать
@@ -78,16 +79,18 @@ export function SetupWizard({ userId }: Props) {
         {step === 'create' && (
           <motion.div
             key="create"
-            className="w-full max-w-sm space-y-5"
+            style={{ width: '100%', maxWidth: '24rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            <h2 className="text-2xl font-semibold text-foreground tracking-tight">Создайте счёт</h2>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'hsl(var(--foreground))', letterSpacing: '-0.02em' }}>
+              Создайте счёт
+            </h2>
 
             <div>
-              <label className="block text-xs font-medium uppercase tracking-widest text-hint mb-2">
+              <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
                 Название счёта
               </label>
               <input
@@ -100,7 +103,7 @@ export function SetupWizard({ userId }: Props) {
             </div>
 
             <div>
-              <label className="block text-xs font-medium uppercase tracking-widest text-hint mb-2">
+              <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
                 Начальный баланс
               </label>
               <input
@@ -115,7 +118,8 @@ export function SetupWizard({ userId }: Props) {
             <motion.button
               onClick={handleCreate}
               disabled={!accountName.trim() || createMutation.isPending}
-              className="btn-primary w-full"
+              className="btn-primary"
+              style={{ width: '100%' }}
               whileTap={{ scale: !(!accountName.trim() || createMutation.isPending) ? 0.97 : 1 }}
             >
               {createMutation.isPending ? 'Создание...' : 'Создать счёт'}
@@ -123,7 +127,8 @@ export function SetupWizard({ userId }: Props) {
 
             <motion.button
               onClick={() => setStep('welcome')}
-              className="btn-ghost w-full"
+              className="btn-ghost"
+              style={{ width: '100%' }}
               whileTap={{ scale: 0.97 }}
             >
               Назад
@@ -135,7 +140,7 @@ export function SetupWizard({ userId }: Props) {
         {step === 'success' && (
           <motion.div
             key="success"
-            className="w-full max-w-sm space-y-6 text-center"
+            style={{ width: '100%', maxWidth: '24rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
@@ -144,18 +149,18 @@ export function SetupWizard({ userId }: Props) {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
-              className="flex justify-center"
             >
-              <MdCheckCircle size={64} className="text-income" />
+              <MdCheckCircle size={64} color="hsl(155, 100%, 62%)" />
             </motion.div>
 
             <div>
-              <h2 className="text-2xl font-semibold text-foreground mb-1">Готово</h2>
-              <p className="text-sm text-hint">Счёт создан. Добро пожаловать!</p>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '0.25rem' }}>Готово</h2>
+              <p className="text-hint" style={{ fontSize: '0.875rem' }}>Счёт создан. Добро пожаловать!</p>
             </div>
 
             <motion.div
-              className="surface p-4 text-sm text-muted-foreground text-left"
+              className="surface"
+              style={{ padding: '1rem', fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))', textAlign: 'left', width: '100%' }}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -165,7 +170,8 @@ export function SetupWizard({ userId }: Props) {
 
             <motion.button
               onClick={() => window.location.reload()}
-              className="btn-primary w-full"
+              className="btn-primary"
+              style={{ width: '100%' }}
               whileTap={{ scale: 0.97 }}
             >
               Начать пользоваться
