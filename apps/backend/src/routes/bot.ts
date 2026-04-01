@@ -1,4 +1,4 @@
-import { Elysia, t } from 'elysia'
+import { Elysia } from 'elysia'
 import { db, users, accounts, transactions, categories } from '@fast-finance/db'
 import { eq, and } from 'drizzle-orm'
 import { parseSmartInput } from '@fast-finance/shared'
@@ -53,7 +53,7 @@ async function sendTelegramMessage(chatId: number, text: string, replyMarkup?: u
 export const botRouter = new Elysia({ prefix: '/bot' }).post(
   '/webhook',
   async ({ body }) => {
-    const update = body as TelegramUpdate
+    const update = body as unknown as TelegramUpdate
     const message = update.message
 
     if (!message?.text) {
@@ -145,11 +145,5 @@ export const botRouter = new Elysia({ prefix: '/bot' }).post(
       await sendTelegramMessage(chatId, '❌ Ошибка при сохранении операции')
       return { ok: true }
     }
-  },
-  {
-    body: t.Object({
-      update_id: t.Number(),
-      message: t.Optional(t.Any()),
-    }),
   },
 )
