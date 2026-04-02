@@ -82,7 +82,7 @@ export function AddTransaction({ userId }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       >
-        <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.75rem' }}>
+        <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
           Быстрый ввод
         </label>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -121,9 +121,8 @@ export function AddTransaction({ userId }: Props) {
               Сумма
             </span>
             <motion.span
-              className="font-display"
               style={{
-                fontStyle: 'italic',
+                fontWeight: 300,
                 fontSize: '1.75rem',
                 fontVariantNumeric: 'tabular-nums',
                 color: parsed.amount > 0 ? 'hsl(var(--income))' : 'hsl(var(--expense))',
@@ -157,7 +156,7 @@ export function AddTransaction({ userId }: Props) {
 
           {/* Category selector */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-            <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.75rem' }}>
+            <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
               Категория
             </label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -176,9 +175,9 @@ export function AddTransaction({ userId }: Props) {
                         fontWeight: 500,
                         fontFamily: "'Outfit', sans-serif",
                         border: '1px solid',
-                        borderColor: isSelected ? 'hsl(var(--primary))' : 'hsl(var(--border))',
-                        backgroundColor: isSelected ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-                        color: isSelected ? 'hsl(var(--primary-foreground))' : 'hsl(var(--secondary-foreground))',
+                        borderColor: isSelected ? 'var(--accent)' : 'hsl(var(--border))',
+                        backgroundColor: isSelected ? 'var(--accent-dim)' : 'hsl(var(--secondary))',
+                        color: isSelected ? 'var(--accent)' : 'hsl(var(--secondary-foreground))',
                         cursor: 'pointer',
                         transition: 'all 150ms ease',
                         WebkitAppearance: 'none',

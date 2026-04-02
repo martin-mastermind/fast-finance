@@ -9,7 +9,6 @@ const config: Config = {
   theme: {
     fontFamily: {
       sans: ['Outfit', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-      display: ['DM Serif Display', 'Georgia', 'serif'],
     },
     extend: {
       colors: {

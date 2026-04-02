@@ -46,19 +46,7 @@ export function BalanceCard({ userId, currency }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.1 }}
     >
-      {/* Accent top line */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: '1.5rem',
-          right: '1.5rem',
-          height: '1px',
-          background: 'linear-gradient(to right, transparent, hsl(76 100% 66% / 0.4), transparent)',
-        }}
-      />
-
-      <p className="text-hint" style={{ fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.75rem' }}>
+      <p className="text-hint" style={{ fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
         Общий баланс
       </p>
 
@@ -66,8 +54,7 @@ export function BalanceCard({ userId, currency }: Props) {
         <div className="skeleton" style={{ height: '3rem', width: '12rem' }} />
       ) : (
         <motion.p
-          className="font-display"
-          style={{ fontStyle: 'italic', fontSize: '2.75rem', letterSpacing: '-0.02em', lineHeight: 1, color: 'hsl(var(--foreground))' }}
+          style={{ fontWeight: 300, fontSize: '2.5rem', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--foreground))' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15, duration: 0.4 }}
@@ -102,7 +89,7 @@ export function BalanceCard({ userId, currency }: Props) {
               <p className="text-hint" style={{ fontSize: '0.6rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                 {account.name}
               </p>
-              <p className="font-display" style={{ fontStyle: 'italic', fontSize: '0.875rem', color: 'hsl(var(--foreground))', marginTop: '0.15rem' }}>
+              <p style={{ fontWeight: 500, fontSize: '0.8125rem', fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--foreground))', marginTop: '0.15rem' }}>
                 {formatCurrency(account.balance, currency)}
               </p>
             </motion.div>

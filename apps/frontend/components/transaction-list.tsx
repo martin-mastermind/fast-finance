@@ -42,7 +42,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
   if (!data?.items?.length) {
     return (
       <motion.div
-        style={{ padding: '3rem 0', textAlign: 'center' }}
+        style={{ padding: '4rem 0', textAlign: 'center' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
@@ -87,9 +87,8 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.75rem' }}>
               <span
-                className="font-display"
                 style={{
-                  fontStyle: 'italic',
+                  fontWeight: 600,
                   fontSize: '0.875rem',
                   fontVariantNumeric: 'tabular-nums',
                   color: tx.amount > 0 ? 'hsl(var(--income))' : 'hsl(var(--expense))',

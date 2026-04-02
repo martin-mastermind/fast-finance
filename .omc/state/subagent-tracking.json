@@ -1,0 +1,35 @@
+{
+  "agents": [
+    {
+      "agent_id": "af181e5aef2776df8",
+      "agent_type": "Explore",
+      "started_at": "2026-04-02T16:53:21.101Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-02T16:53:55.394Z",
+      "duration_ms": 34293
+    },
+    {
+      "agent_id": "a300b434be6486546",
+      "agent_type": "Explore",
+      "started_at": "2026-04-02T16:54:03.747Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-02T16:54:29.058Z",
+      "duration_ms": 25311
+    },
+    {
+      "agent_id": "afc71f94771a1bd96",
+      "agent_type": "Plan",
+      "started_at": "2026-04-02T16:55:05.235Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-02T16:57:41.730Z",
+      "duration_ms": 156495
+    }
+  ],
+  "total_spawned": 3,
+  "total_completed": 3,
+  "total_failed": 0,
+  "last_updated": "2026-04-02T16:57:41.839Z"
+}

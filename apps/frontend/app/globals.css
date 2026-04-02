@@ -57,29 +57,26 @@ a {
 
 /* ===== Theme Variables ===== */
 :root {
-  --bg: #0B0B0F;
-  --bg-card: #131318;
-  --bg-card-hover: #1A1A21;
-  --bg-elevated: #1E1E26;
-  --bg-input: #16161C;
+  --bg:           #090909;
+  --bg-card:      #111114;
+  --bg-elevated:  #18181C;
+  --bg-input:     #0F0F12;
 
-  --text: #EAEAF0;
-  --text-secondary: #9898A6;
-  --text-muted: #5E5E6E;
+  --text:           #E8E8ED;
+  --text-secondary: #8A8A96;
+  --text-muted:     #484854;
 
-  --accent: #A8FF53;
-  --accent-dim: rgba(168, 255, 83, 0.12);
-  --accent-glow: rgba(168, 255, 83, 0.06);
+  --accent:     #A8FF53;
+  --accent-dim: rgba(168, 255, 83, 0.10);
 
-  --border: #1F1F28;
-  --border-light: #2A2A35;
+  --green: #4ADE80;
+  --red:   #F87171;
 
-  --green: #34D399;
-  --red: #F87171;
+  --border: #1C1C22;
 
-  --radius: 16px;
+  --radius:    14px;
   --radius-sm: 10px;
-  --radius-xs: 8px;
+  --radius-xs:  6px;
 }
 
 /* ===== Base ===== */
@@ -109,26 +106,6 @@ body {
   overflow: hidden;
 }
 
-/* ===== Balance Hero Card ===== */
-.balance-card {
-  position: relative;
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: linear-gradient(145deg, #1A1A2E 0%, #16162A 50%, #1A1428 100%);
-  border: 1px solid rgba(168, 255, 83, 0.08);
-}
-
-.balance-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(ellipse at 20% 0%, rgba(168, 255, 83, 0.05) 0%, transparent 60%);
-  pointer-events: none;
-}
-
 /* ===== Buttons ===== */
 .btn-primary {
   display: inline-flex;
@@ -145,10 +122,6 @@ body {
   letter-spacing: 0.01em;
   transition: transform 100ms ease, box-shadow 200ms ease;
   white-space: nowrap;
-}
-
-.btn-primary:hover {
-  box-shadow: 0 0 20px rgba(168, 255, 83, 0.15);
 }
 
 .btn-primary:active {
@@ -170,7 +143,7 @@ body {
   height: 48px;
   padding: 0 24px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
   color: var(--text-secondary);
   font-weight: 500;
   font-size: 14px;
@@ -208,7 +181,6 @@ body {
 
 .input-field:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-dim);
 }
 
 select.input-field {
@@ -238,9 +210,14 @@ select.input-field {
 .label {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+.mono-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }
 
 /* ===== Scrollbar ===== */
@@ -249,7 +226,7 @@ select.input-field {
 
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 /* ===== Safe areas ===== */
 .safe-top { padding-top: var(--tg-safe-area-inset-top, 0px); }

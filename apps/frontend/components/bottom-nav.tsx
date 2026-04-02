@@ -19,9 +19,7 @@ export function BottomNav() {
       bottom: 0,
       left: 0,
       right: 0,
-      backgroundColor: 'hsla(240, 8%, 5%, 0.85)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
+      backgroundColor: 'var(--bg)',
       borderTop: '1px solid hsl(var(--border))',
     }}>
       <div style={{
@@ -69,7 +67,7 @@ export function BottomNav() {
 
               <Icon
                 size={22}
-                color={isActive ? 'hsl(76, 100%, 66%)' : 'hsl(260, 4%, 40%)'}
+                color={isActive ? 'hsl(76, 100%, 66%)' : 'var(--text-muted)'}
                 style={{ transition: 'color 150ms ease' }}
               />
               <span style={{
@@ -77,9 +75,8 @@ export function BottomNav() {
                 fontWeight: 500,
                 marginTop: '0.25rem',
                 letterSpacing: '0.04em',
-                color: isActive ? 'hsl(76, 100%, 66%)' : 'hsl(260, 4%, 40%)',
-                opacity: isActive ? 1 : 0.7,
-                transition: 'color 150ms ease, opacity 150ms ease',
+                color: isActive ? 'hsl(76, 100%, 66%)' : 'var(--text-muted)',
+                transition: 'color 150ms ease',
               }}>
                 {label}
               </span>

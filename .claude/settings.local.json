@@ -1,7 +1,5 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(bun test:*)"
-    ]
-  }
+  "disabledMcpjsonServers": [
+    "claude-flow"
+  ]
 }
