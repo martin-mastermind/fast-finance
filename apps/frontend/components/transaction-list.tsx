@@ -47,7 +47,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
         animate={{ opacity: 1 }}
       >
         <p className="text-hint" style={{ fontSize: '0.875rem' }}>Транзакций пока нет</p>
-        <p style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))', marginTop: '0.25rem' }}>Добавьте первую операцию</p>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Добавьте первую операцию</p>
       </motion.div>
     )
   }
@@ -68,7 +68,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '0.875rem 0',
-              borderBottom: '1px solid hsl(var(--border))',
+              borderBottom: '1px solid var(--border)',
             }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -77,7 +77,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
             layout
           >
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--foreground))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {tx.description || 'Без описания'}
               </p>
               <p className="text-hint" style={{ fontSize: '0.7rem', marginTop: '0.15rem' }}>
@@ -91,7 +91,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                   fontWeight: 600,
                   fontSize: '0.875rem',
                   fontVariantNumeric: 'tabular-nums',
-                  color: tx.amount > 0 ? 'hsl(var(--income))' : 'hsl(var(--expense))',
+                  color: tx.amount > 0 ? 'var(--green)' : 'var(--red)',
                 }}
               >
                 {tx.amount > 0 ? '+' : ''}{formatCurrency(tx.amount, currency)}
@@ -105,7 +105,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  color: 'hsl(var(--hint))',
+                  color: 'var(--text-muted)',
                   opacity: 0.5,
                   transition: 'opacity 150ms ease, color 150ms ease',
                   WebkitAppearance: 'none',

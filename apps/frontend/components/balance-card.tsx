@@ -54,7 +54,7 @@ export function BalanceCard({ userId, currency }: Props) {
         <div className="skeleton" style={{ height: '3rem', width: '12rem' }} />
       ) : (
         <motion.p
-          style={{ fontWeight: 300, fontSize: '2.5rem', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--foreground))' }}
+          style={{ fontWeight: 300, fontSize: '2.5rem', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: 'var(--text)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15, duration: 0.4 }}
@@ -78,8 +78,8 @@ export function BalanceCard({ userId, currency }: Props) {
               style={{
                 flexShrink: 0,
                 borderRadius: '0.5rem',
-                border: '1px solid hsl(var(--border))',
-                backgroundColor: 'hsl(var(--secondary))',
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--bg-elevated)',
                 padding: '0.5rem 0.75rem',
               }}
               initial={{ opacity: 0, x: -8 }}
@@ -89,7 +89,7 @@ export function BalanceCard({ userId, currency }: Props) {
               <p className="text-hint" style={{ fontSize: '0.6rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                 {account.name}
               </p>
-              <p style={{ fontWeight: 500, fontSize: '0.8125rem', fontVariantNumeric: 'tabular-nums', color: 'hsl(var(--foreground))', marginTop: '0.15rem' }}>
+              <p style={{ fontWeight: 500, fontSize: '0.8125rem', fontVariantNumeric: 'tabular-nums', color: 'var(--text)', marginTop: '0.15rem' }}>
                 {formatCurrency(account.balance, currency)}
               </p>
             </motion.div>

@@ -19,7 +19,7 @@ export function Dashboard() {
   const { activeTab } = useFinanceStore()
 
   return (
-    <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'hsl(var(--background))' }}>
+    <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
       <AnimatePresence mode="wait">
         {activeTab === 'dashboard' && (
           <motion.div
@@ -42,7 +42,7 @@ export function Dashboard() {
               <p className="text-hint" style={{ fontSize: '0.8rem', marginBottom: '0.25rem' }}>
                 {user?.username || 'Пользователь'}
               </p>
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'hsl(var(--foreground))', letterSpacing: '-0.02em' }}>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.02em' }}>
                 Мои финансы
               </h1>
             </motion.div>
@@ -75,7 +75,7 @@ export function Dashboard() {
             transition={{ duration: 0.2 }}
           >
             <motion.h1
-              style={{ marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 600, color: 'hsl(var(--foreground))', letterSpacing: '-0.02em' }}
+              style={{ marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.02em' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
@@ -97,7 +97,7 @@ export function Dashboard() {
             transition={{ duration: 0.2 }}
           >
             <motion.h1
-              style={{ marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 600, color: 'hsl(var(--foreground))', letterSpacing: '-0.02em' }}
+              style={{ marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.02em' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >

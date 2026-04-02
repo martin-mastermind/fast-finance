@@ -125,7 +125,7 @@ export function AddTransaction({ userId }: Props) {
                 fontWeight: 300,
                 fontSize: '1.75rem',
                 fontVariantNumeric: 'tabular-nums',
-                color: parsed.amount > 0 ? 'hsl(var(--income))' : 'hsl(var(--expense))',
+                color: parsed.amount > 0 ? 'var(--green)' : 'var(--red)',
               }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -175,9 +175,9 @@ export function AddTransaction({ userId }: Props) {
                         fontWeight: 500,
                         fontFamily: "'Outfit', sans-serif",
                         border: '1px solid',
-                        borderColor: isSelected ? 'var(--accent)' : 'hsl(var(--border))',
-                        backgroundColor: isSelected ? 'var(--accent-dim)' : 'hsl(var(--secondary))',
-                        color: isSelected ? 'var(--accent)' : 'hsl(var(--secondary-foreground))',
+                        borderColor: isSelected ? 'var(--accent)' : 'var(--border)',
+                        backgroundColor: isSelected ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                        color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
                         cursor: 'pointer',
                         transition: 'all 150ms ease',
                         WebkitAppearance: 'none',

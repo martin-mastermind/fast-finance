@@ -20,7 +20,7 @@ export function BottomNav() {
       left: 0,
       right: 0,
       backgroundColor: 'var(--bg)',
-      borderTop: '1px solid hsl(var(--border))',
+      borderTop: '1px solid var(--border)',
     }}>
       <div style={{
         display: 'flex',
@@ -59,7 +59,7 @@ export function BottomNav() {
                     width: '1.5rem',
                     height: '2px',
                     borderRadius: '1px',
-                    backgroundColor: 'hsl(var(--primary))',
+                    backgroundColor: 'var(--accent)',
                   }}
                   transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                 />

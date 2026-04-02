@@ -41,7 +41,7 @@ export function SetupWizard({ userId }: Props) {
   }
 
   return (
-    <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'hsl(var(--background))', padding: '0 1.25rem' }}>
+    <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg)', padding: '0 1.25rem' }}>
       <AnimatePresence mode="wait">
         {/* Welcome */}
         {step === 'welcome' && (
@@ -54,13 +54,13 @@ export function SetupWizard({ userId }: Props) {
             transition={{ duration: 0.2 }}
           >
             <div>
-              <h1 className="font-display" style={{ fontSize: '2.25rem', fontStyle: 'italic', color: 'hsl(var(--foreground))', marginBottom: '0.75rem' }}>
+              <h1 style={{ fontSize: '2.25rem', fontWeight: 300, color: 'var(--text)', marginBottom: '0.75rem' }}>
                 Fast Finance
               </h1>
               <p className="text-hint" style={{ fontSize: '0.875rem' }}>Быстрый учёт личных финансов</p>
             </div>
 
-            <p style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', lineHeight: 1.6 }}>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
               Создайте счёт и начните отслеживать свои расходы прямо здесь или через бота.
             </p>
 
@@ -85,7 +85,7 @@ export function SetupWizard({ userId }: Props) {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'hsl(var(--foreground))', letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.02em' }}>
               Создайте счёт
             </h2>
 
@@ -154,13 +154,13 @@ export function SetupWizard({ userId }: Props) {
             </motion.div>
 
             <div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '0.25rem' }}>Готово</h2>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.25rem' }}>Готово</h2>
               <p className="text-hint" style={{ fontSize: '0.875rem' }}>Счёт создан. Добро пожаловать!</p>
             </div>
 
             <motion.div
               className="surface"
-              style={{ padding: '1rem', fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))', textAlign: 'left', width: '100%' }}
+              style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'left', width: '100%' }}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
