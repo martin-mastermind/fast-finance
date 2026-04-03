@@ -90,23 +90,23 @@ export const TransactionService = {
         lt(transactions.date, end)
       ))
 
-    // Convert all amounts to RUB (base currency) and group
+    // Convert all amounts to USD (base currency) and group
     const expenseByCategoryMap = new Map<number, number>()
     const incomeByCategoryMap = new Map<number, number>()
 
     allTransactions.forEach(tx => {
       const rate = getRate(tx.currency)
-      const rublAmount = tx.amount * rate
+      const usdAmount = tx.amount * rate
 
-      if (rublAmount < 0) {
+      if (usdAmount < 0) {
         expenseByCategoryMap.set(
           tx.categoryId,
-          (expenseByCategoryMap.get(tx.categoryId) ?? 0) + rublAmount
+          (expenseByCategoryMap.get(tx.categoryId) ?? 0) + usdAmount
         )
-      } else if (rublAmount > 0) {
+      } else if (usdAmount > 0) {
         incomeByCategoryMap.set(
           tx.categoryId,
-          (incomeByCategoryMap.get(tx.categoryId) ?? 0) + rublAmount
+          (incomeByCategoryMap.get(tx.categoryId) ?? 0) + usdAmount
         )
       }
     })
