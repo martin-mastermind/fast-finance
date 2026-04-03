@@ -245,7 +245,7 @@ export function SettingsPanel({ userId }: Props) {
                 >
                   <span style={{ fontSize: '1rem' }}>{getCategoryIcon(cat.icon)}</span>
                   <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{cat.name}</span>
-                  <div style={{ display: 'flex', gap: '0.125rem', marginLeft: '0.25rem', opacity: 0, transition: 'opacity 150ms' }} className="group-hover:opacity-100">
+                  <div style={{ display: 'flex', gap: '0.125rem', marginLeft: '0.25rem', opacity: 1, transition: 'opacity 150ms' }} className="group-hover:opacity-100">
                     <motion.button
                       onClick={() => setEditingCategory(cat)}
                       style={{
@@ -318,7 +318,7 @@ export function SettingsPanel({ userId }: Props) {
                 >
                   <span style={{ fontSize: '1rem' }}>{getCategoryIcon(cat.icon)}</span>
                   <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{cat.name}</span>
-                  <div style={{ display: 'flex', gap: '0.125rem', marginLeft: '0.25rem', opacity: 0, transition: 'opacity 150ms' }} className="group-hover:opacity-100">
+                  <div style={{ display: 'flex', gap: '0.125rem', marginLeft: '0.25rem', opacity: 1, transition: 'opacity 150ms' }} className="group-hover:opacity-100">
                     <motion.button
                       onClick={() => setEditingCategory(cat)}
                       style={{
