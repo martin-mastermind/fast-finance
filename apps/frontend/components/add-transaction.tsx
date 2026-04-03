@@ -49,7 +49,7 @@ export function AddTransaction({ userId, onClose }: Props) {
   }, [transactionType])
 
   const createMutation = useMutation({
-    mutationFn: (data: { accountId: number; categoryId: number; amount: number; description?: string }) =>
+    mutationFn: (data: { accountId: number; categoryId: number; amount: number; currency: string; description?: string }) =>
       api.transactions.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions', userId] })
@@ -74,6 +74,7 @@ export function AddTransaction({ userId, onClose }: Props) {
       accountId: selectedAccountId,
       categoryId: selectedCategoryId,
       amount: transactionType === 'income' ? numAmount : -numAmount,
+      currency,
       description: description || undefined,
     })
   }

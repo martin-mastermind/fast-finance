@@ -47,6 +47,7 @@ export const transactions = pgTable('transactions', {
     .references(() => categories.id)
     .notNull(),
   amount: doublePrecision('amount').notNull(),
+  currency: text('currency', { enum: ['RUB', 'BYN', 'USD'] }).notNull(),
   description: text('description'),
   date: timestamp('date').defaultNow().notNull(),
 })

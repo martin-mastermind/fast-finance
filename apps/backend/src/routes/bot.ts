@@ -213,6 +213,7 @@ export const botRouter = new Elysia({ prefix: '/bot' }).post(
             accountId: userAccounts[0].id,
             categoryId: category.id,
             amount: session.type === 'income' ? session.amount : -session.amount,
+            currency: userAccounts[0].currency,
             description: session.description,
             date: new Date(),
           })

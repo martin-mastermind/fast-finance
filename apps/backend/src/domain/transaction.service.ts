@@ -9,6 +9,7 @@ export interface NewTransactionInput {
   amount: number
   description?: string
   date?: string
+  currency: string
 }
 
 function getDateRange(period: string): { start: Date; end: Date } {
@@ -141,6 +142,7 @@ export const TransactionService = {
         accountId: input.accountId,
         categoryId: input.categoryId,
         amount: input.amount,
+        currency: input.currency as 'RUB' | 'BYN' | 'USD',
         description: input.description || null,
         date: input.date ? new Date(input.date) : new Date(),
       })

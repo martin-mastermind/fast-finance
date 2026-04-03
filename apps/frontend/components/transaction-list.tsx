@@ -211,7 +211,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                       borderRadius: 'var(--radius-xs)',
                       background: isIncome ? 'var(--green-dim)' : 'var(--red-dim)',
                     }}>
-                      {isIncome ? '+' : ''}{formatCurrency(tx.amount, currency)}
+                      {isIncome ? '+' : ''}{formatCurrency(tx.amount, tx.currency)}
                     </span>
 
                     <motion.button

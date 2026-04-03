@@ -36,6 +36,7 @@ const mockTransaction = {
   accountId: 1,
   categoryId: 1,
   amount: -500,
+  currency: 'RUB',
   description: 'кофе',
   date: new Date(),
 }
@@ -94,7 +95,7 @@ describe('POST /transactions', () => {
     mockCreateTransaction.mockRejectedValue(new AccessDeniedError('Access denied'))
 
     const res = await makeRequest('POST', '/transactions', {
-      body: { accountId: 99, categoryId: 1, amount: -500, description: 'кофе' },
+      body: { accountId: 99, categoryId: 1, amount: -500, currency: 'RUB', description: 'кофе' },
     })
     expect(res.status).toBe(403)
     const data = await res.json()
@@ -103,7 +104,7 @@ describe('POST /transactions', () => {
 
   it('creates transaction when account belongs to user', async () => {
     const res = await makeRequest('POST', '/transactions', {
-      body: { accountId: 1, categoryId: 1, amount: -500, description: 'кофе' },
+      body: { accountId: 1, categoryId: 1, amount: -500, currency: 'RUB', description: 'кофе' },
     })
     expect(res.status).toBe(200)
     const data = await res.json()

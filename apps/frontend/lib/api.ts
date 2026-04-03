@@ -45,7 +45,7 @@ export function createApiClient(userId: number) {
     transactions: {
       list: (params?: { limit?: number; offset?: number }) => {
         const qs = new URLSearchParams(params as Record<string, string>).toString()
-        return request<{ items: any[]; total: number; page: number; pageSize: number }>(
+        return request<{ items: Array<{ id: string; accountId: number; categoryId: number; amount: number; currency: string; description: string | null; date: string }>; total: number; page: number; pageSize: number }>(
           `/transactions${qs ? `?${qs}` : ''}`, {}, userId,
         )
       },
@@ -64,6 +64,7 @@ export function createApiClient(userId: number) {
         accountId: number
         categoryId: number
         amount: number
+        currency: string
         description?: string
         date?: string
       }) => request('/transactions', { method: 'POST', body: JSON.stringify(data) }, userId),
@@ -74,6 +75,8 @@ export function createApiClient(userId: number) {
       list: () => request<Array<{ id: number; name: string; icon: string; type: string; userId: number | null }>>('/categories', {}, userId),
       create: (data: { name: string; icon: string; type: string }) =>
         request('/categories', { method: 'POST', body: JSON.stringify(data) }, userId),
+      update: (id: number, data: { name: string; icon: string; type: string }) =>
+        request(`/categories/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, userId),
       delete: (id: number) =>
         request(`/categories/${id}`, { method: 'DELETE' }, userId),
     },

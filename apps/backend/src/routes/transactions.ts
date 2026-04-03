@@ -33,6 +33,7 @@ export const transactionsRouter = new Elysia({ prefix: '/transactions' })
         accountId: t.Number(),
         categoryId: t.Number(),
         amount: t.Number(),
+        currency: t.Union([t.Literal('RUB'), t.Literal('BYN'), t.Literal('USD')]),
         description: t.Optional(t.String()),
         date: t.Optional(t.String()),
       }),

@@ -54,6 +54,7 @@ const mockTransaction = {
   accountId: 1,
   categoryId: 1,
   amount: -500,
+  currency: 'RUB',
   description: 'кофе',
   date: new Date(),
 }
@@ -80,7 +81,7 @@ describe('TransactionService.createTransaction', () => {
     mockDb.where.mockResolvedValueOnce([])
 
     await expect(
-      TransactionService.createTransaction(1, { accountId: 99, categoryId: 1, amount: -500 }),
+      TransactionService.createTransaction(1, { accountId: 99, categoryId: 1, amount: -500, currency: 'RUB' }),
     ).rejects.toThrow(AccessDeniedError)
   })
 
@@ -94,6 +95,7 @@ describe('TransactionService.createTransaction', () => {
       accountId: 1,
       categoryId: 1,
       amount: -500,
+      currency: 'RUB',
       description: 'кофе',
     })
 
