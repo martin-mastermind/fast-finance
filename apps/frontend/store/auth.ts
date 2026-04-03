@@ -48,12 +48,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   setCurrency: async (currency: string) => {
     const currentUser = useAuthStore.getState().user
+    console.log('setCurrency called:', currency, 'current user:', currentUser?.currency)
     if (!currentUser) return
 
     try {
       const api = createApiClient(currentUser.id)
       await api.users.updateCurrency(currency)
       set({ user: { ...currentUser, currency } })
+      console.log('Currency updated to:', currency)
     } catch (err) {
       console.error('Failed to update currency:', err)
     }

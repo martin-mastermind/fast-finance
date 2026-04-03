@@ -71,7 +71,7 @@ export function Dashboard() {
               </div>
             </motion.div>
 
-            <BalanceCard userId={user!.id} currency={user?.currency || 'USD'} onCurrencyChange={setCurrency} />
+            <BalanceCard key={user?.currency} userId={user!.id} currency={user?.currency || 'USD'} onCurrencyChange={setCurrency} />
 
             {/* Action buttons */}
             <motion.div

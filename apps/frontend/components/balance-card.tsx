@@ -36,7 +36,9 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
     if (isLoading || !accounts) return
     const totalUSD = accounts.reduce((sum, a) => sum + convertToUSD(a.balance, a.currency), 0)
     const totalInCurrency = convertFromUSD(totalUSD, mainCurrency)
-    const start = displayBalance
+    console.log('Balance effect:', { totalUSD, totalInCurrency, currency: mainCurrency, accountCount: accounts.length })
+    
+    const start = displayBalance || 0
     const end = totalInCurrency
     const diff = end - start
     const steps = 30
@@ -56,6 +58,7 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
     const currentIndex = CURRENCY_ORDER.indexOf(mainCurrency)
     const nextIndex = (currentIndex + 1) % CURRENCY_ORDER.length
     const nextCurrency = CURRENCY_ORDER[nextIndex]
+    console.log('Currency cycle:', mainCurrency, '->', nextCurrency)
     onCurrencyChange?.(nextCurrency)
   }
 
