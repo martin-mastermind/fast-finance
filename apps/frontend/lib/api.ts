@@ -84,5 +84,17 @@ export function createApiClient(userId: number) {
       delete: (id: number) =>
         request(`/categories/${id}`, { method: 'DELETE' }, userId),
     },
+    ai: {
+      chat: (message: string) =>
+        request<{ response: string }>('/ai/chat', { method: 'POST', body: JSON.stringify({ message }) }, userId),
+      getHistory: () =>
+        request<{ messages: Array<{ role: 'user' | 'assistant'; content: string }> }>('/ai/history', {}, userId),
+      clearHistory: () =>
+        request<{ success: boolean }>('/ai/history', { method: 'DELETE' }, userId),
+      getInsights: () =>
+        request<{ insights: Array<{ id: number; type: string; title: string; content: string; isRead: number; createdAt: string }> }>('/ai/insights', {}, userId),
+      markInsightRead: (id: number) =>
+        request<{ success: boolean }>(`/ai/insights/${id}/read`, { method: 'PATCH' }, userId),
+    },
   }
 }

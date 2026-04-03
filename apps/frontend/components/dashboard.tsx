@@ -8,6 +8,7 @@ import { TransactionCharts } from './transaction-charts'
 import { AddTransaction } from './add-transaction'
 import { BottomNav } from './bottom-nav'
 import { SettingsPanel } from './settings-panel'
+import { AiAssistant } from './ai-assistant'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MdSettings, MdAdd, MdRemove, MdClose } from 'react-icons/md'
 
@@ -190,6 +191,21 @@ export function Dashboard() {
             <div style={{ marginTop: '1.5rem' }}>
               <TransactionList userId={user!.id} currency={user?.currency || 'USD'} limit={100} />
             </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'ai' && (
+          <motion.div
+            key="ai"
+            className="safe-bottom no-scrollbar"
+            style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ duration: 0.2 }}
+          >
+            <AiAssistant />
           </motion.div>
         )}
 

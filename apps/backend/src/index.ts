@@ -8,6 +8,7 @@ import { accountsRouter } from './routes/accounts'
 import { transactionsRouter } from './routes/transactions'
 import { categoriesRouter } from './routes/categories'
 import { botRouter } from './routes/bot'
+import { aiRouter } from './routes/ai'
 import { currencyRouter } from './routes/currency'
 import { CurrencyService } from './domain/currency.service'
 
@@ -42,6 +43,7 @@ const app = new Elysia()
   .use(transactionsRouter)
   .use(categoriesRouter)
   .use(botRouter)
+  .use(aiRouter)
   .use(currencyRouter)
 
 await runMigrations()

@@ -1,11 +1,12 @@
 'use client'
 
 import { useFinanceStore } from '@/store/finance'
-import { MdHome, MdHistory, MdSettings } from 'react-icons/md'
+import { MdHome, MdHistory, MdSettings, MdPsychology } from 'react-icons/md'
 import { motion } from 'framer-motion'
 
 const tabs = [
   { id: 'dashboard' as const, icon: MdHome, label: 'Главная' },
+  { id: 'ai' as const, icon: MdPsychology, label: 'AI' },
   { id: 'history' as const, icon: MdHistory, label: 'История' },
   { id: 'settings' as const, icon: MdSettings, label: 'Настройки' },
 ]

@@ -59,6 +59,40 @@ export const currencyRates = pgTable('currency_rates', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
+export const savingsGoals = pgTable('savings_goals', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  name: text('name').notNull(),
+  targetAmount: doublePrecision('target_amount').notNull(),
+  currentAmount: doublePrecision('current_amount').default(0).notNull(),
+  targetDate: timestamp('target_date'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const aiInsights = pgTable('ai_insights', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  type: text('type', { enum: ['spending_alert', 'savings_tip', 'budget_warning', 'trend_analysis'] }).notNull(),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  isRead: serial('is_read').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const aiChatMessages = pgTable('ai_chat_messages', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  role: text('role', { enum: ['user', 'assistant'] }).notNull(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 export type Account = typeof accounts.$inferSelect
@@ -69,3 +103,9 @@ export type Category = typeof categories.$inferSelect
 export type NewCategory = typeof categories.$inferInsert
 export type CurrencyRate = typeof currencyRates.$inferSelect
 export type NewCurrencyRate = typeof currencyRates.$inferInsert
+export type SavingsGoal = typeof savingsGoals.$inferSelect
+export type NewSavingsGoal = typeof savingsGoals.$inferInsert
+export type AiInsight = typeof aiInsights.$inferSelect
+export type NewAiInsight = typeof aiInsights.$inferInsert
+export type AiChatMessage = typeof aiChatMessages.$inferSelect
+export type NewAiChatMessage = typeof aiChatMessages.$inferInsert

@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 
 interface FinanceStore {
-  activeTab: 'dashboard' | 'history' | 'settings'
-  setActiveTab: (tab: 'dashboard' | 'history' | 'settings') => void
+  activeTab: 'dashboard' | 'history' | 'ai' | 'settings'
+  setActiveTab: (tab: 'dashboard' | 'history' | 'ai' | 'settings') => void
   selectedAccountId: number | null
   setSelectedAccountId: (id: number | null) => void
   transactionType: 'income' | 'expense'
