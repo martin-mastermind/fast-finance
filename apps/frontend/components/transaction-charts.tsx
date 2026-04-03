@@ -167,48 +167,6 @@ export function TransactionCharts({ userId, currency }: Props) {
         </motion.div>
       )}
 
-      {/* Income breakdown */}
-      {data.incomeByCategory.length > 0 && (
-        <motion.div
-          className="glass-card"
-          style={{ padding: '1.25rem' }}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '1rem' }}>
-            <MdPieChart size={16} color="var(--green)" />
-            <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text)' }}>
-              Структура доходов
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            {data.incomeByCategory.map((cat, idx) => (
-              <motion.div
-                key={cat.categoryId}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  background: 'var(--green-dim)',
-                  borderRadius: '0.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.375rem',
-                }}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.25 + idx * 0.05 }}
-              >
-                <span>{cat.categoryIcon}</span>
-                <span style={{ fontSize: '0.8125rem', color: 'var(--green)' }}>
-                  {formatCurrency(cat.amount, currency)}
-                </span>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
       {/* Empty state */}
       {data.expenseByCategory.length === 0 && data.incomeByCategory.length === 0 && (
         <motion.div
