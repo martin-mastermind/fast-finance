@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
-import { convertToUSD, formatAsUSD } from '@/lib/currency'
+import { convertToUSD, convertFromUSD } from '@/lib/currency'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { MdVisibility } from 'react-icons/md'
@@ -30,12 +30,14 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
   })
 
   const [displayBalance, setDisplayBalance] = useState(0)
+  const mainCurrency = userCurrency || 'USD'
 
   useEffect(() => {
     if (isLoading || !accounts) return
     const totalUSD = accounts.reduce((sum, a) => sum + convertToUSD(a.balance, a.currency), 0)
+    const totalInCurrency = convertFromUSD(totalUSD, mainCurrency)
     const start = displayBalance
-    const end = totalUSD
+    const end = totalInCurrency
     const diff = end - start
     const steps = 30
     const stepValue = diff / steps
@@ -48,9 +50,7 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
     }, 16)
 
     return () => clearInterval(interval)
-  }, [accounts, isLoading])
-
-  const mainCurrency = userCurrency || 'USD'
+  }, [accounts, isLoading, mainCurrency])
 
   const handleCurrencyCycle = () => {
     const currentIndex = CURRENCY_ORDER.indexOf(mainCurrency)
