@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
-import { getCategoryIcon } from '@/lib/icon-map'
 import { convertFromUSD } from '@/lib/currency'
 
 const FALLBACK_RATES: Record<string, number> = {
@@ -13,7 +12,7 @@ const FALLBACK_RATES: Record<string, number> = {
   BYN: 0.31,
 }
 import { motion } from 'framer-motion'
-import { MdTrendingUp, MdTrendingDown, MdPieChart } from 'react-icons/md'
+import { MdTrendingUp, MdTrendingDown } from 'react-icons/md'
 
 interface Props {
   userId: number
@@ -50,8 +49,6 @@ export function TransactionCharts({ userId, currency }: Props) {
   }
 
   if (!data) return null
-
-  const maxExpense = Math.max(...data.expenseByCategory.map(c => c.amount), 1)
 
   return (
     <motion.div
@@ -127,57 +124,7 @@ export function TransactionCharts({ userId, currency }: Props) {
         </motion.div>
       </div>
 
-      {/* Expense breakdown */}
-      {data.expenseByCategory.length > 0 && (
-        <motion.div
-          className="glass-card"
-          style={{ padding: '1.25rem' }}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '1rem' }}>
-            <MdPieChart size={16} color="var(--accent)" />
-            <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text)' }}>
-              Структура расходов
-            </span>
-          </div>
 
-          {/* Bar chart */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {data.expenseByCategory.slice(0, 6).map((cat, idx) => (
-              <div key={cat.categoryId}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                  <span style={{ fontSize: '0.8125rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                    <span>{getCategoryIcon(cat.categoryIcon)}</span>
-                    {cat.categoryName}
-                  </span>
-                  <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
-                    {formatCurrency(convertAmount(cat.amount), currency)} ({cat.percentage}%)
-                  </span>
-                </div>
-                <div style={{
-                  height: 6,
-                  background: 'var(--bg-elevated)',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                }}>
-                  <motion.div
-                    style={{
-                      height: '100%',
-                      background: 'var(--red)',
-                      borderRadius: 3,
-                    }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(cat.amount / maxExpense) * 100}%` }}
-                    transition={{ delay: 0.2 + idx * 0.05, duration: 0.4 }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
 
       {/* Empty state */}
       {data.expenseByCategory.length === 0 && data.incomeByCategory.length === 0 && (

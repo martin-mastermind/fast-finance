@@ -186,7 +186,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.2rem' }}>
                       <MdAccessTime size={10} color="var(--text-muted)" />
                       <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                        {isTransfer ? 'Перевод' : isIncome ? 'Получено' : 'Оплачено'}
+                        {new Date(tx.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                       </span>
                     </div>
                   </div>
