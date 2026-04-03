@@ -20,6 +20,7 @@ export function BottomNav() {
       bottom: 0,
       left: 0,
       right: 0,
+      height: '70px',
       borderRadius: 0,
       borderLeft: 'none',
       borderRight: 'none',

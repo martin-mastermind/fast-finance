@@ -28,12 +28,12 @@ export function Dashboard() {
   const { activeTab, setActiveTab, setTransactionType, isAddModalOpen, setAddModalOpen, isAddCategoryModalOpen, setAddCategoryModalOpen } = useFinanceStore()
 
   return (
-    <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
+    <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 70px)', overflow: 'hidden', background: 'var(--bg)' }}>
       <AnimatePresence mode="wait">
         {activeTab === 'dashboard' && (
           <motion.div
             key="dashboard"
-            className="safe-bottom no-scrollbar"
+            className="safe-bottom-70 no-scrollbar"
             style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.25rem 0.5rem' }}
             variants={pageVariants}
             initial="initial"
@@ -172,7 +172,7 @@ export function Dashboard() {
         {activeTab === 'history' && (
           <motion.div
             key="history"
-            className="safe-bottom no-scrollbar"
+            className="safe-bottom-70 no-scrollbar"
             style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.25rem 0.5rem' }}
             variants={pageVariants}
             initial="initial"
@@ -197,7 +197,7 @@ export function Dashboard() {
         {activeTab === 'ai' && (
           <motion.div
             key="ai"
-            className="safe-bottom no-scrollbar"
+            className="safe-bottom-70 no-scrollbar"
             style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}
             variants={pageVariants}
             initial="initial"
@@ -212,7 +212,7 @@ export function Dashboard() {
         {activeTab === 'settings' && (
           <motion.div
             key="settings"
-            className="safe-bottom no-scrollbar"
+            className="safe-bottom-70 no-scrollbar"
             style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.25rem 0.5rem' }}
             variants={pageVariants}
             initial="initial"
