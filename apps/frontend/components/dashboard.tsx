@@ -9,7 +9,7 @@ import { AddTransaction } from './add-transaction'
 import { BottomNav } from './bottom-nav'
 import { SettingsPanel } from './settings-panel'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdBarChart, MdAdd, MdRemove, MdClose } from 'react-icons/md'
+import { MdSettings, MdAdd, MdRemove, MdClose } from 'react-icons/md'
 
 const pageVariants = {
   initial: { opacity: 0, y: 6 },
@@ -66,12 +66,12 @@ export function Dashboard() {
                     cursor: 'pointer',
                     WebkitAppearance: 'none',
                   }}>
-                  <MdBarChart size={18} color="var(--text-secondary)" />
+                  <MdSettings size={18} color="var(--text-secondary)" />
                 </button>
               </div>
             </motion.div>
 
-            <BalanceCard userId={user!.id} currency={user?.currency || 'RUB'} />
+            <BalanceCard userId={user!.id} currency="USD" />
 
             {/* Action buttons */}
             <motion.div
@@ -163,7 +163,7 @@ export function Dashboard() {
                   Все
                 </button>
               </div>
-              <TransactionList userId={user!.id} currency={user?.currency || 'RUB'} limit={5} />
+              <TransactionList userId={user!.id} currency="USD" limit={5} />
             </motion.div>
           </motion.div>
         )}
@@ -186,9 +186,9 @@ export function Dashboard() {
             >
               История
             </motion.h1>
-            <TransactionCharts userId={user!.id} currency={user?.currency || 'RUB'} />
+            <TransactionCharts userId={user!.id} currency="USD" />
             <div style={{ marginTop: '1.5rem' }}>
-              <TransactionList userId={user!.id} currency={user?.currency || 'RUB'} limit={100} />
+              <TransactionList userId={user!.id} currency="USD" limit={100} />
             </div>
           </motion.div>
         )}

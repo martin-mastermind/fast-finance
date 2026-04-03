@@ -6,12 +6,24 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number, currency = 'RUB'): string {
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency,
+  const absAmount = Math.abs(amount)
+  const formatted = absAmount.toLocaleString('ru-RU', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(amount)
+  })
+  
+  const sign = amount < 0 ? '-' : ''
+  
+  if (currency === 'BYN') {
+    return `${sign}${formatted} Br`
+  }
+  if (currency === 'USD') {
+    return `${sign}$${formatted}`
+  }
+  if (currency === 'RUB') {
+    return `${sign}${formatted} ₽`
+  }
+  return `${sign}${formatted} ${currency}`
 }
 
 export function formatDate(date: Date | string): string {

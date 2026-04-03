@@ -1,8 +1,10 @@
 'use client'
 
+import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
+import { getCategoryIcon } from '@/lib/icon-map'
 import { motion } from 'framer-motion'
 import { MdTrendingUp, MdTrendingDown, MdPieChart } from 'react-icons/md'
 
@@ -19,7 +21,7 @@ const PERIODS = [
 
 export function TransactionCharts({ userId, currency }: Props) {
   const api = createApiClient(userId)
-  const [activePeriod, setActivePeriod] = React.useState('month')
+  const [activePeriod, setActivePeriod] = useState('month')
 
   const { data, isLoading } = useQuery({
     queryKey: ['transaction-stats', userId, activePeriod],
@@ -135,7 +137,7 @@ export function TransactionCharts({ userId, currency }: Props) {
               <div key={cat.categoryId}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
                   <span style={{ fontSize: '0.8125rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                    <span>{cat.categoryIcon}</span>
+                    <span>{getCategoryIcon(cat.categoryIcon)}</span>
                     {cat.categoryName}
                   </span>
                   <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
@@ -223,4 +225,3 @@ export function TransactionCharts({ userId, currency }: Props) {
   )
 }
 
-import React from 'react'

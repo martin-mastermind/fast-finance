@@ -51,6 +51,13 @@ export const transactions = pgTable('transactions', {
   date: timestamp('date').defaultNow().notNull(),
 })
 
+export const currencyRates = pgTable('currency_rates', {
+  id: serial('id').primaryKey(),
+  currency: text('currency', { enum: ['RUB', 'BYN', 'USD'] }).notNull(),
+  rateToUSD: doublePrecision('rate_to_usd').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 export type Account = typeof accounts.$inferSelect
@@ -59,3 +66,5 @@ export type Transaction = typeof transactions.$inferSelect
 export type NewTransaction = typeof transactions.$inferInsert
 export type Category = typeof categories.$inferSelect
 export type NewCategory = typeof categories.$inferInsert
+export type CurrencyRate = typeof currencyRates.$inferSelect
+export type NewCurrencyRate = typeof currencyRates.$inferInsert

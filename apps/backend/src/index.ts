@@ -7,6 +7,24 @@ import { accountsRouter } from './routes/accounts'
 import { transactionsRouter } from './routes/transactions'
 import { categoriesRouter } from './routes/categories'
 import { botRouter } from './routes/bot'
+import { currencyRouter } from './routes/currency'
+import { CurrencyService } from './domain/currency.service'
+
+async function startCronJob() {
+  const ONE_DAY = 24 * 60 * 60 * 1000
+  
+  await CurrencyService.updateRates()
+  console.log('Currency rates updated')
+  
+  setInterval(async () => {
+    try {
+      await CurrencyService.updateRates()
+      console.log('Currency rates updated at', new Date().toISOString())
+    } catch (error) {
+      console.error('Failed to update currency rates:', error)
+    }
+  }, ONE_DAY)
+}
 
 const app = new Elysia()
   .use(
@@ -22,8 +40,10 @@ const app = new Elysia()
   .use(transactionsRouter)
   .use(categoriesRouter)
   .use(botRouter)
+  .use(currencyRouter)
 
 await runMigrations()
+startCronJob()
 
 app.listen(process.env.PORT || 3001)
 
