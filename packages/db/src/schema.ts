@@ -44,8 +44,7 @@ export const transactions = pgTable('transactions', {
     .references(() => accounts.id, { onDelete: 'cascade' })
     .notNull(),
   categoryId: integer('category_id')
-    .references(() => categories.id)
-    .notNull(),
+    .references(() => categories.id),
   amount: doublePrecision('amount').notNull(),
   currency: text('currency', { enum: ['RUB', 'BYN', 'USD'] }).notNull(),
   description: text('description'),

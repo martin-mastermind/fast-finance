@@ -180,7 +180,7 @@ export const TransactionService = {
     return deleted
   },
 
-  async transfer(userId: number, input: TransferInput): Promise<{ from: Transaction; to: Transaction }> {
+  async transfer(userId: number, input: TransferInput): Promise<Transaction> {
     const [fromAccount] = await db
       .select()
       .from(accounts)
@@ -195,61 +195,38 @@ export const TransactionService = {
 
     if (!toAccount) throw new AccessDeniedError('Destination account not found or access denied')
 
-    let transferCategory = await db
-      .select()
-      .from(categories)
-      .where(and(eq(categories.userId, userId), sql`${categories.name} = 'Перевод'`))
-      .limit(1)
-
-    if (transferCategory.length === 0) {
-      const [created] = await db
-        .insert(categories)
+    return await db.transaction(async (dbTx) => {
+      const [transaction] = await dbTx
+        .insert(transactions)
         .values({
           userId,
-          name: 'Перевод',
-          icon: '🔄',
-          type: 'expense',
+          accountId: input.fromAccountId,
+          categoryId: null,
+          amount: input.amount,
+          currency: input.currency as 'RUB' | 'BYN' | 'USD',
+          description: JSON.stringify({
+            type: 'transfer',
+            fromAccountId: input.fromAccountId,
+            fromAccountName: fromAccount.name,
+            toAccountId: input.toAccountId,
+            toAccountName: toAccount.name,
+            description: input.description || 'Перевод между счетами',
+          }),
+          date: new Date(),
         })
         .returning()
-      transferCategory = [created]
-    }
 
-    const [fromTransaction] = await db
-      .insert(transactions)
-      .values({
-        userId,
-        accountId: input.fromAccountId,
-        categoryId: transferCategory[0].id,
-        amount: -input.amount,
-        currency: input.currency as 'RUB' | 'BYN' | 'USD',
-        description: input.description || 'Перевод между счетами',
-        date: new Date(),
-      })
-      .returning()
+      await dbTx
+        .update(accounts)
+        .set({ balance: sql`${accounts.balance} - ${input.amount}` })
+        .where(and(eq(accounts.id, input.fromAccountId), eq(accounts.userId, userId)))
 
-    const [toTransaction] = await db
-      .insert(transactions)
-      .values({
-        userId,
-        accountId: input.toAccountId,
-        categoryId: transferCategory[0].id,
-        amount: input.amount,
-        currency: input.currency as 'RUB' | 'BYN' | 'USD',
-        description: input.description || 'Перевод между счетами',
-        date: new Date(),
-      })
-      .returning()
+      await dbTx
+        .update(accounts)
+        .set({ balance: sql`${accounts.balance} + ${input.amount}` })
+        .where(and(eq(accounts.id, input.toAccountId), eq(accounts.userId, userId)))
 
-    await db
-      .update(accounts)
-      .set({ balance: sql`${accounts.balance} - ${input.amount}` })
-      .where(and(eq(accounts.id, input.fromAccountId), eq(accounts.userId, userId)))
-
-    await db
-      .update(accounts)
-      .set({ balance: sql`${accounts.balance} + ${input.amount}` })
-      .where(and(eq(accounts.id, input.toAccountId), eq(accounts.userId, userId)))
-
-    return { from: fromTransaction, to: toTransaction }
+      return transaction
+    })
   },
 }

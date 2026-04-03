@@ -47,6 +47,28 @@ function groupByDate(items: any[]): { label: string; key: string; items: any[] }
   })
 }
 
+interface TransferInfo {
+  from: string
+  to: string
+  description: string
+}
+
+function parseTransferInfo(raw: string | null): TransferInfo | null {
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw)
+    if (parsed.type !== 'transfer') return null
+    return {
+      from: parsed.fromAccountName || '',
+      to: parsed.toAccountName || '',
+      description: parsed.description || 'Перевод между счетами',
+    }
+  } catch (e: unknown) {
+    if (!(e instanceof SyntaxError)) throw e
+    return null
+  }
+}
+
 export function TransactionList({ userId, currency, limit = 50 }: Props) {
   const api = createApiClient(userId)
   const queryClient = useQueryClient()
@@ -124,7 +146,10 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
               const desc = tx.description || 'Без описания'
               const category = categoryMap.get(tx.categoryId)
               const isIncome = tx.amount > 0
-              const isTransfer = category?.name === 'Перевод' || tx.description?.includes('Перевод')
+              
+              const transfer = parseTransferInfo(tx.description)
+              const isTransfer = transfer !== null
+              const displayDesc = transfer?.description ?? desc
 
               const getTransactionColor = () => {
                 if (isTransfer) return '#F59E0B'
@@ -135,7 +160,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                 if (isTransfer) return '#F59E0B15'
                 return isIncome ? 'var(--green-dim)' : 'var(--red-dim)'
               }
-
+              
               return (
                 <motion.div
                   key={tx.id}
@@ -181,13 +206,19 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                     }}>
-                      {desc}
+                      {displayDesc}
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.2rem' }}>
                       <MdAccessTime size={10} color="var(--text-muted)" />
-                      <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                        {new Date(tx.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-                      </span>
+                      {isTransfer ? (
+                        <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                          {transfer?.from} → {transfer?.to}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                          {new Date(tx.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                        </span>
+                      )}
                     </div>
                   </div>
 
