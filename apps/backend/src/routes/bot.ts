@@ -201,7 +201,7 @@ export const botRouter = new Elysia({ prefix: '/bot' }).post(
             .from(accounts)
             .where(eq(accounts.userId, user.id))
 
-          if (userAccounts.length === 0) {
+          if (!userAccounts?.[0]) {
             await sendTelegramMessage(chatId, '❌ Нет счетов. Создайте счёт в приложении.')
             userSessions.delete(telegramUserId)
             return { ok: true }
@@ -321,7 +321,7 @@ export const botRouter = new Elysia({ prefix: '/bot' }).post(
         .from(accounts)
         .where(eq(accounts.userId, user.id))
 
-      if (userAccounts.length === 0) {
+      if (!userAccounts?.[0]) {
         const miniAppUrl = process.env.MINI_APP_URL || 'https://t.me/FastFinanceBot/app'
         await sendTelegramMessage(
           chatId,
