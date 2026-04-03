@@ -129,7 +129,7 @@ export function Dashboard() {
                     width: 40,
                     height: 40,
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, var(--accent) 0%, #9AEP40 100%)',
+                    background: 'linear-gradient(135deg, var(--accent) 0%, #8B5CF6 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

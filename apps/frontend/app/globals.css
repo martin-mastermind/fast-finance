@@ -64,11 +64,11 @@ a {
 
   --text:           #F2F2F5;
   --text-secondary: #9898A0;
-  --text-muted:     #404048;
+  --text-muted:     #6B6B75;
 
-  --accent:     #B8FF60;
-  --accent-dim: rgba(184, 255, 96, 0.08);
-  --accent-glow: rgba(184, 255, 96, 0.25);
+  --accent:     #A855F7;
+  --accent-dim: rgba(168, 85, 247, 0.12);
+  --accent-glow: rgba(168, 85, 247, 0.3);
 
   --green: #3CEF80;
   --green-dim: rgba(60, 239, 128, 0.12);

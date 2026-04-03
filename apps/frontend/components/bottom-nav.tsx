@@ -23,6 +23,9 @@ export function BottomNav() {
       borderLeft: 'none',
       borderRight: 'none',
       borderBottom: 'none',
+      background: 'var(--bg-card)',
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
     }}>
       <div style={{
         display: 'flex',
