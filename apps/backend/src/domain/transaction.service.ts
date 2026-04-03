@@ -64,33 +64,62 @@ export const TransactionService = {
   async getTransactionStats(userId: number, period: string) {
     const { start, end } = getDateRange(period)
 
-    const expenseData = await db
-      .select({
-        categoryId: transactions.categoryId,
-        total: sql<number>`sum(${transactions.amount})`,
-      })
-      .from(transactions)
-      .where(and(
-        eq(transactions.userId, userId),
-        sql`${transactions.amount} < 0`,
-        gte(transactions.date, start),
-        lt(transactions.date, end)
-      ))
-      .groupBy(transactions.categoryId)
+    // Get currency rates (use fallback if not in db)
+    // Note: currencyRates table may be empty, so we'll just use fallback rates
+    const rateMap = new Map<string, number>()
 
-    const incomeData = await db
+    const fallbackRates: Record<string, number> = {
+      USD: 1,
+      RUB: 0.0115,
+      BYN: 0.31,
+    }
+    const getRate = (currency: string): number => rateMap.get(currency) ?? fallbackRates[currency] ?? 1
+
+    // Get all transactions for the period
+    const allTransactions = await db
       .select({
         categoryId: transactions.categoryId,
-        total: sql<number>`sum(${transactions.amount})`,
+        amount: transactions.amount,
+        currency: transactions.currency,
       })
       .from(transactions)
       .where(and(
         eq(transactions.userId, userId),
-        sql`${transactions.amount} > 0`,
+        sql`${transactions.categoryId} IS NOT NULL`,
         gte(transactions.date, start),
         lt(transactions.date, end)
       ))
-      .groupBy(transactions.categoryId)
+
+    // Convert all amounts to RUB (base currency) and group
+    const expenseByCategoryMap = new Map<number, number>()
+    const incomeByCategoryMap = new Map<number, number>()
+
+    allTransactions.forEach(tx => {
+      const rate = getRate(tx.currency)
+      const rublAmount = tx.amount * rate
+
+      if (rublAmount < 0) {
+        expenseByCategoryMap.set(
+          tx.categoryId,
+          (expenseByCategoryMap.get(tx.categoryId) ?? 0) + rublAmount
+        )
+      } else if (rublAmount > 0) {
+        incomeByCategoryMap.set(
+          tx.categoryId,
+          (incomeByCategoryMap.get(tx.categoryId) ?? 0) + rublAmount
+        )
+      }
+    })
+
+    const expenseData = Array.from(expenseByCategoryMap.entries()).map(([categoryId, total]) => ({
+      categoryId,
+      total,
+    }))
+
+    const incomeData = Array.from(incomeByCategoryMap.entries()).map(([categoryId, total]) => ({
+      categoryId,
+      total,
+    }))
 
     const categoryMap = new Map<number, { name: string; icon: string }>()
     const allCategoryIds = [...expenseData.map(d => d.categoryId), ...incomeData.map(d => d.categoryId)]

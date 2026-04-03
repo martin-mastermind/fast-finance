@@ -35,6 +35,7 @@ export function TransactionCharts({ userId, currency }: Props) {
   })
 
   const convertAmount = (amount: number) => {
+    // Backend returns amounts in RUB, convert to display currency
     const usdAmount = amount * FALLBACK_RATES.RUB
     return convertFromUSD(usdAmount, currency)
   }
