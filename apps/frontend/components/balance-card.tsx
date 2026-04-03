@@ -11,7 +11,10 @@ import { MdVisibility } from 'react-icons/md'
 interface Props {
   userId: number
   currency?: string
+  onCurrencyChange?: (currency: string) => void
 }
+
+const CURRENCY_ORDER = ['USD', 'RUB', 'BYN']
 
 const CURRENCY_LABELS: Record<string, string> = {
   RUB: '₽',
@@ -19,7 +22,7 @@ const CURRENCY_LABELS: Record<string, string> = {
   USD: '$',
 }
 
-export function BalanceCard({ userId, currency: userCurrency }: Props) {
+export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }: Props) {
   const api = createApiClient(userId)
   const { data: accounts, isLoading } = useQuery({
     queryKey: ['accounts', userId],
@@ -47,8 +50,14 @@ export function BalanceCard({ userId, currency: userCurrency }: Props) {
     return () => clearInterval(interval)
   }, [accounts, isLoading])
 
-  const userCurrencyCode = userCurrency || 'RUB'
-  const mainCurrency = 'USD'
+  const mainCurrency = userCurrency || 'USD'
+
+  const handleCurrencyCycle = () => {
+    const currentIndex = CURRENCY_ORDER.indexOf(mainCurrency)
+    const nextIndex = (currentIndex + 1) % CURRENCY_ORDER.length
+    const nextCurrency = CURRENCY_ORDER[nextIndex]
+    onCurrencyChange?.(nextCurrency)
+  }
 
   return (
     <motion.div
@@ -75,20 +84,25 @@ export function BalanceCard({ userId, currency: userCurrency }: Props) {
 
       {/* Top row: currency pill + label */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', position: 'relative' }}>
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.375rem',
-          backgroundColor: 'var(--accent-dim)',
-          borderRadius: '2rem',
-          padding: '0.35rem 0.875rem',
-          border: '1px solid var(--accent-glow)',
-        }}>
+        <button
+          onClick={handleCurrencyCycle}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.375rem',
+            backgroundColor: 'var(--accent-dim)',
+            borderRadius: '2rem',
+            padding: '0.35rem 0.875rem',
+            border: '1px solid var(--accent-glow)',
+            cursor: 'pointer',
+            WebkitAppearance: 'none',
+          }}
+        >
           <MdVisibility size={13} color="var(--accent)" />
           <span style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--accent)', textTransform: 'uppercase' }}>
             {mainCurrency}
           </span>
-        </div>
+        </button>
 
         <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
           Общий баланс

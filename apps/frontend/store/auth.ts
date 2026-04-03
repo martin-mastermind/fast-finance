@@ -13,6 +13,7 @@ interface AuthStore {
   isLoading: boolean
   error: string | null
   initAuth: () => Promise<void>
+  setCurrency: (currency: string) => Promise<void>
   logout: () => void
 }
 
@@ -42,6 +43,19 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ user: result.user, isLoading: false })
     } catch (err) {
       set({ error: String(err), isLoading: false })
+    }
+  },
+
+  setCurrency: async (currency: string) => {
+    const currentUser = useAuthStore.getState().user
+    if (!currentUser) return
+
+    try {
+      const api = createApiClient(currentUser.id)
+      await api.users.updateCurrency(currency)
+      set({ user: { ...currentUser, currency } })
+    } catch (err) {
+      console.error('Failed to update currency:', err)
     }
   },
 

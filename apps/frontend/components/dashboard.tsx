@@ -23,7 +23,7 @@ const ACTION_BUTTONS = [
 ]
 
 export function Dashboard() {
-  const { user } = useAuthStore()
+  const { user, setCurrency } = useAuthStore()
   const { activeTab, setActiveTab, setTransactionType, isAddModalOpen, setAddModalOpen, isAddCategoryModalOpen, setAddCategoryModalOpen } = useFinanceStore()
 
   return (
@@ -71,7 +71,7 @@ export function Dashboard() {
               </div>
             </motion.div>
 
-            <BalanceCard userId={user!.id} currency="USD" />
+            <BalanceCard userId={user!.id} currency={user?.currency || 'USD'} onCurrencyChange={setCurrency} />
 
             {/* Action buttons */}
             <motion.div
@@ -163,7 +163,7 @@ export function Dashboard() {
                   Все
                 </button>
               </div>
-              <TransactionList userId={user!.id} currency="USD" limit={5} />
+              <TransactionList userId={user!.id} currency={user?.currency || 'USD'} limit={5} />
             </motion.div>
           </motion.div>
         )}
@@ -186,9 +186,9 @@ export function Dashboard() {
             >
               История
             </motion.h1>
-            <TransactionCharts userId={user!.id} currency="USD" />
+            <TransactionCharts userId={user!.id} currency={user?.currency || 'USD'} />
             <div style={{ marginTop: '1.5rem' }}>
-              <TransactionList userId={user!.id} currency="USD" limit={100} />
+              <TransactionList userId={user!.id} currency={user?.currency || 'USD'} limit={100} />
             </div>
           </motion.div>
         )}

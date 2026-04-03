@@ -33,6 +33,10 @@ export function createApiClient(userId: number) {
           { method: 'POST', body: JSON.stringify({ initData }) },
         ),
     },
+    users: {
+      updateCurrency: (currency: string) =>
+        request<{ currency: string }>('/users/currency', { method: 'PATCH', body: JSON.stringify({ currency }) }, userId),
+    },
     accounts: {
       list: () => request<Array<{ id: number; name: string; balance: number; currency: string }>>('/accounts', {}, userId),
       create: (data: { name: string; balance?: number; currency?: string }) =>

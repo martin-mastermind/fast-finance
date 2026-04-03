@@ -3,6 +3,7 @@ import { cors } from '@elysiajs/cors'
 import { swagger } from '@elysiajs/swagger'
 import { runMigrations } from '@fast-finance/db'
 import { authRouter } from './routes/auth'
+import { usersRouter } from './routes/users'
 import { accountsRouter } from './routes/accounts'
 import { transactionsRouter } from './routes/transactions'
 import { categoriesRouter } from './routes/categories'
@@ -36,6 +37,7 @@ const app = new Elysia()
   .use(swagger({ path: '/docs' }))
   .get('/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
   .use(authRouter)
+  .use(usersRouter)
   .use(accountsRouter)
   .use(transactionsRouter)
   .use(categoriesRouter)
