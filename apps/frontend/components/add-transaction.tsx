@@ -28,6 +28,7 @@ export function AddTransaction({ userId, onClose }: Props) {
   const [description, setDescription] = useState('')
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
+  const [currency, setCurrency] = useState('RUB')
 
   const { data: accounts } = useQuery({
     queryKey: ['accounts', userId],
@@ -42,6 +43,7 @@ export function AddTransaction({ userId, onClose }: Props) {
   useEffect(() => {
     if (accounts?.length && !selectedAccountId) {
       setSelectedAccountId(accounts[0].id)
+      setCurrency(accounts[0].currency)
     }
   }, [accounts, selectedAccountId])
 
@@ -81,8 +83,6 @@ export function AddTransaction({ userId, onClose }: Props) {
   }
 
   const filteredCategories = categories?.filter(c => c.type === transactionType) || []
-  const selectedAccount = accounts?.find(a => a.id === selectedAccountId)
-  const currency = selectedAccount?.currency || 'RUB'
 
   const isSubmitDisabled = !amount || !selectedAccountId || !selectedCategoryId || createMutation.isPending
 
@@ -220,7 +220,7 @@ export function AddTransaction({ userId, onClose }: Props) {
             return (
               <motion.button
                 key={a.id}
-                onClick={() => setSelectedAccountId(a.id)}
+                onClick={() => { setSelectedAccountId(a.id); setCurrency(a.currency) }}
                 style={{
                   borderRadius: '0.5rem',
                   padding: '0.5rem 0.875rem',
