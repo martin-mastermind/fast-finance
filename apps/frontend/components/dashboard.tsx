@@ -10,7 +10,7 @@ import { BottomNav } from './bottom-nav'
 import { SettingsPanel } from './settings-panel'
 import { AiAssistant } from './ai-assistant'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdSettings, MdAdd, MdRemove, MdClose } from 'react-icons/md'
+import { MdSettings, MdAdd, MdRemove, MdClose, MdSwapHoriz } from 'react-icons/md'
 
 const pageVariants = {
   initial: { opacity: 0, y: 6 },
@@ -20,6 +20,7 @@ const pageVariants = {
 
 const ACTION_BUTTONS = [
   { label: 'Доход', icon: MdAdd, color: 'var(--green)' },
+  { label: 'Перевести', icon: MdSwapHoriz, color: '#F59E0B' },
   { label: 'Расход', icon: MdRemove, color: 'var(--red)' },
 ]
 
@@ -105,7 +106,9 @@ export function Dashboard() {
                   transition={{ delay: 0.22 + i * 0.06, type: 'spring', stiffness: 300, damping: 28 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => {
-                    setTransactionType(label === 'Доход' ? 'income' : 'expense')
+                    if (label === 'Доход') setTransactionType('income')
+                    else if (label === 'Расход') setTransactionType('expense')
+                    else setTransactionType('transfer')
                     setAddModalOpen(true)
                   }}
                 >
