@@ -83,9 +83,10 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
       }} />
 
       {/* Top row: currency pill + label */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', position: 'relative' }}>
-        <button
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', position: 'relative', zIndex: 10 }}>
+        <motion.button
           onClick={handleCurrencyCycle}
+          whileTap={{ scale: 0.92 }}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -96,13 +97,14 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
             border: '1px solid var(--accent-glow)',
             cursor: 'pointer',
             WebkitAppearance: 'none',
+            touchAction: 'manipulation',
           }}
         >
           <MdVisibility size={13} color="var(--accent)" />
           <span style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--accent)', textTransform: 'uppercase' }}>
             {mainCurrency}
           </span>
-        </button>
+        </motion.button>
 
         <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
           Общий баланс
