@@ -5,6 +5,13 @@ import { useQuery } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import { getCategoryIcon } from '@/lib/icon-map'
+import { convertFromUSD } from '@/lib/currency'
+
+const FALLBACK_RATES: Record<string, number> = {
+  USD: 1,
+  RUB: 0.0115,
+  BYN: 0.31,
+}
 import { motion } from 'framer-motion'
 import { MdTrendingUp, MdTrendingDown, MdPieChart } from 'react-icons/md'
 
@@ -24,9 +31,14 @@ export function TransactionCharts({ userId, currency }: Props) {
   const [activePeriod, setActivePeriod] = useState('month')
 
   const { data, isLoading } = useQuery({
-    queryKey: ['transaction-stats', userId, activePeriod],
+    queryKey: ['transaction-stats', userId, activePeriod, currency],
     queryFn: () => api.transactions.getStats(activePeriod),
   })
+
+  const convertAmount = (amount: number) => {
+    const usdAmount = amount * FALLBACK_RATES.RUB
+    return convertFromUSD(usdAmount, currency)
+  }
 
   if (isLoading) {
     return (
@@ -92,7 +104,7 @@ export function TransactionCharts({ userId, currency }: Props) {
             </span>
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--green)' }}>
-            +{formatCurrency(data.totalIncome, currency)}
+            +{formatCurrency(convertAmount(data.totalIncome), currency)}
           </div>
         </motion.div>
 
@@ -110,7 +122,7 @@ export function TransactionCharts({ userId, currency }: Props) {
             </span>
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--red)' }}>
-            -{formatCurrency(data.totalExpense, currency)}
+            -{formatCurrency(convertAmount(data.totalExpense), currency)}
           </div>
         </motion.div>
       </div>
@@ -141,7 +153,7 @@ export function TransactionCharts({ userId, currency }: Props) {
                     {cat.categoryName}
                   </span>
                   <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
-                    {formatCurrency(cat.amount, currency)} ({cat.percentage}%)
+                    {formatCurrency(convertAmount(cat.amount), currency)} ({cat.percentage}%)
                   </span>
                 </div>
                 <div style={{
