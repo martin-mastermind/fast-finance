@@ -1,12 +1,14 @@
 import { create } from 'zustand'
 
 interface FinanceStore {
-  activeTab: 'dashboard' | 'add' | 'history'
-  setActiveTab: (tab: 'dashboard' | 'add' | 'history') => void
+  activeTab: 'dashboard' | 'history'
+  setActiveTab: (tab: 'dashboard' | 'history') => void
   selectedAccountId: number | null
   setSelectedAccountId: (id: number | null) => void
   transactionType: 'income' | 'expense'
   setTransactionType: (type: 'income' | 'expense') => void
+  isAddModalOpen: boolean
+  setAddModalOpen: (open: boolean) => void
 }
 
 export const useFinanceStore = create<FinanceStore>((set) => ({
@@ -16,4 +18,6 @@ export const useFinanceStore = create<FinanceStore>((set) => ({
   setSelectedAccountId: (id) => set({ selectedAccountId: id }),
   transactionType: 'expense',
   setTransactionType: (type) => set({ transactionType: type }),
+  isAddModalOpen: false,
+  setAddModalOpen: (open) => set({ isAddModalOpen: open }),
 }))

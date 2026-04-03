@@ -9,6 +9,7 @@ import { useFinanceStore } from '@/store/finance'
 
 interface Props {
   userId: number
+  onClose?: () => void
 }
 
 const CURRENCY_LABELS: Record<string, string> = {
@@ -17,7 +18,7 @@ const CURRENCY_LABELS: Record<string, string> = {
   USD: '$',
 }
 
-export function AddTransaction({ userId }: Props) {
+export function AddTransaction({ userId, onClose }: Props) {
   const api = createApiClient(userId)
   const queryClient = useQueryClient()
   const { transactionType, setTransactionType } = useFinanceStore()
@@ -56,6 +57,7 @@ export function AddTransaction({ userId }: Props) {
       setAmount('')
       setDescription('')
       setSelectedCategoryId(null)
+      onClose?.()
 
       if (typeof window !== 'undefined' && window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success')

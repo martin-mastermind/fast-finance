@@ -49,6 +49,17 @@ export function createApiClient(userId: number) {
           `/transactions${qs ? `?${qs}` : ''}`, {}, userId,
         )
       },
+      getStats: (period?: string) => {
+        const qs = period ? `?period=${period}` : ''
+        return request<{
+          period: string
+          totalIncome: number
+          totalExpense: number
+          balance: number
+          expenseByCategory: Array<{ categoryId: number; categoryName: string; categoryIcon: string; amount: number; percentage: number }>
+          incomeByCategory: Array<{ categoryId: number; categoryName: string; categoryIcon: string; amount: number; percentage: number }>
+        }>(`/transactions/stats${qs}`, {}, userId)
+      },
       create: (data: {
         accountId: number
         categoryId: number

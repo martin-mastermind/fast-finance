@@ -10,6 +10,12 @@ export const transactionsRouter = new Elysia({ prefix: '/transactions' })
     const offset = parseInt(String(query.offset ?? '0'))
     return TransactionService.getTransactions(userId, limit, offset)
   })
+  .get('/stats', async ({ headers, query, set }) => {
+    const userId = parseInt(headers['x-user-id'] || '0')
+    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+    const period = String(query.period ?? 'month')
+    return TransactionService.getTransactionStats(userId, period)
+  })
   .post(
     '/',
     async ({ body, headers, set }) => {

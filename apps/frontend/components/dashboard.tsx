@@ -4,10 +4,11 @@ import { useAuthStore } from '@/store/auth'
 import { useFinanceStore } from '@/store/finance'
 import { BalanceCard } from './balance-card'
 import { TransactionList } from './transaction-list'
+import { TransactionCharts } from './transaction-charts'
 import { AddTransaction } from './add-transaction'
 import { BottomNav } from './bottom-nav'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdNotificationsNone, MdBarChart, MdAdd, MdRemove } from 'react-icons/md'
+import { MdNotificationsNone, MdBarChart, MdAdd, MdRemove, MdClose } from 'react-icons/md'
 
 const pageVariants = {
   initial: { opacity: 0, y: 6 },
@@ -22,7 +23,7 @@ const ACTION_BUTTONS = [
 
 export function Dashboard() {
   const { user } = useAuthStore()
-  const { activeTab, setActiveTab, setTransactionType } = useFinanceStore()
+  const { activeTab, setActiveTab, setTransactionType, isAddModalOpen, setAddModalOpen } = useFinanceStore()
 
   return (
     <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
@@ -115,7 +116,7 @@ export function Dashboard() {
                   whileTap={{ scale: 0.96 }}
                   onClick={() => {
                     setTransactionType(label === 'Доход' ? 'income' : 'expense')
-                    setActiveTab('add')
+                    setAddModalOpen(true)
                   }}
                 >
                   {/* Subtle glow on hover */}
@@ -178,28 +179,6 @@ export function Dashboard() {
           </motion.div>
         )}
 
-        {activeTab === 'add' && (
-          <motion.div
-            key="add"
-            className="safe-bottom no-scrollbar"
-            style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.25rem 0.5rem' }}
-            variants={pageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            transition={{ duration: 0.2 }}
-          >
-            <motion.h1
-              style={{ marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.02em' }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              Новая операция
-            </motion.h1>
-            <AddTransaction userId={user!.id} />
-          </motion.div>
-        )}
-
         {activeTab === 'history' && (
           <motion.div
             key="history"
@@ -218,7 +197,67 @@ export function Dashboard() {
             >
               История
             </motion.h1>
-            <TransactionList userId={user!.id} currency={user?.currency || 'RUB'} limit={100} />
+            <TransactionCharts userId={user!.id} currency={user?.currency || 'RUB'} />
+            <div style={{ marginTop: '1.5rem' }}>
+              <TransactionList userId={user!.id} currency={user?.currency || 'RUB'} limit={100} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Transaction Modal */}
+      <AnimatePresence>
+        {isAddModalOpen && (
+          <motion.div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'flex-end',
+              zIndex: 1000,
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setAddModalOpen(false)}
+          >
+            <motion.div
+              style={{
+                width: '100%',
+                maxHeight: '90vh',
+                backgroundColor: 'var(--bg)',
+                borderTopLeftRadius: '1.5rem',
+                borderTopRightRadius: '1.5rem',
+                padding: '1.5rem',
+                paddingBottom: 'calc(1.5rem + var(--tg-safe-area-inset-bottom, 0px))',
+                overflowY: 'auto',
+              }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)' }}>
+                  Новая операция
+                </h2>
+                <button
+                  onClick={() => setAddModalOpen(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '0.25rem',
+                    WebkitAppearance: 'none',
+                  }}
+                >
+                  <MdClose size={24} color="var(--text-secondary)" />
+                </button>
+              </div>
+              <AddTransaction userId={user!.id} onClose={() => setAddModalOpen(false)} />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
