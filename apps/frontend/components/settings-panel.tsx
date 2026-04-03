@@ -7,6 +7,7 @@ import { formatCurrency } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MdAdd, MdDelete, MdClose, MdAccountBalance, MdCategory, MdEdit } from 'react-icons/md'
 import { useFinanceStore } from '@/store/finance'
+import { getCategoryIcon } from '@/lib/icon-map'
 
 interface Props {
   userId: number
@@ -242,7 +243,7 @@ export function SettingsPanel({ userId }: Props) {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.15 + idx * 0.03 }}
                 >
-                  <span style={{ fontSize: '1rem' }}>{cat.icon}</span>
+                  <span style={{ fontSize: '1rem' }}>{getCategoryIcon(cat.icon)}</span>
                   <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{cat.name}</span>
                   <div style={{ display: 'flex', gap: '0.125rem', marginLeft: '0.25rem', opacity: 0, transition: 'opacity 150ms' }} className="group-hover:opacity-100">
                     <motion.button
@@ -315,7 +316,7 @@ export function SettingsPanel({ userId }: Props) {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.2 + idx * 0.03 }}
                 >
-                  <span style={{ fontSize: '1rem' }}>{cat.icon}</span>
+                  <span style={{ fontSize: '1rem' }}>{getCategoryIcon(cat.icon)}</span>
                   <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{cat.name}</span>
                   <div style={{ display: 'flex', gap: '0.125rem', marginLeft: '0.25rem', opacity: 0, transition: 'opacity 150ms' }} className="group-hover:opacity-100">
                     <motion.button

@@ -6,6 +6,7 @@ import { createApiClient } from '@/lib/api'
 import { motion } from 'framer-motion'
 import { MdCheck, MdAdd, MdRemove } from 'react-icons/md'
 import { useFinanceStore } from '@/store/finance'
+import { getCategoryIcon } from '@/lib/icon-map'
 
 interface Props {
   userId: number
@@ -284,7 +285,7 @@ export function AddTransaction({ userId, onClose }: Props) {
                 transition={{ delay: 0.22 + idx * 0.03 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span style={{ fontSize: '1rem' }}>{c.icon}</span>
+                <span style={{ fontSize: '1rem' }}>{getCategoryIcon(c.icon)}</span>
                 {c.name}
               </motion.button>
             )
