@@ -7,7 +7,7 @@ COPY apps/backend/package.json ./apps/backend/
 COPY apps/frontend/package.json ./apps/frontend/
 COPY packages/db/package.json ./packages/db/
 COPY packages/shared/package.json ./packages/shared/
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Copy source and build
 COPY . .
