@@ -58,10 +58,10 @@ export function BottomNav() {
                   layoutId="navIndicator"
                   style={{
                     position: 'absolute',
-                    top: '0.25rem',
-                    left: 'calc(50% - 1rem)',
-                    width: '2rem',
-                    height: '2rem',
+                    top: '0.375rem',
+                    left: 'calc(50% - 1.25rem)',
+                    width: '2.5rem',
+                    height: '2.5rem',
                     borderRadius: '50%',
                     backgroundColor: 'var(--accent)',
                     opacity: 0.15,
@@ -71,7 +71,7 @@ export function BottomNav() {
               )}
 
               <Icon
-                size={22}
+                size={24}
                 color={isActive ? 'var(--accent)' : 'var(--text-muted)'}
                 style={{ transition: 'color 150ms ease', position: 'relative', zIndex: 1 }}
               />
