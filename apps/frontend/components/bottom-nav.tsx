@@ -1,19 +1,20 @@
 'use client'
 
 import { useFinanceStore } from '@/store/finance'
-import { MdHome, MdHistory } from 'react-icons/md'
+import { MdHome, MdHistory, MdSettings } from 'react-icons/md'
 import { motion } from 'framer-motion'
 
 const tabs = [
   { id: 'dashboard' as const, icon: MdHome, label: 'Главная' },
   { id: 'history' as const, icon: MdHistory, label: 'История' },
+  { id: 'settings' as const, icon: MdSettings, label: 'Настройки' },
 ]
 
 export function BottomNav() {
   const { activeTab, setActiveTab } = useFinanceStore()
 
   return (
-    <nav className="glass-card" style={{
+    <nav className="glass-card-strong" style={{
       position: 'fixed',
       bottom: 0,
       left: 0,
@@ -22,9 +23,6 @@ export function BottomNav() {
       borderLeft: 'none',
       borderRight: 'none',
       borderBottom: 'none',
-      background: 'var(--bg-card)',
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none',
     }}>
       <motion.div
         style={{

@@ -78,7 +78,7 @@ export function TransactionCharts({ userId, currency }: Props) {
       {/* Summary cards */}
       <div style={{ display: 'flex', gap: '0.75rem' }}>
         <motion.div
-          className="surface"
+          className="glass-card"
           style={{ flex: 1, padding: '1rem' }}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -95,7 +95,7 @@ export function TransactionCharts({ userId, currency }: Props) {
         </motion.div>
 
         <motion.div
-          className="surface"
+          className="glass-card"
           style={{ flex: 1, padding: '1rem' }}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -116,7 +116,7 @@ export function TransactionCharts({ userId, currency }: Props) {
       {/* Expense breakdown */}
       {data.expenseByCategory.length > 0 && (
         <motion.div
-          className="surface"
+          className="glass-card"
           style={{ padding: '1.25rem' }}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -168,7 +168,7 @@ export function TransactionCharts({ userId, currency }: Props) {
       {/* Income breakdown */}
       {data.incomeByCategory.length > 0 && (
         <motion.div
-          className="surface"
+          className="glass-card"
           style={{ padding: '1.25rem' }}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}

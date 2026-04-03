@@ -51,7 +51,7 @@ export function BalanceCard({ userId, currency: userCurrency }: Props) {
 
   return (
     <motion.div
-      className="glass-card"
+      className="glass-card-strong"
       style={{
         padding: '1.5rem',
         position: 'relative',

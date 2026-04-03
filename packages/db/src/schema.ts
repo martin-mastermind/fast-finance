@@ -29,6 +29,7 @@ export const accounts = pgTable('accounts', {
 
 export const categories = pgTable('categories', {
   id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   icon: text('icon').notNull(),
   type: text('type', { enum: ['income', 'expense'] }).notNull(),

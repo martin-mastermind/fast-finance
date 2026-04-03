@@ -154,7 +154,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                     padding: '0.75rem 0.25rem',
                     borderRadius: 'var(--radius-sm)',
                     marginBottom: '0.25rem',
-                    background: 'var(--bg-card)',
+                    background: 'var(--glass-bg)',
                     border: '1px solid transparent',
                   }}
                   initial={{ opacity: 0, y: 8 }}

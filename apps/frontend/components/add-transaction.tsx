@@ -92,7 +92,7 @@ export function AddTransaction({ userId, onClose }: Props) {
     >
       {/* Type selector */}
       <motion.div
-        className="surface"
+        className="glass-card"
         style={{ padding: '0.75rem', display: 'flex', gap: '0.5rem' }}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -152,7 +152,7 @@ export function AddTransaction({ userId, onClose }: Props) {
 
       {/* Amount input */}
       <motion.div
-        className="surface"
+        className="glass-card"
         style={{ padding: '1.25rem' }}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -185,7 +185,7 @@ export function AddTransaction({ userId, onClose }: Props) {
 
       {/* Description input */}
       <motion.div
-        className="surface"
+        className="glass-card"
         style={{ padding: '1.25rem' }}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -274,13 +274,17 @@ export function AddTransaction({ userId, onClose }: Props) {
                   cursor: 'pointer',
                   transition: 'all 150ms ease',
                   WebkitAppearance: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.375rem',
                 }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.22 + idx * 0.03 }}
                 whileTap={{ scale: 0.95 }}
               >
-                {c.icon} {c.name}
+                <span style={{ fontSize: '1rem' }}>{c.icon}</span>
+                {c.name}
               </motion.button>
             )
           })}
@@ -317,7 +321,7 @@ export function AddTransaction({ userId, onClose }: Props) {
       {/* No accounts hint */}
       {accounts?.length === 0 && (
         <motion.div
-          className="surface"
+          className="glass-card"
           style={{ padding: '1.5rem', textAlign: 'center' }}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}

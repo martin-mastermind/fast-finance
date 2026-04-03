@@ -71,7 +71,11 @@ export function createApiClient(userId: number) {
         request(`/transactions/${id}`, { method: 'DELETE' }, userId),
     },
     categories: {
-      list: () => request<Array<{ id: number; name: string; icon: string; type: string }>>('/categories', {}, userId),
+      list: () => request<Array<{ id: number; name: string; icon: string; type: string; userId: number | null }>>('/categories', {}, userId),
+      create: (data: { name: string; icon: string; type: string }) =>
+        request('/categories', { method: 'POST', body: JSON.stringify(data) }, userId),
+      delete: (id: number) =>
+        request(`/categories/${id}`, { method: 'DELETE' }, userId),
     },
   }
 }

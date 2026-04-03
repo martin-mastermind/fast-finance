@@ -7,8 +7,9 @@ import { TransactionList } from './transaction-list'
 import { TransactionCharts } from './transaction-charts'
 import { AddTransaction } from './add-transaction'
 import { BottomNav } from './bottom-nav'
+import { SettingsPanel } from './settings-panel'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdNotificationsNone, MdBarChart, MdAdd, MdRemove, MdClose } from 'react-icons/md'
+import { MdBarChart, MdAdd, MdRemove, MdClose } from 'react-icons/md'
 
 const pageVariants = {
   initial: { opacity: 0, y: 6 },
@@ -23,7 +24,7 @@ const ACTION_BUTTONS = [
 
 export function Dashboard() {
   const { user } = useAuthStore()
-  const { activeTab, setActiveTab, setTransactionType, isAddModalOpen, setAddModalOpen } = useFinanceStore()
+  const { activeTab, setActiveTab, setTransactionType, isAddModalOpen, setAddModalOpen, isAddCategoryModalOpen, setAddCategoryModalOpen } = useFinanceStore()
 
   return (
     <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
@@ -51,32 +52,20 @@ export function Dashboard() {
               </h1>
 
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '0.5rem',
-                  backgroundColor: 'var(--bg-elevated)',
-                  border: '1px solid var(--border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  WebkitAppearance: 'none',
-                }}>
-                  <MdNotificationsNone size={18} color="var(--text-secondary)" />
-                </button>
-                <button style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '0.5rem',
-                  backgroundColor: 'var(--bg-elevated)',
-                  border: '1px solid var(--border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  WebkitAppearance: 'none',
-                }}>
+                <button 
+                  onClick={() => setActiveTab('settings')}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '0.5rem',
+                    backgroundColor: 'var(--bg-elevated)',
+                    border: '1px solid var(--border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    WebkitAppearance: 'none',
+                  }}>
                   <MdBarChart size={18} color="var(--text-secondary)" />
                 </button>
               </div>
@@ -102,7 +91,7 @@ export function Dashboard() {
                     alignItems: 'center',
                     gap: '0.625rem',
                     padding: '1rem 0.5rem',
-                    background: 'var(--bg-card)',
+                    background: 'var(--glass-bg)',
                     border: '1px solid var(--border)',
                     borderRadius: 'var(--radius-sm)',
                     cursor: 'pointer',
@@ -201,6 +190,28 @@ export function Dashboard() {
             <div style={{ marginTop: '1.5rem' }}>
               <TransactionList userId={user!.id} currency={user?.currency || 'RUB'} limit={100} />
             </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'settings' && (
+          <motion.div
+            key="settings"
+            className="safe-bottom no-scrollbar"
+            style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.25rem 0.5rem' }}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ duration: 0.2 }}
+          >
+            <motion.h1
+              style={{ marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.02em' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              Настройки
+            </motion.h1>
+            <SettingsPanel userId={user!.id} />
           </motion.div>
         )}
       </AnimatePresence>

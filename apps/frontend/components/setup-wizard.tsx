@@ -204,7 +204,7 @@ export function SetupWizard({ userId }: Props) {
             </div>
 
             <motion.div
-              className="surface"
+              className="glass-card"
               style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'left', width: '100%' }}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
