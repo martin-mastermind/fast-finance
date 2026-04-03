@@ -1,26 +1,28 @@
 'use client'
 
 import { useFinanceStore } from '@/store/finance'
-import { MdHome, MdAdd, MdReceipt } from 'react-icons/md'
+import { MdHome, MdAdd, MdHistory } from 'react-icons/md'
 import { motion } from 'framer-motion'
 
 const tabs = [
   { id: 'dashboard' as const, icon: MdHome, label: 'Главная' },
   { id: 'add' as const, icon: MdAdd, label: 'Добавить' },
-  { id: 'history' as const, icon: MdReceipt, label: 'История' },
+  { id: 'history' as const, icon: MdHistory, label: 'История' },
 ]
 
 export function BottomNav() {
   const { activeTab, setActiveTab } = useFinanceStore()
 
   return (
-    <nav style={{
+    <nav className="glass-card" style={{
       position: 'fixed',
       bottom: 0,
       left: 0,
       right: 0,
-      backgroundColor: 'var(--bg)',
-      borderTop: '1px solid var(--border)',
+      borderRadius: 0,
+      borderLeft: 'none',
+      borderRight: 'none',
+      borderBottom: 'none',
     }}>
       <div style={{
         display: 'flex',
@@ -47,19 +49,19 @@ export function BottomNav() {
                 WebkitAppearance: 'none',
               }}
             >
-              {/* Active indicator line */}
+              {/* Active indicator pill */}
               {isActive && (
                 <motion.div
                   layoutId="navIndicator"
                   style={{
                     position: 'absolute',
-                    top: '-1px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: '1.5rem',
-                    height: '2px',
-                    borderRadius: '1px',
+                    top: '0.25rem',
+                    left: 'calc(50% - 1rem)',
+                    width: '2rem',
+                    height: '2rem',
+                    borderRadius: '50%',
                     backgroundColor: 'var(--accent)',
+                    opacity: 0.15,
                   }}
                   transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                 />
@@ -67,16 +69,18 @@ export function BottomNav() {
 
               <Icon
                 size={22}
-                color={isActive ? 'hsl(76, 100%, 66%)' : 'var(--text-muted)'}
-                style={{ transition: 'color 150ms ease' }}
+                color={isActive ? 'var(--accent)' : 'var(--text-muted)'}
+                style={{ transition: 'color 150ms ease', position: 'relative', zIndex: 1 }}
               />
               <span style={{
                 fontSize: '0.6rem',
                 fontWeight: 500,
                 marginTop: '0.25rem',
                 letterSpacing: '0.04em',
-                color: isActive ? 'hsl(76, 100%, 66%)' : 'var(--text-muted)',
+                color: isActive ? 'var(--accent)' : 'var(--text-muted)',
                 transition: 'color 150ms ease',
+                position: 'relative',
+                zIndex: 1,
               }}>
                 {label}
               </span>

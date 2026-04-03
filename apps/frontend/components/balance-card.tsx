@@ -5,6 +5,7 @@ import { createApiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import { MdVisibility } from 'react-icons/md'
 
 interface Props {
   userId: number
@@ -41,20 +42,62 @@ export function BalanceCard({ userId, currency }: Props) {
 
   return (
     <motion.div
-      className="surface p-6"
+      className="glass-card"
+      style={{
+        padding: '1.5rem',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.1 }}
     >
-      <p className="text-hint" style={{ fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
-        Общий баланс
-      </p>
+      {/* Accent glow effect */}
+      <div style={{
+        position: 'absolute',
+        top: '-50%',
+        right: '-20%',
+        width: '60%',
+        height: '100%',
+        background: 'radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
 
+      {/* Top row: currency pill + label */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', position: 'relative' }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.375rem',
+          backgroundColor: 'var(--accent-dim)',
+          borderRadius: '2rem',
+          padding: '0.35rem 0.875rem',
+          border: '1px solid var(--accent-glow)',
+        }}>
+          <MdVisibility size={13} color="var(--accent)" />
+          <span style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--accent)', textTransform: 'uppercase' }}>
+            {currency}
+          </span>
+        </div>
+
+        <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+          Общий баланс
+        </p>
+      </div>
+
+      {/* Large balance */}
       {isLoading ? (
         <div className="skeleton" style={{ height: '3rem', width: '12rem' }} />
       ) : (
         <motion.p
-          style={{ fontWeight: 300, fontSize: '2.5rem', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: 'var(--text)' }}
+          style={{
+            fontWeight: 300,
+            fontSize: '2.75rem',
+            letterSpacing: '-0.03em',
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+            color: 'var(--text)',
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15, duration: 0.4 }}

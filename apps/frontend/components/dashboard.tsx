@@ -7,6 +7,7 @@ import { TransactionList } from './transaction-list'
 import { AddTransaction } from './add-transaction'
 import { BottomNav } from './bottom-nav'
 import { motion, AnimatePresence } from 'framer-motion'
+import { MdNotificationsNone, MdBarChart, MdCallReceived, MdSwapHoriz, MdSend } from 'react-icons/md'
 
 const pageVariants = {
   initial: { opacity: 0, y: 6 },
@@ -14,9 +15,15 @@ const pageVariants = {
   exit: { opacity: 0, y: -4 },
 }
 
+const ACTION_BUTTONS = [
+  { label: 'Пополнить', icon: MdCallReceived },
+  { label: 'Перевести', icon: MdSwapHoriz },
+  { label: 'Оплатить', icon: MdSend },
+]
+
 export function Dashboard() {
   const { user } = useAuthStore()
-  const { activeTab } = useFinanceStore()
+  const { activeTab, setActiveTab } = useFinanceStore()
 
   return (
     <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
@@ -32,33 +39,139 @@ export function Dashboard() {
             exit="exit"
             transition={{ duration: 0.2 }}
           >
-            {/* Greeting */}
+            {/* Header row */}
             <motion.div
-              style={{ marginBottom: '1.5rem' }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.05 }}
             >
-              <p className="text-hint" style={{ fontSize: '0.8rem', marginBottom: '0.25rem' }}>
-                {user?.username || 'Пользователь'}
-              </p>
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.02em' }}>
-                Мои финансы
+              <h1 style={{ fontSize: '1.375rem', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+                Привет, {user?.username || 'Пользователь'}!
               </h1>
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '0.5rem',
+                  backgroundColor: 'var(--bg-elevated)',
+                  border: '1px solid var(--border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  WebkitAppearance: 'none',
+                }}>
+                  <MdNotificationsNone size={18} color="var(--text-secondary)" />
+                </button>
+                <button style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '0.5rem',
+                  backgroundColor: 'var(--bg-elevated)',
+                  border: '1px solid var(--border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  WebkitAppearance: 'none',
+                }}>
+                  <MdBarChart size={18} color="var(--text-secondary)" />
+                </button>
+              </div>
             </motion.div>
 
             <BalanceCard userId={user!.id} currency={user?.currency || 'RUB'} />
 
+            {/* Action buttons */}
             <motion.div
-              style={{ marginTop: '2rem' }}
+              style={{ display: 'flex', gap: '0.625rem', marginTop: '1.25rem' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              {ACTION_BUTTONS.map(({ label, icon: Icon }, i) => (
+                <motion.button
+                  key={label}
+                  className="hover-lift"
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.625rem',
+                    padding: '1rem 0.5rem',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                    WebkitAppearance: 'none',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.22 + i * 0.06, type: 'spring', stiffness: 300, damping: 28 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={label === 'Пополнить' ? () => setActiveTab('add') : undefined}
+                >
+                  {/* Subtle glow on hover */}
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'radial-gradient(circle at 50% 30%, var(--accent-dim) 0%, transparent 60%)',
+                    opacity: 0,
+                    transition: 'opacity 200ms ease',
+                    pointerEvents: 'none',
+                  }} />
+                  <div style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, var(--accent) 0%, #9AEP40 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px var(--accent-dim)',
+                  }}>
+                    <Icon size={20} color="#050507" />
+                  </div>
+                  <span style={{ fontSize: '0.6875rem', color: 'var(--text-secondary)', fontWeight: 500, letterSpacing: '0.01em' }}>
+                    {label}
+                  </span>
+                </motion.button>
+              ))}
+            </motion.div>
+
+            {/* Latest transactions section */}
+            <motion.div
+              style={{ marginTop: '1.75rem' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <h2 className="text-hint" style={{ marginBottom: '1rem', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                Последние операции
-              </h2>
-              <TransactionList userId={user!.id} currency={user?.currency || 'RUB'} limit={10} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>
+                  Последние операции
+                </h2>
+                <button
+                  onClick={() => setActiveTab('history')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.8125rem',
+                    fontWeight: 500,
+                    color: 'var(--accent)',
+                    WebkitAppearance: 'none',
+                    padding: 0,
+                  }}
+                >
+                  Все
+                </button>
+              </div>
+              <TransactionList userId={user!.id} currency={user?.currency || 'RUB'} limit={5} />
             </motion.div>
           </motion.div>
         )}

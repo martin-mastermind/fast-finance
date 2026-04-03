@@ -57,26 +57,38 @@ a {
 
 /* ===== Theme Variables ===== */
 :root {
-  --bg:           #090909;
-  --bg-card:      #111114;
-  --bg-elevated:  #18181C;
-  --bg-input:     #0F0F12;
+  --bg:           #050507;
+  --bg-card:      #0C0C10;
+  --bg-elevated:  #131318;
+  --bg-input:     #0A0A0D;
 
-  --text:           #E8E8ED;
-  --text-secondary: #8A8A96;
-  --text-muted:     #484854;
+  --text:           #F2F2F5;
+  --text-secondary: #9898A0;
+  --text-muted:     #404048;
 
-  --accent:     #A8FF53;
-  --accent-dim: rgba(168, 255, 83, 0.10);
+  --accent:     #B8FF60;
+  --accent-dim: rgba(184, 255, 96, 0.08);
+  --accent-glow: rgba(184, 255, 96, 0.25);
 
-  --green: #4ADE80;
-  --red:   #F87171;
+  --green: #3CEF80;
+  --green-dim: rgba(60, 239, 128, 0.12);
+  --red:   #FF6060;
+  --red-dim: rgba(255, 96, 96, 0.12);
 
-  --border: #1C1C22;
+  --border: #1A1A22;
+  --border-light: #252530;
 
-  --radius:    14px;
-  --radius-sm: 10px;
-  --radius-xs:  6px;
+  --glass-bg: rgba(12, 12, 16, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.06);
+
+  --radius:    20px;
+  --radius-sm: 14px;
+  --radius-xs:  10px;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 40px var(--accent-dim);
 }
 
 /* ===== Base ===== */
@@ -231,3 +243,64 @@ select.input-field {
 /* ===== Safe areas ===== */
 .safe-top { padding-top: var(--tg-safe-area-inset-top, 0px); }
 .safe-bottom { padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 80px); }
+
+/* ===== Glass Card ===== */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+}
+
+/* ===== Glow Effects ===== */
+.glow-accent {
+  box-shadow: 0 0 20px var(--accent-dim), 0 0 40px var(--accent-dim);
+}
+
+.glow-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, var(--accent-glow) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+
+.glow-button:active::before {
+  opacity: 1;
+  transition: opacity 0s;
+}
+
+/* ===== Smooth transitions ===== */
+.smooth-spring {
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ===== Modern surface ===== */
+.surface {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* ===== Hover lift ===== */
+.hover-lift {
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.hover-lift:active {
+  transform: translateY(0);
+}
