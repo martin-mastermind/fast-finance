@@ -27,6 +27,18 @@ export function BottomNav() {
       backdropFilter: 'none',
       WebkitBackdropFilter: 'none',
     }}>
+      <motion.div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '3px',
+          background: 'var(--accent)',
+        }}
+        layoutId="navLine"
+        transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+      />
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -43,7 +55,7 @@ export function BottomNav() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                paddingTop: '0.75rem',
+                paddingTop: '0.875rem',
                 paddingBottom: '0.5rem',
                 background: 'none',
                 border: 'none',
@@ -52,28 +64,10 @@ export function BottomNav() {
                 WebkitAppearance: 'none',
               }}
             >
-              {/* Active indicator pill */}
-              {isActive && (
-                <motion.div
-                  layoutId="navIndicator"
-                  style={{
-                    position: 'absolute',
-                    top: '0.375rem',
-                    left: 'calc(50% - 1.25rem)',
-                    width: '2.5rem',
-                    height: '2.5rem',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--accent)',
-                    opacity: 0.15,
-                  }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                />
-              )}
-
               <Icon
                 size={24}
                 color={isActive ? 'var(--accent)' : 'var(--text-muted)'}
-                style={{ transition: 'color 150ms ease', position: 'relative', zIndex: 1 }}
+                style={{ transition: 'color 150ms ease' }}
               />
               <span style={{
                 fontSize: '0.6rem',
@@ -82,8 +76,6 @@ export function BottomNav() {
                 letterSpacing: '0.04em',
                 color: isActive ? 'var(--accent)' : 'var(--text-muted)',
                 transition: 'color 150ms ease',
-                position: 'relative',
-                zIndex: 1,
               }}>
                 {label}
               </span>
