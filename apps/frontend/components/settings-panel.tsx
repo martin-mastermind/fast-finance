@@ -683,9 +683,10 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
             }}
             whileTap={{ scale: name.trim() && !createMutation.isPending ? 0.97 : 1 }}
           >
-          {createMutation.isPending ? 'Создание...' : 'Создать категорию'}
-        </motion.button>
-      </div>
+            {createMutation.isPending ? 'Создание...' : 'Создать категорию'}
+          </motion.button>
+        </div>
+      </motion.div>
     </motion.div>
   )
 }
