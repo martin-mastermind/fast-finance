@@ -1,5 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { db, users } from '@fast-finance/db'
+import { eq } from 'drizzle-orm'
 
 export const usersRouter = new Elysia({ prefix: '/users' })
   .patch(
@@ -22,7 +23,7 @@ export const usersRouter = new Elysia({ prefix: '/users' })
       const [updated] = await db
         .update(users)
         .set({ currency })
-        .where(users.id.equals(parseInt(userId)))
+        .where(eq(users.id, parseInt(userId)))
         .returning()
 
       if (!updated) {
