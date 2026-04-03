@@ -69,6 +69,10 @@ const ICON_MAP: Record<string, string> = {
   Ruble: '₽',
 }
 
+const EMOJI_REGEX = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2300}-\u{23FF}]|[\u{2500}-\u{25FF}]|[\u{2712}-\u{2714}]|[\u{2700}-\u{270F}]|[\u{FE00}-\u{FE0F}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]|[\u{20A0}-\u{20CF}]|[\u{00A2}-\u{00A5}]/u
+
 export function getCategoryIcon(iconName: string): string {
+  if (!iconName) return '📁'
+  if (EMOJI_REGEX.test(iconName)) return iconName
   return ICON_MAP[iconName] || '📁'
 }

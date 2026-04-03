@@ -34,12 +34,16 @@ mock.module('@fast-finance/db', () => ({
   db: mockDb,
   transactions: { id: 'id', userId: 'user_id', date: 'date', accountId: 'account_id' },
   accounts: { id: 'id', userId: 'user_id', balance: 'balance' },
+  categories: { id: 'id', userId: 'user_id', name: 'name', icon: 'icon' },
 }))
 
 mock.module('drizzle-orm', () => ({
   eq: mock(() => 'eq'),
   and: mock(() => 'and'),
   desc: mock(() => 'desc'),
+  gte: mock(() => 'gte'),
+  lt: mock(() => 'lt'),
+  between: mock(() => 'between'),
   count: mock(() => ({ total: 0 })),
   sql: mock((..._args: unknown[]) => 'sql'),
 }))

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { motion } from 'framer-motion'
-import { MdCheck, MdAdd, MdRemove } from 'react-icons/md'
+import { MdCheck, MdAdd, MdRemove, MdSwapHoriz } from 'react-icons/md'
 import { useFinanceStore } from '@/store/finance'
 import { getCategoryIcon } from '@/lib/icon-map'
 
@@ -29,6 +29,7 @@ export function AddTransaction({ userId, onClose }: Props) {
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
   const [currency, setCurrency] = useState('RUB')
+  const [toAccountId, setToAccountId] = useState<number | null>(null)
 
   const { data: accounts } = useQuery({
     queryKey: ['accounts', userId],
@@ -68,11 +69,41 @@ export function AddTransaction({ userId, onClose }: Props) {
     },
   })
 
+  const transferMutation = useMutation({
+    mutationFn: (data: { fromAccountId: number; toAccountId: number; amount: number; currency: string; description?: string }) =>
+      api.transactions.transfer(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', userId] })
+      queryClient.invalidateQueries({ queryKey: ['accounts', userId] })
+      setAmount('')
+      setDescription('')
+      setToAccountId(null)
+      onClose?.()
+
+      if (typeof window !== 'undefined' && window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success')
+      }
+    },
+  })
+
   function handleSubmit() {
-    if (!amount || !selectedAccountId || !selectedCategoryId) return
+    if (!amount || !selectedAccountId) return
     const numAmount = parseFloat(amount.replace(',', '.'))
     if (isNaN(numAmount) || numAmount <= 0) return
 
+    if (transactionType === 'transfer') {
+      if (!toAccountId || toAccountId === selectedAccountId) return
+      transferMutation.mutate({
+        fromAccountId: selectedAccountId,
+        toAccountId,
+        amount: numAmount,
+        currency,
+        description: description || 'Перевод между счетами',
+      })
+      return
+    }
+
+    if (!selectedCategoryId) return
     createMutation.mutate({
       accountId: selectedAccountId,
       categoryId: selectedCategoryId,
@@ -84,7 +115,9 @@ export function AddTransaction({ userId, onClose }: Props) {
 
   const filteredCategories = categories?.filter(c => c.type === transactionType) || []
 
-  const isSubmitDisabled = !amount || !selectedAccountId || !selectedCategoryId || createMutation.isPending
+  const isSubmitDisabled = transactionType === 'transfer'
+    ? !amount || !selectedAccountId || !toAccountId || toAccountId === selectedAccountId || transferMutation.isPending
+    : !amount || !selectedAccountId || !selectedCategoryId || createMutation.isPending
 
   return (
     <motion.div
@@ -150,6 +183,31 @@ export function AddTransaction({ userId, onClose }: Props) {
           <MdRemove size={18} />
           Расход
         </motion.button>
+        <motion.button
+          onClick={() => setTransactionType('transfer')}
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            padding: '0.875rem',
+            borderRadius: '0.5rem',
+            border: '1px solid',
+            borderColor: transactionType === 'transfer' ? '#F59E0B' : 'var(--border)',
+            backgroundColor: transactionType === 'transfer' ? '#F59E0B' + '15' : 'transparent',
+            color: transactionType === 'transfer' ? '#F59E0B' : 'var(--text-secondary)',
+            cursor: 'pointer',
+            fontWeight: 500,
+            fontSize: '0.875rem',
+            fontFamily: "'Outfit', sans-serif",
+            WebkitAppearance: 'none',
+          }}
+          whileTap={{ scale: 0.97 }}
+        >
+          <MdSwapHoriz size={18} />
+          Перевод
+        </motion.button>
       </motion.div>
 
       {/* Amount input */}
@@ -212,15 +270,17 @@ export function AddTransaction({ userId, onClose }: Props) {
         transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.15 }}
       >
         <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
-          Счёт
+          {transactionType === 'transfer' ? 'Откуда' : 'Счёт'}
         </label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
           {accounts?.map((a, idx) => {
             const isSelected = selectedAccountId === a.id
+            const isDisabled = transactionType === 'transfer' && toAccountId === a.id
             return (
               <motion.button
                 key={a.id}
                 onClick={() => { setSelectedAccountId(a.id); setCurrency(a.currency) }}
+                disabled={isDisabled}
                 style={{
                   borderRadius: '0.5rem',
                   padding: '0.5rem 0.875rem',
@@ -230,15 +290,16 @@ export function AddTransaction({ userId, onClose }: Props) {
                   border: '1px solid',
                   borderColor: isSelected ? 'var(--accent)' : 'var(--border)',
                   backgroundColor: isSelected ? 'var(--accent-dim)' : 'var(--bg-elevated)',
-                  color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
-                  cursor: 'pointer',
+                  color: isDisabled ? 'var(--text-muted)' : isSelected ? 'var(--accent)' : 'var(--text-secondary)',
+                  cursor: isDisabled ? 'not-allowed' : 'pointer',
+                  opacity: isDisabled ? 0.5 : 1,
                   transition: 'all 150ms ease',
                   WebkitAppearance: 'none',
                 }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.18 + idx * 0.03 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: isDisabled ? 1 : 0.95 }}
               >
                 {a.name} ({CURRENCY_LABELS[a.currency] || a.currency})
               </motion.button>
@@ -247,51 +308,97 @@ export function AddTransaction({ userId, onClose }: Props) {
         </div>
       </motion.div>
 
+      {/* To Account selector (for transfers) */}
+      {transactionType === 'transfer' && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.18 }}
+        >
+          <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+            Куда
+          </label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {accounts?.filter(a => a.id !== selectedAccountId).map((a, idx) => {
+              const isSelected = toAccountId === a.id
+              return (
+                <motion.button
+                  key={a.id}
+                  onClick={() => setToAccountId(a.id)}
+                  style={{
+                    borderRadius: '0.5rem',
+                    padding: '0.5rem 0.875rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    fontFamily: "'Outfit', sans-serif",
+                    border: '1px solid',
+                    borderColor: isSelected ? '#F59E0B' : 'var(--border)',
+                    backgroundColor: isSelected ? '#F59E0B15' : 'var(--bg-elevated)',
+                    color: isSelected ? '#F59E0B' : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    transition: 'all 150ms ease',
+                    WebkitAppearance: 'none',
+                  }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 + idx * 0.03 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {a.name} ({CURRENCY_LABELS[a.currency] || a.currency})
+                </motion.button>
+              )
+            })}
+          </div>
+        </motion.div>
+      )}
+
       {/* Category selector */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.2 }}
-      >
-        <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
-          Категория
-        </label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          {filteredCategories.map((c, idx) => {
-            const isSelected = selectedCategoryId === c.id
-            return (
-              <motion.button
-                key={c.id}
-                onClick={() => setSelectedCategoryId(c.id)}
-                style={{
-                  borderRadius: '0.5rem',
-                  padding: '0.5rem 0.875rem',
-                  fontSize: '0.8rem',
-                  fontWeight: 500,
-                  fontFamily: "'Outfit', sans-serif",
-                  border: '1px solid',
-                  borderColor: isSelected ? (transactionType === 'income' ? 'var(--green)' : 'var(--red)') : 'var(--border)',
-                  backgroundColor: isSelected ? (transactionType === 'income' ? 'var(--green)' : 'var(--red)') + '15' : 'var(--bg-elevated)',
-                  color: isSelected ? (transactionType === 'income' ? 'var(--green)' : 'var(--red)') : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  transition: 'all 150ms ease',
-                  WebkitAppearance: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.375rem',
-                }}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.22 + idx * 0.03 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span style={{ fontSize: '1rem' }}>{getCategoryIcon(c.icon)}</span>
-                {c.name}
-              </motion.button>
-            )
-          })}
-        </div>
-      </motion.div>
+      {transactionType !== 'transfer' && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.2 }}
+        >
+          <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+            Категория
+          </label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {filteredCategories.map((c, idx) => {
+              const isSelected = selectedCategoryId === c.id
+              return (
+                <motion.button
+                  key={c.id}
+                  onClick={() => setSelectedCategoryId(c.id)}
+                  style={{
+                    borderRadius: '0.5rem',
+                    padding: '0.5rem 0.875rem',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    fontFamily: "'Outfit', sans-serif",
+                    border: '1px solid',
+                    borderColor: isSelected ? (transactionType === 'income' ? 'var(--green)' : 'var(--red)') : 'var(--border)',
+                    backgroundColor: isSelected ? (transactionType === 'income' ? 'var(--green)' : 'var(--red)') + '15' : 'var(--bg-elevated)',
+                    color: isSelected ? (transactionType === 'income' ? 'var(--green)' : 'var(--red)') : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    transition: 'all 150ms ease',
+                    WebkitAppearance: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.375rem',
+                  }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.22 + idx * 0.03 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span style={{ fontSize: '1rem' }}>{getCategoryIcon(c.icon)}</span>
+                  {c.name}
+                </motion.button>
+              )
+            })}
+          </div>
+        </motion.div>
+      )}
 
       {/* Submit */}
       <motion.button
@@ -301,14 +408,14 @@ export function AddTransaction({ userId, onClose }: Props) {
         style={{ 
           width: '100%', 
           padding: '0.875rem',
-          backgroundColor: transactionType === 'income' ? 'var(--green)' : 'var(--red)',
+          backgroundColor: transactionType === 'income' ? 'var(--green)' : transactionType === 'transfer' ? '#F59E0B' : 'var(--red)',
         }}
         whileTap={{ scale: isSubmitDisabled ? 1 : 0.97 }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.25 }}
       >
-        {createMutation.isPending ? (
+        {createMutation.isPending || transferMutation.isPending ? (
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
@@ -316,7 +423,7 @@ export function AddTransaction({ userId, onClose }: Props) {
             <MdCheck size={20} />
           </motion.div>
         ) : (
-          <span>Сохранить</span>
+          <span>{transactionType === 'transfer' ? 'Перевести' : 'Сохранить'}</span>
         )}
       </motion.button>
 

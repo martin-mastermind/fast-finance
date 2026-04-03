@@ -4,37 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdClose, MdAccessTime } from 'react-icons/md'
+import { MdClose, MdAccessTime, MdSwapHoriz } from 'react-icons/md'
+import { getCategoryIcon } from '@/lib/icon-map'
 
 interface Props {
   userId: number
   currency?: string
   limit?: number
-}
-
-const AVATAR_COLORS = ['#2D4A8F', '#8B3A8F', '#3A8B5C', '#8B6B3A', '#3A6B8B', '#8B3A3A']
-
-function hashString(str: string): number {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i)
-    hash |= 0
-  }
-  return Math.abs(hash)
-}
-
-function getAvatarColor(description: string): string {
-  return AVATAR_COLORS[hashString(description) % AVATAR_COLORS.length]
-}
-
-function getAvatarInitials(description: string): string {
-  const trimmed = description.trim()
-  if (!trimmed) return '??'
-  const words = trimmed.split(/\s+/)
-  if (words.length >= 2) {
-    return (words[0][0] + words[1][0]).toUpperCase()
-  }
-  return trimmed.slice(0, 2).toUpperCase()
 }
 
 function groupByDate(items: any[]): { label: string; key: string; items: any[] }[] {
@@ -79,6 +55,13 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
     queryKey: ['transactions', userId, limit],
     queryFn: () => api.transactions.list({ limit }),
   })
+
+  const { data: categories } = useQuery({
+    queryKey: ['categories', userId],
+    queryFn: () => api.categories.list(),
+  })
+
+  const categoryMap = new Map(categories?.map(c => [c.id, c]) || [])
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.transactions.delete(id),
@@ -139,9 +122,19 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
             {group.items.map((tx: any) => {
               const idx = globalIdx++
               const desc = tx.description || 'Без описания'
-              const avatarColor = getAvatarColor(desc)
-              const initials = getAvatarInitials(desc)
+              const category = categoryMap.get(tx.categoryId)
               const isIncome = tx.amount > 0
+              const isTransfer = category?.name === 'Перевод' || tx.description?.includes('Перевод')
+
+              const getTransactionColor = () => {
+                if (isTransfer) return '#F59E0B'
+                return isIncome ? 'var(--green)' : 'var(--red)'
+              }
+
+              const getTransactionBg = () => {
+                if (isTransfer) return '#F59E0B15'
+                return isIncome ? 'var(--green-dim)' : 'var(--red-dim)'
+              }
 
               return (
                 <motion.div
@@ -163,21 +156,19 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                   transition={{ delay: idx * 0.03, type: 'spring', stiffness: 300, damping: 28 }}
                   layout
                 >
-                  {/* Avatar */}
+                  {/* Category Icon */}
                   <div style={{
                     width: 44,
                     height: 44,
                     borderRadius: '14px',
-                    backgroundColor: avatarColor,
+                    backgroundColor: getTransactionBg(),
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
-                    boxShadow: `0 4px 12px ${avatarColor}30`,
+                    fontSize: '1.25rem',
                   }}>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#fff' }}>
-                      {initials}
-                    </span>
+                    {isTransfer ? <MdSwapHoriz size={22} color={getTransactionColor()} /> : getCategoryIcon(category?.icon || '')}
                   </div>
 
                   {/* Middle: description + type */}
@@ -195,7 +186,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.2rem' }}>
                       <MdAccessTime size={10} color="var(--text-muted)" />
                       <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                        {isIncome ? 'Получено' : 'Оплачено'}
+                        {isTransfer ? 'Перевод' : isIncome ? 'Получено' : 'Оплачено'}
                       </span>
                     </div>
                   </div>
@@ -206,10 +197,10 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                       fontWeight: 600,
                       fontSize: '0.9375rem',
                       fontVariantNumeric: 'tabular-nums',
-                      color: isIncome ? 'var(--green)' : 'var(--red)',
+                      color: getTransactionColor(),
                       padding: '0.375rem 0.625rem',
                       borderRadius: 'var(--radius-xs)',
-                      background: isIncome ? 'var(--green-dim)' : 'var(--red-dim)',
+                      background: getTransactionBg(),
                     }}>
                       {isIncome ? '+' : ''}{formatCurrency(tx.amount, tx.currency)}
                     </span>

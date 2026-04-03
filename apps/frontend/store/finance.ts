@@ -5,8 +5,8 @@ interface FinanceStore {
   setActiveTab: (tab: 'dashboard' | 'history' | 'ai' | 'settings') => void
   selectedAccountId: number | null
   setSelectedAccountId: (id: number | null) => void
-  transactionType: 'income' | 'expense'
-  setTransactionType: (type: 'income' | 'expense') => void
+  transactionType: 'income' | 'expense' | 'transfer'
+  setTransactionType: (type: 'income' | 'expense' | 'transfer') => void
   isAddModalOpen: boolean
   setAddModalOpen: (open: boolean) => void
   isAddCategoryModalOpen: boolean

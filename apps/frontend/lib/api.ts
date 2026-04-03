@@ -72,6 +72,13 @@ export function createApiClient(userId: number) {
         description?: string
         date?: string
       }) => request('/transactions', { method: 'POST', body: JSON.stringify(data) }, userId),
+      transfer: (data: {
+        fromAccountId: number
+        toAccountId: number
+        amount: number
+        currency: string
+        description?: string
+      }) => request('/transactions/transfer', { method: 'POST', body: JSON.stringify(data) }, userId),
       delete: (id: string) =>
         request(`/transactions/${id}`, { method: 'DELETE' }, userId),
     },

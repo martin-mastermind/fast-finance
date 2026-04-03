@@ -50,3 +50,21 @@ export const transactionsRouter = new Elysia({ prefix: '/transactions' })
       throw e
     }
   })
+  .post('/transfer', async ({ body, headers, set }) => {
+    const userId = parseInt(headers['x-user-id'] || '0')
+    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+    try {
+      return await TransactionService.transfer(userId, body)
+    } catch (e) {
+      if (e instanceof AccessDeniedError) { set.status = 403; return { error: e.message } }
+      throw e
+    }
+  }, {
+    body: t.Object({
+      fromAccountId: t.Number(),
+      toAccountId: t.Number(),
+      amount: t.Number(),
+      currency: t.Union([t.Literal('RUB'), t.Literal('BYN'), t.Literal('USD')]),
+      description: t.Optional(t.String()),
+    }),
+  })
