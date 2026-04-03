@@ -88,98 +88,110 @@
   "hotPaths": [
     {
       "path": "apps\\frontend\\app\\globals.css",
-      "accessCount": 11,
-      "lastAccessed": 1775149226485,
-      "type": "file"
-    },
-    {
-      "path": "apps\\frontend\\components\\add-transaction.tsx",
-      "accessCount": 8,
-      "lastAccessed": 1775149313717,
+      "accessCount": 12,
+      "lastAccessed": 1775150448578,
       "type": "file"
     },
     {
       "path": "apps\\frontend\\components\\balance-card.tsx",
-      "accessCount": 7,
-      "lastAccessed": 1775149254742,
-      "type": "file"
-    },
-    {
-      "path": "apps\\frontend\\components\\bottom-nav.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1775149272173,
+      "accessCount": 11,
+      "lastAccessed": 1775150615530,
       "type": "file"
     },
     {
       "path": "apps\\frontend\\components\\transaction-list.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1775149284897,
+      "accessCount": 10,
+      "lastAccessed": 1775150633650,
       "type": "file"
     },
     {
-      "path": "apps\\frontend\\tailwind.config.ts",
-      "accessCount": 4,
-      "lastAccessed": 1775149234077,
+      "path": "apps\\frontend\\components\\add-transaction.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1775150452987,
+      "type": "file"
+    },
+    {
+      "path": "apps\\frontend\\components\\bottom-nav.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1775150588095,
       "type": "file"
     },
     {
       "path": "apps\\frontend\\components\\dashboard.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1775148918221,
+      "accessCount": 7,
+      "lastAccessed": 1775150656138,
       "type": "file"
     },
     {
-      "path": "apps\\frontend\\app\\layout.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1775148806464,
+      "path": "apps\\frontend\\tailwind.config.ts",
+      "accessCount": 5,
+      "lastAccessed": 1775150449041,
       "type": "file"
     },
     {
       "path": "apps\\frontend\\package.json",
-      "accessCount": 1,
-      "lastAccessed": 1775148806926,
+      "accessCount": 2,
+      "lastAccessed": 1775150449269,
       "type": "file"
     },
     {
       "path": "apps\\frontend\\app\\page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1775148806963,
-      "type": "file"
-    },
-    {
-      "path": "apps\\frontend\\components\\providers.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1775148809886,
+      "accessCount": 2,
+      "lastAccessed": 1775150449525,
       "type": "file"
     },
     {
       "path": "apps\\frontend\\components\\auth-screen.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1775148812541,
+      "accessCount": 2,
+      "lastAccessed": 1775150453174,
+      "type": "file"
+    },
+    {
+      "path": "apps\\frontend\\app\\layout.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1775150453424,
       "type": "file"
     },
     {
       "path": "apps\\frontend\\components\\setup-wizard.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1775148812803,
-      "type": "file"
-    },
-    {
-      "path": "apps\\frontend\\lib\\utils.ts",
-      "accessCount": 1,
-      "lastAccessed": 1775148812889,
+      "accessCount": 2,
+      "lastAccessed": 1775150457430,
       "type": "file"
     },
     {
       "path": "apps\\frontend\\components\\loading-screen.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1775148926421,
+      "accessCount": 2,
+      "lastAccessed": 1775150457829,
+      "type": "file"
+    },
+    {
+      "path": "apps\\frontend\\components\\providers.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1775150458055,
+      "type": "file"
+    },
+    {
+      "path": "apps\\frontend\\lib\\utils.ts",
+      "accessCount": 2,
+      "lastAccessed": 1775150462736,
       "type": "file"
     },
     {
       "path": "C:\\Users\\ryzen\\.claude\\plans\\hazy-giggling-rose.md",
       "accessCount": 1,
       "lastAccessed": 1775149134745,
+      "type": "file"
+    },
+    {
+      "path": "apps\\frontend\\store\\auth.ts",
+      "accessCount": 1,
+      "lastAccessed": 1775150462432,
+      "type": "file"
+    },
+    {
+      "path": "apps\\frontend\\store\\finance.ts",
+      "accessCount": 1,
+      "lastAccessed": 1775150462639,
       "type": "file"
     }
   ],

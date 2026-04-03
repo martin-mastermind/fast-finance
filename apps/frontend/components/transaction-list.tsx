@@ -8,7 +8,7 @@ import { MdClose, MdAccessTime } from 'react-icons/md'
 
 interface Props {
   userId: number
-  currency: string
+  currency?: string
   limit?: number
 }
 

@@ -5,6 +5,8 @@ interface FinanceStore {
   setActiveTab: (tab: 'dashboard' | 'add' | 'history') => void
   selectedAccountId: number | null
   setSelectedAccountId: (id: number | null) => void
+  transactionType: 'income' | 'expense'
+  setTransactionType: (type: 'income' | 'expense') => void
 }
 
 export const useFinanceStore = create<FinanceStore>((set) => ({
@@ -12,4 +14,6 @@ export const useFinanceStore = create<FinanceStore>((set) => ({
   setActiveTab: (tab) => set({ activeTab: tab }),
   selectedAccountId: null,
   setSelectedAccountId: (id) => set({ selectedAccountId: id }),
+  transactionType: 'expense',
+  setTransactionType: (type) => set({ transactionType: type }),
 }))

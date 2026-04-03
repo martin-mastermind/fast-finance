@@ -24,6 +24,7 @@ export const accounts = pgTable('accounts', {
     .notNull(),
   name: text('name').notNull(),
   balance: doublePrecision('balance').default(0).notNull(),
+  currency: text('currency', { enum: ['RUB', 'BYN', 'USD'] }).default('RUB').notNull(),
 })
 
 export const categories = pgTable('categories', {

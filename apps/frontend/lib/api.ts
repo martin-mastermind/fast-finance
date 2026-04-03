@@ -34,10 +34,10 @@ export function createApiClient(userId: number) {
         ),
     },
     accounts: {
-      list: () => request<Array<{ id: number; name: string; balance: number }>>('/accounts', {}, userId),
-      create: (data: { name: string; balance?: number }) =>
+      list: () => request<Array<{ id: number; name: string; balance: number; currency: string }>>('/accounts', {}, userId),
+      create: (data: { name: string; balance?: number; currency?: string }) =>
         request('/accounts', { method: 'POST', body: JSON.stringify(data) }, userId),
-      update: (id: number, data: { name?: string; balance?: number }) =>
+      update: (id: number, data: { name?: string; balance?: number; currency?: string }) =>
         request(`/accounts/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, userId),
       delete: (id: number) =>
         request(`/accounts/${id}`, { method: 'DELETE' }, userId),

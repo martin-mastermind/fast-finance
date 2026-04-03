@@ -12,10 +12,17 @@ interface Props {
 
 type Step = 'welcome' | 'create' | 'success'
 
+const CURRENCIES = [
+  { code: 'RUB', label: 'Рубль (₽)', flag: '🇷🇺' },
+  { code: 'BYN', label: 'Бел. рубль (Br)', flag: '🇧🇾' },
+  { code: 'USD', label: 'Доллар ($)', flag: '🇺🇸' },
+]
+
 export function SetupWizard({ userId }: Props) {
   const [step, setStep] = useState<Step>('welcome')
   const [accountName, setAccountName] = useState('')
   const [balance, setBalance] = useState('')
+  const [currency, setCurrency] = useState('RUB')
   const queryClient = useQueryClient()
   const api = createApiClient(userId)
 
@@ -24,6 +31,7 @@ export function SetupWizard({ userId }: Props) {
       api.accounts.create({
         name: accountName || 'Основной',
         balance: balance ? parseFloat(balance) : 0,
+        currency,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accounts', userId] })
@@ -88,6 +96,43 @@ export function SetupWizard({ userId }: Props) {
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.02em' }}>
               Создайте счёт
             </h2>
+
+            <div>
+              <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+                Валюта
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {CURRENCIES.map((c) => {
+                  const isSelected = currency === c.code
+                  return (
+                    <motion.button
+                      key={c.code}
+                      onClick={() => setCurrency(c.code)}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        padding: '0.75rem 0.5rem',
+                        borderRadius: '0.5rem',
+                        border: '1px solid',
+                        borderColor: isSelected ? 'var(--accent)' : 'var(--border)',
+                        backgroundColor: isSelected ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                        cursor: 'pointer',
+                        WebkitAppearance: 'none',
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <span style={{ fontSize: '1.25rem' }}>{c.flag}</span>
+                      <span style={{ fontSize: '0.65rem', color: isSelected ? 'var(--accent)' : 'var(--text-secondary)', fontWeight: 500 }}>
+                        {c.code}
+                      </span>
+                    </motion.button>
+                  )
+                })}
+              </div>
+            </div>
 
             <div>
               <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
@@ -165,7 +210,7 @@ export function SetupWizard({ userId }: Props) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              Вы можете добавлять операции прямо здесь или написать боту сообщение вроде "500 кофе"
+              Вы можете добавлять операции прямо здесь или через кнопки бота в Telegram
             </motion.div>
 
             <motion.button

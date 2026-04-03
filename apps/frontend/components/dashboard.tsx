@@ -7,7 +7,7 @@ import { TransactionList } from './transaction-list'
 import { AddTransaction } from './add-transaction'
 import { BottomNav } from './bottom-nav'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdNotificationsNone, MdBarChart, MdCallReceived, MdSwapHoriz, MdSend } from 'react-icons/md'
+import { MdNotificationsNone, MdBarChart, MdAdd, MdRemove } from 'react-icons/md'
 
 const pageVariants = {
   initial: { opacity: 0, y: 6 },
@@ -16,14 +16,13 @@ const pageVariants = {
 }
 
 const ACTION_BUTTONS = [
-  { label: 'Пополнить', icon: MdCallReceived },
-  { label: 'Перевести', icon: MdSwapHoriz },
-  { label: 'Оплатить', icon: MdSend },
+  { label: 'Доход', icon: MdAdd, color: 'var(--green)' },
+  { label: 'Расход', icon: MdRemove, color: 'var(--red)' },
 ]
 
 export function Dashboard() {
   const { user } = useAuthStore()
-  const { activeTab, setActiveTab } = useFinanceStore()
+  const { activeTab, setActiveTab, setTransactionType } = useFinanceStore()
 
   return (
     <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
@@ -91,7 +90,7 @@ export function Dashboard() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              {ACTION_BUTTONS.map(({ label, icon: Icon }, i) => (
+              {ACTION_BUTTONS.map(({ label, icon: Icon, color }, i) => (
                 <motion.button
                   key={label}
                   className="hover-lift"
@@ -114,13 +113,16 @@ export function Dashboard() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.22 + i * 0.06, type: 'spring', stiffness: 300, damping: 28 }}
                   whileTap={{ scale: 0.96 }}
-                  onClick={label === 'Пополнить' ? () => setActiveTab('add') : undefined}
+                  onClick={() => {
+                    setTransactionType(label === 'Доход' ? 'income' : 'expense')
+                    setActiveTab('add')
+                  }}
                 >
                   {/* Subtle glow on hover */}
                   <div style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'radial-gradient(circle at 50% 30%, var(--accent-dim) 0%, transparent 60%)',
+                    background: `radial-gradient(circle at 50% 30%, ${color}22 0%, transparent 60%)`,
                     opacity: 0,
                     transition: 'opacity 200ms ease',
                     pointerEvents: 'none',
@@ -129,11 +131,11 @@ export function Dashboard() {
                     width: 40,
                     height: 40,
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, var(--accent) 0%, #8B5CF6 100%)',
+                    background: color,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 4px 12px var(--accent-dim)',
+                    boxShadow: `0 4px 12px ${color}33`,
                   }}>
                     <Icon size={20} color="#050507" />
                   </div>
