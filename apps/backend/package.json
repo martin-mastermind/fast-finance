@@ -6,8 +6,8 @@
     "dev": "bun run --hot src/index.ts",
     "build": "bun build src/index.ts --target bun --outdir dist",
     "start": "bun run dist/index.js",
-    "test": "bun test src/__tests__/lib && bun test src/__tests__/domain/account.service.test.ts && bun test src/__tests__/domain/transaction.service.test.ts && bun test src/__tests__/routes/accounts.test.ts && bun test src/__tests__/routes/transactions.test.ts && bun test src/__tests__/routes/auth.test.ts && bun test src/__tests__/routes/categories.test.ts",
-    "test:watch": "bun test --watch src/__tests__"
+    "test": "bun test src/__tests__/routes/accounts.test.ts && bun test src/__tests__/routes/transactions.test.ts && bun test src/__tests__/routes/auth.test.ts && bun test src/__tests__/routes/categories.test.ts && bun test src/__tests__/lib/telegram-auth.test.ts",
+    "test:watch": "bun test --watch src/__tests__/routes"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.1",

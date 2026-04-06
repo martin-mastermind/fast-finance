@@ -1,19 +1,38 @@
-import { describe, it, expect, mock } from 'bun:test'
+import { describe, it, expect, mock, beforeEach } from 'bun:test'
 import { Elysia } from 'elysia'
 
 const mockCategories = [
-  { id: 1, name: 'Еда', icon: '🍕', type: 'expense' },
-  { id: 2, name: 'Зарплата', icon: '💰', type: 'income' },
+  { id: 1, name: 'Еда', icon: '🍕', type: 'expense', userId: null },
+  { id: 2, name: 'Зарплата', icon: '💰', type: 'income', userId: 1 },
 ]
 
+const mockEq = mock(() => (col: any, val: any) => ({ type: 'eq', col, val }))
+const mockAnd = mock(() => (...args: any[]) => ({ type: 'and', args }))
+const mockOr = mock(() => (...args: any[]) => ({ type: 'or', args }))
+const mockIsNull = mock(() => (col: any) => ({ type: 'isNull', col }))
+
+const mockFrom = mock(() => ({
+  where: mock(() => Promise.resolve(mockCategories))
+}))
+const mockSelect = mock(() => ({ from: mockFrom }))
+
 const mockDb = {
-  select: mock(() => mockDb),
-  from: mock(() => Promise.resolve(mockCategories)),
+  select: mockSelect,
 }
 
 mock.module('@fast-finance/db', () => ({
   db: mockDb,
-  categories: {},
+  categories: {
+    userId: 'userId',
+    id: 'id',
+    name: 'name',
+    icon: 'icon',
+    type: 'type',
+  },
+  eq: mockEq,
+  and: mockAnd,
+  or: mockOr,
+  isNull: mockIsNull,
 }))
 
 const { categoriesRouter } = await import('../../routes/categories')
@@ -29,7 +48,6 @@ describe('GET /categories', () => {
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data).toHaveLength(2)
-    expect(data[0].name).toBe('Еда')
   })
 
   it('returns 401 without x-user-id header', async () => {

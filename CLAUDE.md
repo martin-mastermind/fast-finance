@@ -62,6 +62,59 @@ npm run lint
 - Always sanitize file paths to prevent directory traversal
 - Run `npx @claude-flow/cli@latest security scan` after security-related changes
 
+## Clean Architecture
+
+```
+src/
+├── domain/           # Entities, interfaces, errors (NO dependencies)
+├── application/     # Use cases (depends on domain interfaces)
+├── infrastructure/  # Repository implementations (depends on domain)
+└── presentation/   # Routes (depends on application use cases)
+```
+
+**Dependency Rule:** Все зависимости направлены внутрь - domain не зависит от других слоев.
+
+**Паттерны:**
+- Entities: иммутабельные с `toEntity()` mapper
+- Repository Interfaces: в `domain/interfaces/`
+- Repository Implementations: в `infrastructure/repositories/`
+- Use Cases: в `application/use-cases/`, зависят от интерфейсов
+- Routes: в `presentation/routes/`, обрабатывают DomainError
+
+**Пример добавления сущности:**
+1. `domain/entities/entity.ts` - определение сущности
+2. `domain/interfaces/i-repository.interface.ts` - интерфейс репозитория
+3. `domain/errors/` - кастомные ошибки если нужно
+4. `infrastructure/repositories/repository.ts` - реализация
+5. `application/use-cases/use-case.ts` - use case
+6. `presentation/routes/` - route контроллер
+
+**Документация:** `docs/architecture.md`
+
+## Frontend Architecture (Next.js)
+
+```
+apps/frontend/src/
+├── domain/types/      # Account, Transaction, Category, User
+├── application/hooks/ # useAccounts, useTransactions, useCategories
+├── infrastructure/api/ # apiClient (HTTP client)
+└── components/        # UI компоненты
+```
+
+### Правила Frontend
+
+- **Hooks** - инкапсулируют бизнес-логику, работают с userId из store
+- **API Client** - stateless HTTP обёртка над fetch
+- **Domain Types** - зеркалируют backend entities
+- **Store** - только состояние UI (activeTab, modals), НЕ бизнес-данные
+
+### Пример добавления хука
+
+1. Создать `domain/types/new-entity.ts`
+2. Добавить метод в `infrastructure/api/client.ts`
+3. Создать `application/hooks/use-entity.ts`
+4. Использовать в компонентах
+
 ## Concurrency: 1 MESSAGE = ALL RELATED OPERATIONS
 
 - All operations MUST be concurrent/parallel in a single message
