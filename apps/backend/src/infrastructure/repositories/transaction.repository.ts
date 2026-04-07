@@ -1,7 +1,7 @@
 import { db, transactions, accounts, categories } from '@fast-finance/db'
-import { eq, and, desc, count, sql, gte, lt } from 'drizzle-orm'
+import { eq, and, desc, count, sql, gte, lt, inArray } from 'drizzle-orm'
 import type { ITransactionRepository } from '../../domain/interfaces/transaction-repository.interface'
-import type { Transaction, TransactionCreateInput, TransactionStats } from '../../domain/entities/transaction.entity'
+import type { Transaction, TransactionCreateInput, TransferInput, TransactionStats } from '../../domain/entities/transaction.entity'
 import { toTransaction } from '../../domain/entities/transaction.entity'
 import { NotFoundError } from '../../domain/errors/domain-errors'
 
@@ -39,7 +39,7 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
       .select()
       .from(transactions)
       .where(eq(transactions.userId, userId))
-      .orderBy(desc(transactions.date))
+      .orderBy(desc(transactions.date), desc(transactions.id))
       .limit(limit)
       .offset(offset)
 
@@ -143,7 +143,7 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
       const cats = await db
         .select({ id: categories.id, name: categories.name, icon: categories.icon })
         .from(categories)
-        .where(sql`${categories.id} IN ${allCategoryIds}`)
+        .where(inArray(categories.id, allCategoryIds))
       cats.forEach(c => categoryMap.set(c.id, { name: c.name, icon: c.icon }))
     }
 
@@ -178,6 +178,41 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
       expenseByCategory,
       incomeByCategory,
     }
+  }
+  async transfer(userId: number, input: TransferInput, fromAccountName: string, toAccountName: string): Promise<Transaction> {
+    return await db.transaction(async (dbTx) => {
+      const [transaction] = await dbTx
+        .insert(transactions)
+        .values({
+          userId,
+          accountId: input.fromAccountId,
+          categoryId: null,
+          amount: -input.amount,
+          currency: input.currency,
+          description: JSON.stringify({
+            type: 'transfer',
+            fromAccountId: input.fromAccountId,
+            fromAccountName,
+            toAccountId: input.toAccountId,
+            toAccountName,
+            description: input.description || 'Перевод между счетами',
+          }),
+          date: new Date(),
+        })
+        .returning()
+
+      await dbTx
+        .update(accounts)
+        .set({ balance: sql`${accounts.balance} - ${input.amount}` })
+        .where(eq(accounts.id, input.fromAccountId))
+
+      await dbTx
+        .update(accounts)
+        .set({ balance: sql`${accounts.balance} + ${input.amount}` })
+        .where(eq(accounts.id, input.toAccountId))
+
+      return toTransaction(transaction)
+    }) as Transaction
   }
 }
 

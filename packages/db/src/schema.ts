@@ -6,6 +6,7 @@ import {
   timestamp,
   uuid,
   integer,
+  index,
 } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
@@ -25,7 +26,9 @@ export const accounts = pgTable('accounts', {
   name: text('name').notNull(),
   balance: doublePrecision('balance').default(0).notNull(),
   currency: text('currency', { enum: ['RUB', 'BYN', 'USD'] }).default('RUB').notNull(),
-})
+}, (t) => [
+  index('accounts_user_id_idx').on(t.userId),
+])
 
 export const categories = pgTable('categories', {
   id: serial('id').primaryKey(),
@@ -49,7 +52,12 @@ export const transactions = pgTable('transactions', {
   currency: text('currency', { enum: ['RUB', 'BYN', 'USD'] }).notNull(),
   description: text('description'),
   date: timestamp('date').defaultNow().notNull(),
-})
+}, (t) => [
+  index('transactions_user_id_idx').on(t.userId),
+  index('transactions_account_id_idx').on(t.accountId),
+  index('transactions_date_idx').on(t.date),
+  index('transactions_user_date_idx').on(t.userId, t.date),
+])
 
 export const currencyRates = pgTable('currency_rates', {
   id: serial('id').primaryKey(),
@@ -78,7 +86,7 @@ export const aiInsights = pgTable('ai_insights', {
   type: text('type', { enum: ['spending_alert', 'savings_tip', 'budget_warning', 'trend_analysis'] }).notNull(),
   title: text('title').notNull(),
   content: text('content').notNull(),
-  isRead: serial('is_read').default(0).notNull(),
+  isRead: integer('is_read').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 })
 

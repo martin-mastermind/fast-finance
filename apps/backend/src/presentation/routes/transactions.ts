@@ -1,9 +1,10 @@
 import { Elysia, t } from 'elysia'
 import { transactionRepository } from '../../infrastructure/repositories/transaction.repository'
+import { accountRepository } from '../../infrastructure/repositories/account.repository'
 import { TransactionUseCases } from '../../application/use-cases/transaction.use-cases'
-import { AccessDeniedError, NotFoundError } from '../../domain/errors/domain-errors'
+import { AccessDeniedError, NotFoundError, InsufficientFundsError } from '../../domain/errors/domain-errors'
 
-const transactionUseCases = new TransactionUseCases(transactionRepository)
+const transactionUseCases = new TransactionUseCases(transactionRepository, accountRepository)
 
 export const transactionsRouter = new Elysia({ prefix: '/transactions' })
   .get('/', async ({ headers, query, set }) => {
@@ -32,9 +33,9 @@ export const transactionsRouter = new Elysia({ prefix: '/transactions' })
     body: t.Object({
       accountId: t.Number(),
       categoryId: t.Number(),
-      amount: t.Number(),
+      amount: t.Number({ minimum: -1_000_000_000, maximum: 1_000_000_000 }),
       currency: t.Union([t.Literal('RUB'), t.Literal('BYN'), t.Literal('USD')]),
-      description: t.Optional(t.String()),
+      description: t.Optional(t.String({ maxLength: 500 })),
       date: t.Optional(t.String()),
     }),
   })
@@ -56,13 +57,14 @@ export const transactionsRouter = new Elysia({ prefix: '/transactions' })
       return await transactionUseCases.transfer(userId, body)
     } catch (e) {
       if (e instanceof AccessDeniedError) { set.status = 403; return { error: e.message } }
+      if (e instanceof InsufficientFundsError) { set.status = 400; return { error: e.message } }
       throw e
     }
   }, {
     body: t.Object({
       fromAccountId: t.Number(),
       toAccountId: t.Number(),
-      amount: t.Number(),
+      amount: t.Number({ minimum: 0.01, maximum: 1_000_000_000 }),
       currency: t.Union([t.Literal('RUB'), t.Literal('BYN'), t.Literal('USD')]),
       description: t.Optional(t.String()),
     }),

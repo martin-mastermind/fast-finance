@@ -1,7 +1,7 @@
 import { db, transactions, accounts, categories } from '@fast-finance/db'
 import { eq, and, desc, count, sql, gte, lt, between } from 'drizzle-orm'
 import type { Transaction } from '@fast-finance/db'
-import { AccessDeniedError, NotFoundError } from './account.service'
+import { AccessDeniedError, NotFoundError } from './errors/domain-errors'
 
 export interface NewTransactionInput {
   accountId: number

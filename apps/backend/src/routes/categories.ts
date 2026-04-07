@@ -33,6 +33,7 @@ export const categoriesRouter = new Elysia({ prefix: '/categories' })
       const userId = parseInt(headers['x-user-id'] || '0')
       if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
       const categoryId = parseInt(params.id)
+      if (isNaN(categoryId)) { set.status = 400; return { error: 'Invalid category ID' } }
       const [updated] = await db.update(categories)
         .set({
           name: body.name,
@@ -50,6 +51,7 @@ export const categoriesRouter = new Elysia({ prefix: '/categories' })
     const userId = parseInt(headers['x-user-id'] || '0')
     if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
     const categoryId = parseInt(params.id)
+    if (isNaN(categoryId)) { set.status = 400; return { error: 'Invalid category ID' } }
     const [deleted] = await db.delete(categories).where(
       and(eq(categories.id, categoryId), eq(categories.userId, userId))
     ).returning()

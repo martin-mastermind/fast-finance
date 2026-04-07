@@ -1,4 +1,4 @@
-import type { Transaction, TransactionCreateInput, TransactionStats } from '../entities/transaction.entity'
+import type { Transaction, TransactionCreateInput, TransferInput, TransactionStats } from '../entities/transaction.entity'
 
 export interface ITransactionRepository {
   findByUserId(userId: number, limit: number, offset: number): Promise<{ items: Transaction[]; total: number }>
@@ -6,4 +6,5 @@ export interface ITransactionRepository {
   create(userId: number, input: TransactionCreateInput): Promise<Transaction>
   delete(id: string, userId: number): Promise<Transaction>
   getStats(userId: number, period: string): Promise<TransactionStats>
+  transfer(userId: number, input: TransferInput, fromAccountName: string, toAccountName: string): Promise<Transaction>
 }

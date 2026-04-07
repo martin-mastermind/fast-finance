@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { apiClient } from '../../infrastructure/api/client'
 import type { Account, AccountCreateInput, AccountUpdateInput } from '../../domain/types/account'
 
@@ -6,15 +6,19 @@ export function useAccounts(userId: number | null) {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
 
   const fetchAccounts = useCallback(async () => {
     if (!userId) return
+    abortRef.current?.abort()
+    abortRef.current = new AbortController()
     setLoading(true)
     setError(null)
     try {
       const data = await apiClient.accounts.list(userId)
       setAccounts(data as Account[])
     } catch (e) {
+      if (e instanceof Error && e.name === 'AbortError') return
       setError(e instanceof Error ? e.message : 'Failed to fetch accounts')
     } finally {
       setLoading(false)
@@ -23,14 +27,17 @@ export function useAccounts(userId: number | null) {
 
   useEffect(() => {
     fetchAccounts()
+    return () => {
+      abortRef.current?.abort()
+    }
   }, [fetchAccounts])
 
   const createAccount = useCallback(async (input: AccountCreateInput) => {
     if (!userId) throw new Error('Not authenticated')
     const account = await apiClient.accounts.create(input, userId)
-    setAccounts(prev => [...prev, account as Account])
+    await fetchAccounts()
     return account as Account
-  }, [userId])
+  }, [userId, fetchAccounts])
 
   const updateAccount = useCallback(async (id: number, input: AccountUpdateInput) => {
     if (!userId) throw new Error('Not authenticated')

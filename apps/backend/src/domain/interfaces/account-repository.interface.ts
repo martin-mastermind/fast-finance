@@ -6,4 +6,5 @@ export interface IAccountRepository {
   create(userId: number, input: AccountCreateInput): Promise<Account>
   update(id: number, userId: number, input: AccountUpdateInput): Promise<Account>
   delete(id: number, userId: number): Promise<void>
+  updateBalance(id: number, userId: number, delta: number): Promise<void>
 }

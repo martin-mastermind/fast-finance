@@ -3,7 +3,10 @@ import { db, transactions, categories, accounts, aiChatMessages } from '@fast-fi
 import { eq, desc, gte, lt, and, sql } from 'drizzle-orm'
 import { TransactionService } from './transaction.service'
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || '' })
+if (!process.env.GROQ_API_KEY) {
+  throw new Error('Missing required environment variable: GROQ_API_KEY')
+}
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant'

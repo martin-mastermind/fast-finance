@@ -14,22 +14,13 @@ export const authRouter = new Elysia({ prefix: '/auth' })
         return { error: 'Bot token not configured' }
       }
 
-      let telegramUserId: number
-      let telegramUsername: string | undefined
-
-      // Dev bypass
-      if (process.env.NODE_ENV === 'development' && initData === 'dev_bypass') {
-        telegramUserId = 123456789
-        telegramUsername = 'devuser'
-      } else {
-        const tgUser = await validateTelegramInitData(initData, botToken)
-        if (!tgUser) {
-          set.status = 401
-          return { error: 'Invalid Telegram auth data' }
-        }
-        telegramUserId = tgUser.id
-        telegramUsername = tgUser.username
+      const tgUser = await validateTelegramInitData(initData, botToken)
+      if (!tgUser) {
+        set.status = 401
+        return { error: 'Invalid Telegram auth data' }
       }
+      const telegramUserId = tgUser.id
+      const telegramUsername = tgUser.username
 
       const [user] = await db
         .insert(users)

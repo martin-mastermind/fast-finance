@@ -1,6 +1,6 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import { db, aiChatMessages, aiInsights } from '@fast-finance/db'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, and } from 'drizzle-orm'
 import { AiService } from '../domain/ai.service'
 
 export const aiRouter = new Elysia({ prefix: '/ai' })
@@ -10,8 +10,8 @@ export const aiRouter = new Elysia({ prefix: '/ai' })
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { message } = body as { message: string }
-    if (!message?.trim()) {
+    const { message } = body
+    if (!message.trim()) {
       return Response.json({ error: 'Message is required' }, { status: 400 })
     }
 
@@ -22,6 +22,8 @@ export const aiRouter = new Elysia({ prefix: '/ai' })
       console.error('AI chat error:', error)
       return Response.json({ error: 'Failed to process message' }, { status: 500 })
     }
+  }, {
+    body: t.Object({ message: t.String() }),
   })
   .get('/history', async ({ headers }) => {
     const userId = parseInt(headers['x-user-id'] || '0')
@@ -85,7 +87,7 @@ export const aiRouter = new Elysia({ prefix: '/ai' })
       await db
         .update(aiInsights)
         .set({ isRead: 1 })
-        .where(eq(aiInsights.id, insightId))
+        .where(and(eq(aiInsights.id, insightId), eq(aiInsights.userId, userId)))
       
       return { success: true }
     } catch (error) {

@@ -1,5 +1,5 @@
 import { db, accounts } from '@fast-finance/db'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import type { IAccountRepository } from '../../domain/interfaces/account-repository.interface'
 import type { Account, AccountCreateInput, AccountUpdateInput } from '../../domain/entities/account.entity'
 import { toAccount } from '../../domain/entities/account.entity'
@@ -55,8 +55,15 @@ export class DrizzleAccountRepository implements IAccountRepository {
       .delete(accounts)
       .where(and(eq(accounts.id, id), eq(accounts.userId, userId)))
       .returning()
-    
+
     if (!deleted) throw new NotFoundError('Account not found')
+  }
+
+  async updateBalance(id: number, userId: number, delta: number): Promise<void> {
+    await db
+      .update(accounts)
+      .set({ balance: sql`${accounts.balance} + ${delta}` })
+      .where(and(eq(accounts.id, id), eq(accounts.userId, userId)))
   }
 }
 

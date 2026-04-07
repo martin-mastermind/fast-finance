@@ -51,7 +51,15 @@ export const apiClient = {
 
   transactions: {
     list: (userId: number, params?: { limit?: number; offset?: number }) => {
-      const qs = params ? new URLSearchParams(params as Record<string, string>).toString() : ''
+      const qs = params
+        ? new URLSearchParams(
+            Object.fromEntries(
+              Object.entries(params)
+                .filter(([, v]) => v !== undefined)
+                .map(([k, v]) => [k, String(v)])
+            )
+          ).toString()
+        : ''
       return request<{ items: Array<{ id: string; accountId: number; categoryId: number; amount: number; currency: string; description: string | null; date: string }>; total: number; page: number; pageSize: number }>(
         `/transactions${qs ? `?${qs}` : ''}`, {}, userId,
       )

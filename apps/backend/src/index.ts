@@ -12,6 +12,15 @@ import { aiRouter } from './routes/ai'
 import { currencyRouter } from './routes/currency'
 import { CurrencyService } from './domain/currency.service'
 
+// Validate required environment variables
+const requiredEnvVars = ['DATABASE_URL', 'TELEGRAM_BOT_TOKEN']
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    console.error(`Missing required environment variable: ${envVar}`)
+    process.exit(1)
+  }
+}
+
 async function startCronJob() {
   const ONE_DAY = 24 * 60 * 60 * 1000
   
@@ -31,7 +40,7 @@ async function startCronJob() {
 const app = new Elysia()
   .use(
     cors({
-      origin: process.env.FRONTEND_URL || '*',
+      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
       credentials: true,
     }),
   )
