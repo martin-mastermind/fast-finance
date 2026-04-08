@@ -12,7 +12,9 @@ const FALLBACK_RATES: Record<string, number> = {
   BYN: 0.31,
 }
 import { motion } from 'framer-motion'
-import { MdTrendingUp, MdTrendingDown } from 'react-icons/md'
+import { TrendingUp, TrendingDown } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface Props {
   userId: number
@@ -42,8 +44,8 @@ export function TransactionCharts({ userId, currency }: Props) {
   if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div className="skeleton" style={{ height: '120px' }} />
-        <div className="skeleton" style={{ height: '200px' }} />
+        <Skeleton className="h-[52px] w-full" />
+        <Skeleton className="h-[88px] w-full" />
       </div>
     )
   }
@@ -57,34 +59,19 @@ export function TransactionCharts({ userId, currency }: Props) {
       style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
     >
       {/* Period selector */}
-      <div style={{
-        display: 'flex',
-        gap: '0.5rem',
-        background: 'var(--bg-elevated)',
-        padding: '0.25rem',
-        borderRadius: '0.75rem',
-      }}>
-        {PERIODS.map(p => (
-          <button
-            key={p.id}
-            onClick={() => setActivePeriod(p.id)}
-            style={{
-              flex: 1,
-              padding: '0.5rem 0.75rem',
-              fontSize: '0.8125rem',
-              fontWeight: 500,
-              borderRadius: '0.5rem',
-              border: 'none',
-              background: activePeriod === p.id ? 'var(--accent)' : 'transparent',
-              color: activePeriod === p.id ? '#fff' : 'var(--text-secondary)',
-              cursor: 'pointer',
-              WebkitAppearance: 'none',
-            }}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+      <Tabs value={activePeriod} onValueChange={setActivePeriod}>
+        <TabsList className="w-full bg-[var(--bg-elevated)] rounded-[12px] p-1 h-auto gap-1">
+          {PERIODS.map(p => (
+            <TabsTrigger
+              key={p.id}
+              value={p.id}
+              className="flex-1 text-[0.8125rem] font-medium py-2 rounded-[8px] text-[var(--text-secondary)] data-active:bg-primary data-active:text-primary-foreground"
+            >
+              {p.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* Summary cards */}
       <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -95,7 +82,7 @@ export function TransactionCharts({ userId, currency }: Props) {
           animate={{ opacity: 1, y: 0 }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '0.5rem' }}>
-            <MdTrendingUp size={16} color="var(--green)" />
+            <TrendingUp size={16} className="text-[var(--green)]" />
             <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
               Доходы
             </span>
@@ -113,7 +100,7 @@ export function TransactionCharts({ userId, currency }: Props) {
           transition={{ delay: 0.1 }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '0.5rem' }}>
-            <MdTrendingDown size={16} color="var(--red)" />
+            <TrendingDown size={16} className="text-[var(--red)]" />
             <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
               Расходы
             </span>

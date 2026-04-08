@@ -5,8 +5,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdAdd, MdDelete, MdClose, MdAccountBalance, MdCategory, MdEdit, MdArrowUpward, MdArrowDownward } from 'react-icons/md'
+import { Plus, Trash2, X, Building2, Grid3x3, Pencil, ArrowUp, ArrowDown } from 'lucide-react'
 import { useFinanceStore } from '@/store/finance'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { MotionButton } from '@/components/ui/motion-button'
 import { getCategoryIcon } from '@/lib/icon-map'
 
 interface Props {
@@ -122,31 +126,20 @@ export function SettingsPanel({ userId }: Props) {
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <MdAccountBalance size={18} color="var(--accent)" />
+            <Building2 size={18} className="text-primary" />
             <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>
               Счета
             </span>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setIsAddAccountOpen(true)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.25rem',
-              padding: '0.375rem 0.75rem',
-              background: 'var(--accent-dim)',
-              borderRadius: '0.5rem',
-              border: '1px solid var(--accent-glow)',
-              color: 'var(--accent)',
-              fontSize: '0.75rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              WebkitAppearance: 'none',
-            }}
+            className="gap-1 text-primary bg-[var(--accent-dim)] border border-[var(--accent-glow)]"
           >
-            <MdAdd size={16} />
+            <Plus size={16} />
             Добавить
-          </button>
+          </Button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -193,7 +186,7 @@ export function SettingsPanel({ userId }: Props) {
                   whileHover={{ opacity: idx === 0 ? 0.2 : 1 }}
                   whileTap={{ scale: idx === 0 ? 1 : 0.85 }}
                 >
-                  <MdArrowUpward size={16} />
+                  <ArrowUp size={16} />
                 </motion.button>
                 <motion.button
                   onClick={() => moveAccount(idx, 1)}
@@ -211,7 +204,7 @@ export function SettingsPanel({ userId }: Props) {
                   whileHover={{ opacity: idx === (accounts?.length ?? 0) - 1 ? 0.2 : 1 }}
                   whileTap={{ scale: idx === (accounts?.length ?? 0) - 1 ? 1 : 0.85 }}
                 >
-                  <MdArrowDownward size={16} />
+                  <ArrowDown size={16} />
                 </motion.button>
                 <motion.button
                   onClick={() => deleteAccountMutation.mutate(account.id)}
@@ -228,7 +221,7 @@ export function SettingsPanel({ userId }: Props) {
                   whileHover={{ opacity: 1 }}
                   whileTap={{ scale: 0.85 }}
                 >
-                  <MdDelete size={18} />
+                  <Trash2 size={18} />
                 </motion.button>
               </div>
             </motion.div>
@@ -246,31 +239,20 @@ export function SettingsPanel({ userId }: Props) {
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <MdCategory size={18} color="var(--accent)" />
+            <Grid3x3 size={18} className="text-primary" />
             <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>
               Категории
             </span>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setAddCategoryModalOpen(true)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.25rem',
-              padding: '0.375rem 0.75rem',
-              background: 'var(--accent-dim)',
-              borderRadius: '0.5rem',
-              border: '1px solid var(--accent-glow)',
-              color: 'var(--accent)',
-              fontSize: '0.75rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              WebkitAppearance: 'none',
-            }}
+            className="gap-1 text-primary bg-[var(--accent-dim)] border border-[var(--accent-glow)]"
           >
-            <MdAdd size={16} />
+            <Plus size={16} />
             Добавить
-          </button>
+          </Button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -321,7 +303,7 @@ export function SettingsPanel({ userId }: Props) {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <MdEdit size={14} />
+                      <Pencil size={14} />
                     </motion.button>
                     <motion.button
                       onClick={() => deleteCategoryMutation.mutate(cat.id)}
@@ -339,7 +321,7 @@ export function SettingsPanel({ userId }: Props) {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <MdDelete size={14} />
+                      <Trash2 size={14} />
                     </motion.button>
                   </div>
                 </motion.div>
@@ -394,7 +376,7 @@ export function SettingsPanel({ userId }: Props) {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <MdEdit size={14} />
+                      <Pencil size={14} />
                     </motion.button>
                     <motion.button
                       onClick={() => deleteCategoryMutation.mutate(cat.id)}
@@ -412,7 +394,7 @@ export function SettingsPanel({ userId }: Props) {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <MdDelete size={14} />
+                      <Trash2 size={14} />
                     </motion.button>
                   </div>
                 </motion.div>
@@ -469,28 +451,27 @@ export function SettingsPanel({ userId }: Props) {
                     WebkitAppearance: 'none',
                   }}
                 >
-                  <MdClose size={24} color="var(--text-secondary)" />
+                  <X size={24} className="text-[var(--text-secondary)]" />
                 </button>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div className="glass-card" style={{ padding: '1.25rem' }}>
-                  <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+                  <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
                     Название счёта
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="text"
                     value={newAccountName}
                     onChange={(e) => setNewAccountName(e.target.value)}
                     placeholder="Например: Наличка"
-                    className="input-field"
                   />
                 </div>
 
                 <div className="glass-card" style={{ padding: '1.25rem' }}>
-                  <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+                  <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
                     Валюта
-                  </label>
+                  </Label>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     {CURRENCIES.map((curr) => (
                       <motion.button
@@ -518,9 +499,9 @@ export function SettingsPanel({ userId }: Props) {
                 </div>
 
                 <div className="glass-card" style={{ padding: '1.25rem' }}>
-                  <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+                  <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
                     Тип счёта
-                  </label>
+                  </Label>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     {([['checking', '🏦', 'Текущий'], ['savings', '🐷', 'Накопительный']] as const).map(([type, icon, label]) => (
                       <motion.button
@@ -552,14 +533,16 @@ export function SettingsPanel({ userId }: Props) {
                   </div>
                 </div>
 
-                <motion.button
+                <MotionButton
                   onClick={() => createAccountMutation.mutate({ name: newAccountName, currency: newAccountCurrency, type: newAccountType })}
                   disabled={!newAccountName.trim() || createAccountMutation.isPending}
-                  className="btn-primary"
+                  variant="default"
+                  size="lg"
+                  className="w-full"
                   whileTap={{ scale: newAccountName.trim() && !createAccountMutation.isPending ? 0.97 : 1 }}
                 >
                   {createAccountMutation.isPending ? 'Создание...' : 'Создать счёт'}
-                </motion.button>
+                </MotionButton>
               </div>
             </motion.div>
           </motion.div>
@@ -653,7 +636,7 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
               WebkitAppearance: 'none',
             }}
           >
-            <MdClose size={24} color="var(--text-secondary)" />
+            <X size={24} className="text-[var(--text-secondary)]" />
           </button>
         </div>
 
@@ -712,23 +695,22 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
 
           {/* Name input */}
           <div className="glass-card" style={{ padding: '1.25rem' }}>
-            <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+            <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
               Название категории
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Например: Продукты"
-              className="input-field"
             />
           </div>
 
           {/* Icon selector */}
           <div className="glass-card" style={{ padding: '1.25rem' }}>
-            <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.75rem' }}>
+            <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-3">
               Иконка
-            </label>
+            </Label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.375rem' }}>
               {EMOJI_ICONS.map((emoji) => (
                 <motion.button
@@ -768,17 +750,17 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
             </span>
           </div>
 
-          <motion.button
+          <MotionButton
             onClick={() => createMutation.mutate({ name, icon, type: transactionType })}
             disabled={!name.trim() || createMutation.isPending}
-            className="btn-primary"
-            style={{
-              backgroundColor: transactionType === 'income' ? 'var(--green)' : 'var(--red)',
-            }}
+            variant="default"
+            size="lg"
+            className="w-full"
+            style={{ backgroundColor: transactionType === 'income' ? 'var(--green)' : 'var(--red)' }}
             whileTap={{ scale: name.trim() && !createMutation.isPending ? 0.97 : 1 }}
           >
             {createMutation.isPending ? 'Создание...' : 'Создать категорию'}
-          </motion.button>
+          </MotionButton>
         </div>
       </motion.div>
     </motion.div>
@@ -848,7 +830,7 @@ function EditCategoryModal({ userId, category, onClose }: { userId: number; cate
               WebkitAppearance: 'none',
             }}
           >
-            <MdClose size={24} color="var(--text-secondary)" />
+            <X size={24} className="text-[var(--text-secondary)]" />
           </button>
         </div>
 
@@ -907,23 +889,22 @@ function EditCategoryModal({ userId, category, onClose }: { userId: number; cate
 
           {/* Name input */}
           <div className="glass-card" style={{ padding: '1.25rem' }}>
-            <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+            <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
               Название категории
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Например: Продукты"
-              className="input-field"
             />
           </div>
 
           {/* Icon selector */}
           <div className="glass-card" style={{ padding: '1.25rem' }}>
-            <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.75rem' }}>
+            <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-3">
               Иконка
-            </label>
+            </Label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.375rem' }}>
               {EMOJI_ICONS.map((emoji) => (
                 <motion.button
@@ -963,17 +944,17 @@ function EditCategoryModal({ userId, category, onClose }: { userId: number; cate
             </span>
           </div>
 
-          <motion.button
+          <MotionButton
             onClick={() => updateMutation.mutate({ name, icon, type })}
             disabled={!name.trim() || updateMutation.isPending}
-            className="btn-primary"
-            style={{
-              backgroundColor: type === 'income' ? 'var(--green)' : 'var(--red)',
-            }}
+            variant="default"
+            size="lg"
+            className="w-full"
+            style={{ backgroundColor: type === 'income' ? 'var(--green)' : 'var(--red)' }}
             whileTap={{ scale: name.trim() && !updateMutation.isPending ? 0.97 : 1 }}
           >
             {updateMutation.isPending ? 'Сохранение...' : 'Сохранить'}
-          </motion.button>
+          </MotionButton>
         </div>
       </motion.div>
     </motion.div>

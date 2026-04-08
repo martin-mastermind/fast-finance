@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 export function LoadingScreen() {
   return (
-    <div className="flex h-screen items-center justify-center bg-[#050507]">
+    <div className="flex h-screen items-center justify-center bg-background">
       <div className="relative flex items-center justify-center">
         {[0, 1, 2].map((i) => (
           <motion.div
@@ -28,7 +28,7 @@ export function LoadingScreen() {
           />
         ))}
         <motion.div
-          className="h-3 w-3 rounded-full bg-[#A855F7]"
+          className="h-3 w-3 rounded-full bg-primary"
           animate={{ scale: [0.8, 1.2, 0.8] }}
           transition={{
             duration: 1.2,

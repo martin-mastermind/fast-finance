@@ -4,7 +4,10 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdCheckCircle } from 'react-icons/md'
+import { CheckCircle2 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { MotionButton } from '@/components/ui/motion-button'
 
 interface Props {
   userId: number
@@ -72,14 +75,15 @@ export function SetupWizard({ userId }: Props) {
               Создайте счёт и начните отслеживать свои расходы прямо здесь или через бота.
             </p>
 
-            <motion.button
+            <MotionButton
               onClick={() => setStep('create')}
-              className="btn-primary"
-              style={{ width: '100%' }}
+              variant="default"
+              size="lg"
+              className="w-full"
               whileTap={{ scale: 0.97 }}
             >
               Начать
-            </motion.button>
+            </MotionButton>
           </motion.div>
         )}
 
@@ -98,9 +102,9 @@ export function SetupWizard({ userId }: Props) {
             </h2>
 
             <div>
-              <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+              <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
                 Валюта
-              </label>
+              </Label>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 {CURRENCIES.map((c) => {
                   const isSelected = currency === c.code
@@ -135,49 +139,49 @@ export function SetupWizard({ userId }: Props) {
             </div>
 
             <div>
-              <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+              <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
                 Название счёта
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value)}
                 placeholder="Основной, Кредитная карта и т.д."
-                className="input-field"
               />
             </div>
 
             <div>
-              <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+              <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
                 Начальный баланс
-              </label>
-              <input
+              </Label>
+              <Input
                 type="number"
                 value={balance}
                 onChange={(e) => setBalance(e.target.value)}
                 placeholder="0"
-                className="input-field"
               />
             </div>
 
-            <motion.button
+            <MotionButton
               onClick={handleCreate}
               disabled={!accountName.trim() || createMutation.isPending}
-              className="btn-primary"
-              style={{ width: '100%' }}
+              variant="default"
+              size="lg"
+              className="w-full"
               whileTap={{ scale: !(!accountName.trim() || createMutation.isPending) ? 0.97 : 1 }}
             >
               {createMutation.isPending ? 'Создание...' : 'Создать счёт'}
-            </motion.button>
+            </MotionButton>
 
-            <motion.button
+            <MotionButton
               onClick={() => setStep('welcome')}
-              className="btn-ghost"
-              style={{ width: '100%' }}
+              variant="outline"
+              size="lg"
+              className="w-full"
               whileTap={{ scale: 0.97 }}
             >
               Назад
-            </motion.button>
+            </MotionButton>
           </motion.div>
         )}
 
@@ -195,7 +199,7 @@ export function SetupWizard({ userId }: Props) {
               animate={{ scale: 1 }}
               transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
             >
-              <MdCheckCircle size={64} color="hsl(155, 100%, 62%)" />
+              <CheckCircle2 size={64} className="text-[var(--green)]" />
             </motion.div>
 
             <div>
@@ -213,14 +217,15 @@ export function SetupWizard({ userId }: Props) {
               Вы можете добавлять операции прямо здесь или через кнопки бота в Telegram
             </motion.div>
 
-            <motion.button
+            <MotionButton
               onClick={() => window.location.reload()}
-              className="btn-primary"
-              style={{ width: '100%' }}
+              variant="default"
+              size="lg"
+              className="w-full"
               whileTap={{ scale: 0.97 }}
             >
               Начать пользоваться
-            </motion.button>
+            </MotionButton>
           </motion.div>
         )}
       </AnimatePresence>

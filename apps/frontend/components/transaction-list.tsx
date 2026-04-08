@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdClose, MdAccessTime, MdSwapHoriz, MdEdit, MdCheck } from 'react-icons/md'
+import { X, Clock, ArrowLeftRight, Pencil, Check } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import { getCategoryIcon } from '@/lib/icon-map'
 import { useState } from 'react'
 
@@ -143,7 +144,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="skeleton" style={{ height: '3.5rem' }} />
+          <Skeleton key={i} className="h-14 rounded-[var(--radius-xs)]" />
         ))}
       </div>
     )
@@ -239,7 +240,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                     flexShrink: 0,
                     fontSize: '1.25rem',
                   }}>
-                    {isTransfer ? <MdSwapHoriz size={22} color={getTransactionColor()} /> : getCategoryIcon(category?.icon || '')}
+                    {isTransfer ? <ArrowLeftRight size={22} color={getTransactionColor()} /> : getCategoryIcon(category?.icon || '')}
                   </div>
 
                   {/* Middle: description + type */}
@@ -255,7 +256,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                       {displayDesc}
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.2rem' }}>
-                      <MdAccessTime size={10} color="var(--text-muted)" />
+                      <Clock size={10} color="var(--text-muted)" />
                       {isTransfer ? (
                         <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
                           {transfer?.from} → {transfer?.to}
@@ -299,7 +300,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                         whileHover={{ opacity: 1 }}
                         whileTap={{ scale: 0.85 }}
                       >
-                        <MdEdit size={14} />
+                        <Pencil size={14} />
                       </motion.button>
                     )}
 
@@ -319,7 +320,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                       whileHover={{ opacity: 1 }}
                       whileTap={{ scale: 0.85 }}
                     >
-                      <MdClose size={14} />
+                      <X size={14} />
                     </motion.button>
                   </div>
                 </motion.div>
@@ -464,7 +465,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                               opacity: updateMutation.isPending ? 0.7 : 1,
                             }}
                           >
-                            <MdCheck size={14} />
+                            <Check size={14} />
                             Сохранить
                           </motion.button>
                         </div>

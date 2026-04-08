@@ -1,14 +1,14 @@
 'use client'
 
 import { useFinanceStore } from '@/store/finance'
-import { MdHome, MdHistory, MdSettings, MdPsychology } from 'react-icons/md'
+import { Home, Brain, History, Settings } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const tabs = [
-  { id: 'dashboard' as const, icon: MdHome, label: 'Главная' },
-  { id: 'ai' as const, icon: MdPsychology, label: 'AI' },
-  { id: 'history' as const, icon: MdHistory, label: 'История' },
-  { id: 'settings' as const, icon: MdSettings, label: 'Настройки' },
+  { id: 'dashboard' as const, icon: Home, label: 'Главная' },
+  { id: 'ai' as const, icon: Brain, label: 'AI' },
+  { id: 'history' as const, icon: History, label: 'История' },
+  { id: 'settings' as const, icon: Settings, label: 'Настройки' },
 ]
 
 export function BottomNav() {

@@ -6,7 +6,8 @@ import { formatCurrency } from '@/lib/utils'
 import { fetchRates, convertToUSD, convertFromUSD } from '@/lib/currency'
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
-import { MdVisibility } from 'react-icons/md'
+import { Eye } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface Props {
   userId: number
@@ -118,7 +119,7 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
             touchAction: 'manipulation',
           }}
         >
-          <MdVisibility size={13} color="var(--accent)" />
+          <Eye size={13} className="text-primary" />
           <span style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--accent)', textTransform: 'uppercase' }}>
             {mainCurrency}
           </span>
@@ -131,7 +132,7 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
 
       {/* Large balance */}
       {isLoading ? (
-        <div className="skeleton" style={{ height: '3rem', width: '12rem' }} />
+        <Skeleton className="h-12 w-48 rounded-[var(--radius-xs)]" />
       ) : (
         <motion.p
           style={{

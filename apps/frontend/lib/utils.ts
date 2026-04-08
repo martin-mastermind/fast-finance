@@ -11,9 +11,9 @@ export function formatCurrency(amount: number, currency = 'RUB'): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   })
-  
+
   const sign = amount < 0 ? '-' : ''
-  
+
   if (currency === 'BYN') {
     return `${sign}${formatted} Br`
   }

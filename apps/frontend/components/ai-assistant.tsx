@@ -5,7 +5,8 @@ import { useAuthStore } from '@/store/auth'
 import { useAiStore, type ChatMessage } from '@/store/ai'
 import { createApiClient } from '@/lib/api'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdSend, MdDelete, MdClose, MdPsychology } from 'react-icons/md'
+import { Send, Trash2, Brain } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 function renderMarkdown(text: string): ReactElement[] {
   const lines = text.split('\n')
@@ -131,7 +132,7 @@ export function AiAssistant() {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <MdPsychology size={18} color="white" />
+            <Brain size={18} className="text-white" />
           </div>
           <div>
             <h2 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
@@ -143,25 +144,15 @@ export function AiAssistant() {
           </div>
         </div>
         {messages.length > 0 && (
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleClear}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.25rem',
-              padding: '0.375rem 0.75rem',
-              background: 'var(--bg-elevated)',
-              border: '1px solid var(--border)',
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontSize: '0.75rem',
-              color: 'var(--text-secondary)',
-              WebkitAppearance: 'none',
-            }}
+            className="gap-1 text-muted-foreground"
           >
-            <MdDelete size={14} />
+            <Trash2 size={14} />
             Очистить
-          </button>
+          </Button>
         )}
       </div>
 
@@ -173,24 +164,14 @@ export function AiAssistant() {
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
             {quickQuestions.map((q) => (
-              <button
+              <Button
                 key={q}
-                onClick={() => {
-                  setInput(q)
-                }}
-                style={{
-                  padding: '0.375rem 0.625rem',
-                  background: 'var(--glass-bg)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '1rem',
-                  fontSize: '0.6875rem',
-                  color: 'var(--text)',
-                  cursor: 'pointer',
-                  WebkitAppearance: 'none',
-                }}
+                variant="outline"
+                className="rounded-full h-7 text-[0.6875rem] px-2.5 bg-[var(--glass-bg)] text-foreground"
+                onClick={() => setInput(q)}
               >
                 {q}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -307,7 +288,7 @@ export function AiAssistant() {
             transition: 'opacity 150ms ease',
           }}
         >
-          <MdSend size={18} color={input.trim() && !isLoading ? 'white' : 'var(--text-muted)'} />
+          <Send size={18} color={input.trim() && !isLoading ? 'white' : 'var(--text-muted)'} />
         </button>
       </div>
     </div>

@@ -4,8 +4,11 @@ import { useState, useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { motion } from 'framer-motion'
-import { MdCheck, MdAdd, MdRemove, MdSwapHoriz } from 'react-icons/md'
+import { Check, Plus, Minus, ArrowLeftRight } from 'lucide-react'
 import { useFinanceStore } from '@/store/finance'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { MotionButton } from '@/components/ui/motion-button'
 import { getCategoryIcon } from '@/lib/icon-map'
 
 interface Props {
@@ -155,7 +158,7 @@ export function AddTransaction({ userId, onClose }: Props) {
           }}
           whileTap={{ scale: 0.97 }}
         >
-          <MdAdd size={18} />
+          <Plus size={18} />
           Доход
         </motion.button>
         <motion.button
@@ -180,7 +183,7 @@ export function AddTransaction({ userId, onClose }: Props) {
           }}
           whileTap={{ scale: 0.97 }}
         >
-          <MdRemove size={18} />
+          <Minus size={18} />
           Расход
         </motion.button>
         <motion.button
@@ -205,7 +208,7 @@ export function AddTransaction({ userId, onClose }: Props) {
           }}
           whileTap={{ scale: 0.97 }}
         >
-          <MdSwapHoriz size={18} />
+          <ArrowLeftRight size={18} />
           Перевод
         </motion.button>
       </motion.div>
@@ -218,24 +221,17 @@ export function AddTransaction({ userId, onClose }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.05 }}
       >
-        <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+        <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
           Сумма
-        </label>
+        </Label>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <input
+          <Input
             type="text"
             inputMode="decimal"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="input-field"
-            style={{ 
-              flex: 1, 
-              fontSize: '1.5rem', 
-              fontWeight: 300,
-              textAlign: 'right',
-              paddingRight: '0.5rem',
-            }}
+            className="flex-1 text-2xl font-light text-right pr-2"
           />
           <span style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
             {CURRENCY_LABELS[currency] || currency}
@@ -251,15 +247,14 @@ export function AddTransaction({ userId, onClose }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.1 }}
       >
-        <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+        <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
           Описание (необязательно)
-        </label>
-        <input
+        </Label>
+        <Input
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Комментарий"
-          className="input-field"
         />
       </motion.div>
 
@@ -269,9 +264,9 @@ export function AddTransaction({ userId, onClose }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.15 }}
       >
-        <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+        <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
           {transactionType === 'transfer' ? 'Откуда' : 'Счёт'}
-        </label>
+        </Label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
           {accounts?.map((a, idx) => {
             const isSelected = selectedAccountId === a.id
@@ -315,9 +310,9 @@ export function AddTransaction({ userId, onClose }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.18 }}
         >
-          <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+          <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
             Куда
-          </label>
+          </Label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {accounts?.filter(a => a.id !== selectedAccountId).map((a, idx) => {
               const isSelected = toAccountId === a.id
@@ -359,9 +354,9 @@ export function AddTransaction({ userId, onClose }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.2 }}
         >
-          <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+          <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
             Категория
-          </label>
+          </Label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {filteredCategories.map((c, idx) => {
               const isSelected = selectedCategoryId === c.id
@@ -401,13 +396,13 @@ export function AddTransaction({ userId, onClose }: Props) {
       )}
 
       {/* Submit */}
-      <motion.button
+      <MotionButton
         onClick={handleSubmit}
         disabled={isSubmitDisabled}
-        className="btn-primary"
-        style={{ 
-          width: '100%', 
-          padding: '0.875rem',
+        variant="default"
+        size="lg"
+        className="w-full"
+        style={{
           backgroundColor: transactionType === 'income' ? 'var(--green)' : transactionType === 'transfer' ? '#F59E0B' : 'var(--red)',
         }}
         whileTap={{ scale: isSubmitDisabled ? 1 : 0.97 }}
@@ -420,12 +415,12 @@ export function AddTransaction({ userId, onClose }: Props) {
             animate={{ rotate: 360 }}
             transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
           >
-            <MdCheck size={20} />
+            <Check size={20} />
           </motion.div>
         ) : (
           <span>{transactionType === 'transfer' ? 'Перевести' : 'Сохранить'}</span>
         )}
-      </motion.button>
+      </MotionButton>
 
       {/* No accounts hint */}
       {accounts?.length === 0 && (

@@ -10,7 +10,9 @@ import { BottomNav } from './bottom-nav'
 import { SettingsPanel } from './settings-panel'
 import { AiAssistant } from './ai-assistant'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdSettings, MdAdd, MdRemove, MdClose, MdSwapHoriz } from 'react-icons/md'
+import { Settings, Plus, Minus, ArrowLeftRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 
 const pageVariants = {
   initial: { opacity: 0, y: 6 },
@@ -19,9 +21,9 @@ const pageVariants = {
 }
 
 const ACTION_BUTTONS = [
-  { label: 'Доход', icon: MdAdd, color: 'var(--green)' },
-  { label: 'Перевести', icon: MdSwapHoriz, color: '#F59E0B' },
-  { label: 'Расход', icon: MdRemove, color: 'var(--red)' },
+  { label: 'Доход', icon: Plus, color: 'var(--green)' },
+  { label: 'Перевести', icon: ArrowLeftRight, color: '#F59E0B' },
+  { label: 'Расход', icon: Minus, color: 'var(--red)' },
 ]
 
 export function Dashboard() {
@@ -54,22 +56,14 @@ export function Dashboard() {
               </h1>
 
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button 
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => setActiveTab('settings')}
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '0.5rem',
-                    backgroundColor: 'var(--bg-elevated)',
-                    border: '1px solid var(--border)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    WebkitAppearance: 'none',
-                  }}>
-                  <MdSettings size={18} color="var(--text-secondary)" />
-                </button>
+                  className="bg-[var(--bg-elevated)] border border-border"
+                >
+                  <Settings size={18} className="text-[var(--text-secondary)]" />
+                </Button>
               </div>
             </motion.div>
 
@@ -151,21 +145,13 @@ export function Dashboard() {
                 <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>
                   Последние операции
                 </h2>
-                <button
+                <Button
+                  variant="link"
+                  className="text-primary text-[0.8125rem] font-medium p-0 h-auto"
                   onClick={() => setActiveTab('history')}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '0.8125rem',
-                    fontWeight: 500,
-                    color: 'var(--accent)',
-                    WebkitAppearance: 'none',
-                    padding: 0,
-                  }}
                 >
                   Все
-                </button>
+                </Button>
               </div>
               <TransactionList userId={user!.id} currency={user?.currency || 'USD'} limit={5} />
             </motion.div>
@@ -236,61 +222,18 @@ export function Dashboard() {
       </AnimatePresence>
 
       {/* Add Transaction Modal */}
-      <AnimatePresence>
-        {isAddModalOpen && (
-          <motion.div
-            style={{
-              position: 'fixed',
-              inset: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              display: 'flex',
-              alignItems: 'flex-end',
-              zIndex: 1000,
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setAddModalOpen(false)}
-          >
-            <motion.div
-              style={{
-                width: '100%',
-                maxHeight: '90vh',
-                backgroundColor: 'var(--bg)',
-                borderTopLeftRadius: '1.5rem',
-                borderTopRightRadius: '1.5rem',
-                padding: '1.5rem',
-                paddingBottom: 'calc(1.5rem + var(--tg-safe-area-inset-bottom, 0px))',
-                overflowY: 'auto',
-              }}
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)' }}>
-                  Новая операция
-                </h2>
-                <button
-                  onClick={() => setAddModalOpen(false)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '0.25rem',
-                    WebkitAppearance: 'none',
-                  }}
-                >
-                  <MdClose size={24} color="var(--text-secondary)" />
-                </button>
-              </div>
-              <AddTransaction userId={user!.id} onClose={() => setAddModalOpen(false)} />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Sheet open={isAddModalOpen} onOpenChange={setAddModalOpen}>
+        <SheetContent
+          side="bottom"
+          className="glass-card-strong rounded-t-[var(--radius)] overflow-y-auto"
+          style={{ maxHeight: '90vh', paddingBottom: 'calc(1.5rem + var(--tg-safe-area-inset-bottom, 0px))' }}
+        >
+          <SheetHeader>
+            <SheetTitle>Новая операция</SheetTitle>
+          </SheetHeader>
+          <AddTransaction userId={user!.id} onClose={() => setAddModalOpen(false)} />
+        </SheetContent>
+      </Sheet>
 
       <BottomNav />
     </div>
