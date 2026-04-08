@@ -1,5 +1,5 @@
 import { db, accounts } from '@fast-finance/db'
-import { eq, and, sql } from 'drizzle-orm'
+import { eq, and, sql, asc } from 'drizzle-orm'
 import type { IAccountRepository } from '../../domain/interfaces/account-repository.interface'
 import type { Account, AccountCreateInput, AccountUpdateInput } from '../../domain/entities/account.entity'
 import { toAccount } from '../../domain/entities/account.entity'
@@ -21,7 +21,8 @@ export class DrizzleAccountRepository implements IAccountRepository {
       .select()
       .from(accounts)
       .where(eq(accounts.userId, userId))
-    
+      .orderBy(asc(accounts.sortOrder), asc(accounts.id))
+
     return result.map(toAccount)
   }
 
@@ -33,9 +34,10 @@ export class DrizzleAccountRepository implements IAccountRepository {
         name: input.name,
         balance: input.balance ?? 0,
         currency: input.currency ?? 'RUB',
+        type: input.type ?? 'checking',
       })
       .returning()
-    
+
     return toAccount(account)
   }
 

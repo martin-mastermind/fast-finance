@@ -35,6 +35,7 @@ export const accountsRouter = new Elysia({ prefix: '/accounts' })
       name: t.String(),
       balance: t.Optional(t.Number()),
       currency: t.Optional(t.Union([t.Literal('RUB'), t.Literal('BYN'), t.Literal('USD')])),
+      type: t.Optional(t.Union([t.Literal('checking'), t.Literal('savings')])),
     }),
   })
   .patch('/:id', async ({ params, body, headers, set }) => {
@@ -51,6 +52,8 @@ export const accountsRouter = new Elysia({ prefix: '/accounts' })
       name: t.Optional(t.String()),
       balance: t.Optional(t.Number()),
       currency: t.Optional(t.Union([t.Literal('RUB'), t.Literal('BYN'), t.Literal('USD')])),
+      sortOrder: t.Optional(t.Number()),
+      type: t.Optional(t.Union([t.Literal('checking'), t.Literal('savings')])),
     }),
   })
   .delete('/:id', async ({ params, headers, set }) => {

@@ -26,6 +26,8 @@ export const accounts = pgTable('accounts', {
   name: text('name').notNull(),
   balance: doublePrecision('balance').default(0).notNull(),
   currency: text('currency', { enum: ['RUB', 'BYN', 'USD'] }).default('RUB').notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  type: text('type', { enum: ['checking', 'savings'] }).default('checking').notNull(),
 }, (t) => [
   index('accounts_user_id_idx').on(t.userId),
 ])

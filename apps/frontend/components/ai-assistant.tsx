@@ -1,11 +1,50 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ReactElement } from 'react'
 import { useAuthStore } from '@/store/auth'
 import { useAiStore, type ChatMessage } from '@/store/ai'
 import { createApiClient } from '@/lib/api'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MdSend, MdDelete, MdClose, MdPsychology } from 'react-icons/md'
+
+function renderMarkdown(text: string): ReactElement[] {
+  const lines = text.split('\n')
+  const result: ReactElement[] = []
+  let key = 0
+
+  for (const line of lines) {
+    if (line.trim() === '') {
+      result.push(<br key={key++} />)
+      continue
+    }
+
+    // Bullet list
+    const isBullet = /^[\-•]\s/.test(line.trim())
+    const content = isBullet ? line.trim().replace(/^[\-•]\s/, '') : line
+
+    // Process bold (**text**)
+    const parts = content.split(/(\*\*[^*]+\*\*)/)
+    const rendered = parts.map((part, i) => {
+      if (/^\*\*[^*]+\*\*$/.test(part)) {
+        return <strong key={i}>{part.slice(2, -2)}</strong>
+      }
+      return part
+    })
+
+    if (isBullet) {
+      result.push(
+        <div key={key++} style={{ display: 'flex', gap: '0.375rem', marginTop: '0.25rem' }}>
+          <span style={{ flexShrink: 0, marginTop: '0.1rem' }}>•</span>
+          <span>{rendered}</span>
+        </div>
+      )
+    } else {
+      result.push(<div key={key++}>{rendered}</div>)
+    }
+  }
+
+  return result
+}
 
 export function AiAssistant() {
   const { user } = useAuthStore()
@@ -184,7 +223,7 @@ export function AiAssistant() {
               <div
                 style={{
                   padding: '0.75rem 1rem',
-                  borderRadius: msg.role === 'user' 
+                  borderRadius: msg.role === 'user'
                     ? '1rem 1rem 0.25rem 1rem'
                     : '1rem 1rem 1rem 0.25rem',
                   background: msg.role === 'user'
@@ -193,10 +232,9 @@ export function AiAssistant() {
                   color: msg.role === 'user' ? 'white' : 'var(--text)',
                   fontSize: '0.875rem',
                   lineHeight: 1.5,
-                  whiteSpace: 'pre-wrap',
                 }}
               >
-                {msg.content}
+                {msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
               </div>
             </motion.div>
           ))}

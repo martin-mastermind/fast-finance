@@ -38,10 +38,10 @@ export function createApiClient(userId: number) {
         request<{ currency: string }>('/users/currency', { method: 'PATCH', body: JSON.stringify({ currency }) }, userId),
     },
     accounts: {
-      list: () => request<Array<{ id: number; name: string; balance: number; currency: string }>>('/accounts', {}, userId),
-      create: (data: { name: string; balance?: number; currency?: string }) =>
+      list: () => request<Array<{ id: number; name: string; balance: number; currency: string; sortOrder: number; type: string }>>('/accounts', {}, userId),
+      create: (data: { name: string; balance?: number; currency?: string; type?: string }) =>
         request('/accounts', { method: 'POST', body: JSON.stringify(data) }, userId),
-      update: (id: number, data: { name?: string; balance?: number; currency?: string }) =>
+      update: (id: number, data: { name?: string; balance?: number; currency?: string; sortOrder?: number; type?: string }) =>
         request(`/accounts/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, userId),
       delete: (id: number) =>
         request(`/accounts/${id}`, { method: 'DELETE' }, userId),
@@ -79,6 +79,8 @@ export function createApiClient(userId: number) {
         currency: string
         description?: string
       }) => request('/transactions/transfer', { method: 'POST', body: JSON.stringify(data) }, userId),
+      update: (id: string, data: { accountId?: number; categoryId?: number; amount?: number; description?: string; date?: string }) =>
+        request(`/transactions/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, userId),
       delete: (id: string) =>
         request(`/transactions/${id}`, { method: 'DELETE' }, userId),
     },

@@ -1,7 +1,8 @@
 import Groq from 'groq-sdk'
-import { db, transactions, categories, accounts, aiChatMessages } from '@fast-finance/db'
-import { eq, desc, gte, lt, and, sql } from 'drizzle-orm'
+import { db, transactions, categories, accounts, aiChatMessages, users, currencyRates } from '@fast-finance/db'
+import { eq, desc } from 'drizzle-orm'
 import { TransactionService } from './transaction.service'
+import { CurrencyService } from './currency.service'
 
 if (!process.env.GROQ_API_KEY) {
   throw new Error('Missing required environment variable: GROQ_API_KEY')
@@ -13,43 +14,54 @@ interface ChatMessage {
   content: string
 }
 
-function getSystemPrompt(): string {
-  return `Ты — финансовый ассистент в приложении Fast Finance. Твоя задача — помогать пользователям управлять личными финансами.
+function getSystemPrompt(displayCurrency: string): string {
+  const currencySymbols: Record<string, string> = { USD: '$', RUB: '₽', BYN: 'Br' }
+  const symbol = currencySymbols[displayCurrency] || displayCurrency
 
-Отвечай кратко и по делу на русском языке. Используй эмодзи для наглядности.
+  return `Ты — опытный финансовый советник с 15-летним стажем работы в личных финансах и управлении бюджетом. Твоя задача — давать профессиональные, конкретные и actionable советы на основе реальных данных пользователя.
 
-Ты можешь:
-- Анализировать расходы и доходы
-- Давать советы по экономии
-- Помогать с бюджетированием
-- Объяснять финансовые термины простым языком
+ВАЖНО: Всегда отвечай ТОЛЬКО на русском языке, даже если вопрос задан на другом языке.
 
-Если пользователь спрашивает что-то не связанное с финансами, вежливо укажи, что твоя специализация — личные финансы.
+Валюта пользователя: ${displayCurrency} (${symbol}). Все суммы в ответах указывай в ${displayCurrency}.
+
+Принципы работы:
+- Анализируй реальные данные пользователя, не давай общих фраз
+- Используй конкретные числа и проценты из контекста
+- Давай 2-3 конкретных actionable рекомендации, а не общие советы
+- Применяй финансовые концепции (правило 50/30/20, фонд экстренных ситуаций, диверсификация и др.)
+- Если данных недостаточно — скажи что именно нужно для анализа
 
 Формат ответов:
-- Используй списки для нескольких пунктов
-- Выделяй ключевые числа жирным
-- Добавляй релевантные эмодзи`
+- Структура: краткий анализ → конкретные рекомендации
+- **Жирный** для ключевых сумм и показателей
+- Списки для рекомендаций (2-3 пункта максимум)
+- Эмодзи умеренно — только там, где усиливают смысл
+- Ответ лаконичный, без воды
+
+Если вопрос не связан с финансами — вежливо объясни, что специализируешься на личных финансах.`
 }
 
 export const AiService = {
   async chat(userId: number, userMessage: string): Promise<string> {
     const messages = await this.getChatHistory(userId)
-    
-    const systemMsg: ChatMessage = { role: 'system', content: getSystemPrompt() }
+
+    const [userRecord] = await db.select({ currency: users.currency }).from(users).where(eq(users.id, userId)).limit(1)
+    const displayCurrency = userRecord?.currency || 'USD'
+
+    const systemMsg: ChatMessage = { role: 'system', content: getSystemPrompt(displayCurrency) }
     const userMsg: ChatMessage = { role: 'user', content: userMessage }
-    
-    const financialContext = await this.getFinancialContext(userId)
+
+    const financialContext = await this.getFinancialContext(userId, displayCurrency)
     const contextMsg: ChatMessage = {
-      role: 'user',
-      content: `Контекст о пользователе:\n${financialContext}`
+      role: 'system',
+      content: `Финансовые данные пользователя:\n${financialContext}`
     }
-    
+
     const allMessages = [systemMsg, contextMsg, ...messages.slice(-10), userMsg]
-    
+
     try {
       const completion = await groq.chat.completions.create({
-        model: 'llama-3.1-8b-instant',
+        model: 'llama-3.3-70b-versatile',
         messages: allMessages as Groq.Chat.ChatCompletionMessage[],
         temperature: 0.7,
         max_tokens: 1024,
@@ -76,13 +88,24 @@ export const AiService = {
     }
   },
 
-  async getFinancialContext(userId: number): Promise<string> {
+  async getFinancialContext(userId: number, displayCurrency: string): Promise<string> {
     try {
+      const rates = await CurrencyService.getRates()
+
+      const convertToDisplay = (amount: number, fromCurrency: string): number => {
+        const fromRate = rates[fromCurrency] ?? 1
+        const toRate = rates[displayCurrency] ?? 1
+        return (amount * fromRate) / toRate
+      }
+
+      const fmt = (amount: number) => `${amount.toFixed(2)} ${displayCurrency}`
+
       const stats = await TransactionService.getTransactionStats(userId, 'month')
-      
+
       const recentTransactions = await db
         .select({
           amount: transactions.amount,
+          currency: transactions.currency,
           description: transactions.description,
           date: transactions.date,
         })
@@ -90,41 +113,47 @@ export const AiService = {
         .where(eq(transactions.userId, userId))
         .orderBy(desc(transactions.date))
         .limit(10)
-      
+
       const userAccounts = await db
-        .select({ name: accounts.name, balance: accounts.balance })
+        .select({ name: accounts.name, balance: accounts.balance, currency: accounts.currency })
         .from(accounts)
         .where(eq(accounts.userId, userId))
-      
-      let context = `Текущий месяц:\n`
-      context += `- Общий доход: ${stats.totalIncome.toFixed(2)}\n`
-      context += `- Общие расходы: ${stats.totalExpense.toFixed(2)}\n`
-      context += `- Баланс: ${stats.balance.toFixed(2)}\n`
-      
+
+      // Stats are already in USD (base), convert to display currency
+      const usdToDisplay = (amount: number) => convertToDisplay(amount, 'USD')
+
+      let context = `Валюта отображения: ${displayCurrency}\n\nТекущий месяц:\n`
+      context += `- Общий доход: ${fmt(usdToDisplay(stats.totalIncome))}\n`
+      context += `- Общие расходы: ${fmt(usdToDisplay(stats.totalExpense))}\n`
+      context += `- Баланс (доходы − расходы): ${fmt(usdToDisplay(stats.balance))}\n`
+
       if (stats.expenseByCategory.length > 0) {
         context += `\nРасходы по категориям:\n`
         stats.expenseByCategory.forEach(cat => {
-          context += `- ${cat.categoryName}: ${cat.amount.toFixed(2)} (${cat.percentage}%)\n`
+          context += `- ${cat.categoryName}: ${fmt(usdToDisplay(cat.amount))} (${cat.percentage}%)\n`
         })
       }
-      
+
       if (userAccounts.length > 0) {
         context += `\nСчета пользователя:\n`
         userAccounts.forEach(acc => {
-          context += `- ${acc.name}: ${acc.balance.toFixed(2)}\n`
+          const inDisplay = convertToDisplay(Number(acc.balance), acc.currency)
+          context += `- ${acc.name} (${acc.currency}): ${fmt(inDisplay)}\n`
         })
       }
-      
+
       if (recentTransactions.length > 0) {
         context += `\nПоследние операции:\n`
         recentTransactions.slice(0, 5).forEach(tx => {
-          const sign = tx.amount > 0 ? '+' : ''
+          const inDisplay = convertToDisplay(Number(tx.amount), tx.currency)
+          const sign = inDisplay > 0 ? '+' : ''
           const date = new Date(tx.date).toLocaleDateString('ru')
-          context += `- ${date}: ${sign}${tx.amount.toFixed(2)}${tx.description ? ` (${tx.description})` : ''}\n`
+          const desc = tx.description ? ` (${tx.description})` : ''
+          context += `- ${date}: ${sign}${fmt(inDisplay)}${desc}\n`
         })
       }
-      
-      return context || 'Нет данных о финансах пользователя'
+
+      return context
     } catch (error) {
       console.error('Error getting financial context:', error)
       return 'Не удалось получить данные о финансах'

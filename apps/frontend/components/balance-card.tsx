@@ -3,9 +3,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
-import { convertToUSD, convertFromUSD } from '@/lib/currency'
+import { fetchRates, convertToUSD, convertFromUSD } from '@/lib/currency'
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { MdVisibility } from 'react-icons/md'
 
 interface Props {
@@ -31,27 +31,42 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
 
   const [displayBalance, setDisplayBalance] = useState(0)
   const mainCurrency = userCurrency || 'USD'
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     if (isLoading || !accounts) return
-    const totalUSD = accounts.reduce((sum, a) => sum + convertToUSD(a.balance, a.currency), 0)
-    const totalInCurrency = convertFromUSD(totalUSD, mainCurrency)
-    console.log('Balance effect:', { totalUSD, totalInCurrency, currency: mainCurrency, accountCount: accounts.length })
-    
-    const start = displayBalance || 0
-    const end = totalInCurrency
-    const diff = end - start
-    const steps = 30
-    const stepValue = diff / steps
-    let current = 0
+    let cancelled = false
 
-    const interval = setInterval(() => {
-      current++
-      setDisplayBalance(start + stepValue * current)
-      if (current >= steps) clearInterval(interval)
-    }, 16)
+    fetchRates().then(rates => {
+      if (cancelled) return
+      const totalUSD = accounts.reduce((sum, a) => sum + convertToUSD(a.balance, a.currency, rates), 0)
+      const totalInCurrency = convertFromUSD(totalUSD, mainCurrency, rates)
 
-    return () => clearInterval(interval)
+      const start = displayBalance || 0
+      const end = totalInCurrency
+      const diff = end - start
+      const steps = 30
+      const stepValue = diff / steps
+      let current = 0
+
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      intervalRef.current = setInterval(() => {
+        current++
+        setDisplayBalance(start + stepValue * current)
+        if (current >= steps && intervalRef.current) {
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
+      }, 16)
+    })
+
+    return () => {
+      cancelled = true
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
   }, [accounts, isLoading, mainCurrency])
 
   const handleCurrencyCycle = () => {
@@ -158,8 +173,9 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + idx * 0.05, type: 'spring', stiffness: 300, damping: 25 }}
             >
-              <p className="text-hint" style={{ fontSize: '0.6rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                {account.name} ({account.currency})
+              <p className="text-hint" style={{ fontSize: '0.6rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                <span>{account.type === 'savings' ? '🐷' : '🏦'}</span>
+                <span>{account.name} ({account.currency})</span>
               </p>
               <p style={{ fontWeight: 500, fontSize: '0.8125rem', fontVariantNumeric: 'tabular-nums', color: 'var(--text)', marginTop: '0.15rem' }}>
                 {formatCurrency(account.balance, account.currency)}

@@ -36,10 +36,11 @@ export const CurrencyService = {
       const data = await response.json() as { rates: Record<string, number> }
       const rates = data.rates
 
+      // API returns "1 USD = X currency", so rateToUSD = 1/X (how many USD per 1 unit of currency)
       const toUpdate = [
         { currency: 'USD', rateToUSD: 1 },
-        { currency: 'RUB', rateToUSD: rates.RUB || DEFAULT_RATES.RUB },
-        { currency: 'BYN', rateToUSD: rates.BYN || DEFAULT_RATES.BYN },
+        { currency: 'RUB', rateToUSD: rates.RUB ? 1 / rates.RUB : DEFAULT_RATES.RUB },
+        { currency: 'BYN', rateToUSD: rates.BYN ? 1 / rates.BYN : DEFAULT_RATES.BYN },
       ]
 
       for (const rate of toUpdate) {

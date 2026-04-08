@@ -1,7 +1,8 @@
 import { db, transactions, accounts, categories } from '@fast-finance/db'
 import { eq, and, desc, count, sql, gte, lt, inArray } from 'drizzle-orm'
+import { CurrencyService } from '../../domain/currency.service'
 import type { ITransactionRepository } from '../../domain/interfaces/transaction-repository.interface'
-import type { Transaction, TransactionCreateInput, TransferInput, TransactionStats } from '../../domain/entities/transaction.entity'
+import type { Transaction, TransactionCreateInput, TransactionUpdateInput, TransferInput, TransactionStats } from '../../domain/entities/transaction.entity'
 import { toTransaction } from '../../domain/entities/transaction.entity'
 import { NotFoundError } from '../../domain/errors/domain-errors'
 
@@ -73,6 +74,24 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
     return toTransaction(tx)
   }
 
+  async update(id: string, userId: number, input: TransactionUpdateInput): Promise<Transaction> {
+    const updateData: Record<string, unknown> = {}
+    if (input.accountId !== undefined) updateData.accountId = input.accountId
+    if (input.categoryId !== undefined) updateData.categoryId = input.categoryId
+    if (input.amount !== undefined) updateData.amount = input.amount
+    if (input.description !== undefined) updateData.description = input.description
+    if (input.date !== undefined) updateData.date = new Date(input.date)
+
+    const [updated] = await db
+      .update(transactions)
+      .set(updateData)
+      .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
+      .returning()
+
+    if (!updated) throw new NotFoundError('Transaction not found')
+    return toTransaction(updated)
+  }
+
   async delete(id: string, userId: number): Promise<Transaction> {
     const [deleted] = await db
       .delete(transactions)
@@ -86,12 +105,8 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
   async getStats(userId: number, period: string): Promise<TransactionStats> {
     const { start, end } = getDateRange(period)
 
-    const fallbackRates: Record<string, number> = {
-      USD: 1,
-      RUB: 0.0115,
-      BYN: 0.31,
-    }
-    const getRate = (currency: string): number => fallbackRates[currency] ?? 1
+    const rates = await CurrencyService.getRates()
+    const getRate = (currency: string): number => rates[currency] ?? 1
 
     const allTransactions = await db
       .select({

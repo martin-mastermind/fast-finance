@@ -39,6 +39,25 @@ export const transactionsRouter = new Elysia({ prefix: '/transactions' })
       date: t.Optional(t.String()),
     }),
   })
+  .patch('/:id', async ({ params, body, headers, set }) => {
+    const userId = parseInt(headers['x-user-id'] || '0')
+    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+    try {
+      return await transactionUseCases.updateTransaction(userId, params.id, body)
+    } catch (e) {
+      if (e instanceof AccessDeniedError) { set.status = 403; return { error: e.message } }
+      if (e instanceof NotFoundError) { set.status = 404; return { error: e.message } }
+      throw e
+    }
+  }, {
+    body: t.Object({
+      accountId: t.Optional(t.Number()),
+      categoryId: t.Optional(t.Number()),
+      amount: t.Optional(t.Number({ minimum: -1_000_000_000, maximum: 1_000_000_000 })),
+      description: t.Optional(t.String({ maxLength: 500 })),
+      date: t.Optional(t.String()),
+    }),
+  })
   .delete('/:id', async ({ params, headers, set }) => {
     const userId = parseInt(headers['x-user-id'] || '0')
     if (!userId) { set.status = 401; return { error: 'Unauthorized' } }

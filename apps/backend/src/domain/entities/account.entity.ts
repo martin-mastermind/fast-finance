@@ -1,6 +1,7 @@
 import type { Account as DbAccount } from '@fast-finance/db'
 
 export type Currency = 'RUB' | 'BYN' | 'USD'
+export type AccountType = 'checking' | 'savings'
 
 export interface Account {
   id: number
@@ -8,20 +9,23 @@ export interface Account {
   name: string
   balance: number
   currency: Currency
-  createdAt: Date | null
-  updatedAt: Date | null
+  sortOrder: number
+  type: AccountType
 }
 
 export interface AccountCreateInput {
   name: string
   balance?: number
   currency?: Currency
+  type?: AccountType
 }
 
 export interface AccountUpdateInput {
   name?: string
   balance?: number
   currency?: Currency
+  sortOrder?: number
+  type?: AccountType
 }
 
 export function toAccount(dbAccount: DbAccount): Account {
@@ -31,7 +35,7 @@ export function toAccount(dbAccount: DbAccount): Account {
     name: dbAccount.name,
     balance: Number(dbAccount.balance),
     currency: dbAccount.currency as Currency,
-    createdAt: dbAccount.createdAt,
-    updatedAt: dbAccount.updatedAt,
+    sortOrder: dbAccount.sortOrder,
+    type: (dbAccount.type ?? 'checking') as AccountType,
   }
 }

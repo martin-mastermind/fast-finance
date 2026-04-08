@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MdAdd, MdDelete, MdClose, MdAccountBalance, MdCategory, MdEdit } from 'react-icons/md'
+import { MdAdd, MdDelete, MdClose, MdAccountBalance, MdCategory, MdEdit, MdArrowUpward, MdArrowDownward } from 'react-icons/md'
 import { useFinanceStore } from '@/store/finance'
 import { getCategoryIcon } from '@/lib/icon-map'
 
@@ -48,6 +48,7 @@ export function SettingsPanel({ userId }: Props) {
   const [isAddAccountOpen, setIsAddAccountOpen] = useState(false)
   const [newAccountName, setNewAccountName] = useState('')
   const [newAccountCurrency, setNewAccountCurrency] = useState('RUB')
+  const [newAccountType, setNewAccountType] = useState<'checking' | 'savings'>('checking')
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
 
   const { data: accounts } = useQuery({
@@ -61,13 +62,14 @@ export function SettingsPanel({ userId }: Props) {
   })
 
   const createAccountMutation = useMutation({
-    mutationFn: (data: { name: string; currency: string }) =>
+    mutationFn: (data: { name: string; currency: string; type: string }) =>
       api.accounts.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accounts', userId] })
       setIsAddAccountOpen(false)
       setNewAccountName('')
       setNewAccountCurrency('RUB')
+      setNewAccountType('checking')
     },
   })
 
@@ -77,6 +79,22 @@ export function SettingsPanel({ userId }: Props) {
       queryClient.invalidateQueries({ queryKey: ['accounts', userId] })
     },
   })
+
+  const updateAccountMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: { sortOrder?: number; type?: string } }) =>
+      api.accounts.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts', userId] })
+    },
+  })
+
+  function moveAccount(idx: number, direction: -1 | 1) {
+    if (!accounts) return
+    const otherIdx = idx + direction
+    if (otherIdx < 0 || otherIdx >= accounts.length) return
+    updateAccountMutation.mutate({ id: accounts[idx].id, data: { sortOrder: otherIdx } })
+    updateAccountMutation.mutate({ id: accounts[otherIdx].id, data: { sortOrder: idx } })
+  }
 
   const deleteCategoryMutation = useMutation({
     mutationFn: (id: number) => api.categories.delete(id),
@@ -147,31 +165,72 @@ export function SettingsPanel({ userId }: Props) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.05 }}
             >
-              <div>
-                <p style={{ fontWeight: 500, color: 'var(--text)', fontSize: '0.9375rem' }}>
-                  {account.name}
-                </p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>
-                  {CURRENCY_LABELS[account.currency]} • {formatCurrency(account.balance, account.currency)}
-                </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.1rem' }}>{account.type === 'savings' ? '🐷' : '🏦'}</span>
+                <div>
+                  <p style={{ fontWeight: 500, color: 'var(--text)', fontSize: '0.9375rem' }}>
+                    {account.name}
+                  </p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>
+                    {CURRENCY_LABELS[account.currency]} • {formatCurrency(account.balance, account.currency)}
+                  </p>
+                </div>
               </div>
-              <motion.button
-                onClick={() => deleteAccountMutation.mutate(account.id)}
-                style={{
-                  padding: '0.5rem',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--text-muted)',
-                  opacity: 0.5,
-                  transition: 'opacity 150ms ease',
-                  WebkitAppearance: 'none',
-                }}
-                whileHover={{ opacity: 1 }}
-                whileTap={{ scale: 0.85 }}
-              >
-                <MdDelete size={18} />
-              </motion.button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <motion.button
+                  onClick={() => moveAccount(idx, -1)}
+                  disabled={idx === 0}
+                  style={{
+                    padding: '0.375rem',
+                    background: 'none',
+                    border: 'none',
+                    cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                    color: 'var(--text-muted)',
+                    opacity: idx === 0 ? 0.2 : 0.5,
+                    transition: 'opacity 150ms ease',
+                    WebkitAppearance: 'none',
+                  }}
+                  whileHover={{ opacity: idx === 0 ? 0.2 : 1 }}
+                  whileTap={{ scale: idx === 0 ? 1 : 0.85 }}
+                >
+                  <MdArrowUpward size={16} />
+                </motion.button>
+                <motion.button
+                  onClick={() => moveAccount(idx, 1)}
+                  disabled={idx === (accounts?.length ?? 0) - 1}
+                  style={{
+                    padding: '0.375rem',
+                    background: 'none',
+                    border: 'none',
+                    cursor: idx === (accounts?.length ?? 0) - 1 ? 'not-allowed' : 'pointer',
+                    color: 'var(--text-muted)',
+                    opacity: idx === (accounts?.length ?? 0) - 1 ? 0.2 : 0.5,
+                    transition: 'opacity 150ms ease',
+                    WebkitAppearance: 'none',
+                  }}
+                  whileHover={{ opacity: idx === (accounts?.length ?? 0) - 1 ? 0.2 : 1 }}
+                  whileTap={{ scale: idx === (accounts?.length ?? 0) - 1 ? 1 : 0.85 }}
+                >
+                  <MdArrowDownward size={16} />
+                </motion.button>
+                <motion.button
+                  onClick={() => deleteAccountMutation.mutate(account.id)}
+                  style={{
+                    padding: '0.5rem',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--text-muted)',
+                    opacity: 0.5,
+                    transition: 'opacity 150ms ease',
+                    WebkitAppearance: 'none',
+                  }}
+                  whileHover={{ opacity: 1 }}
+                  whileTap={{ scale: 0.85 }}
+                >
+                  <MdDelete size={18} />
+                </motion.button>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -458,8 +517,43 @@ export function SettingsPanel({ userId }: Props) {
                   </div>
                 </div>
 
+                <div className="glass-card" style={{ padding: '1.25rem' }}>
+                  <label className="text-hint" style={{ display: 'block', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+                    Тип счёта
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    {([['checking', '🏦', 'Текущий'], ['savings', '🐷', 'Накопительный']] as const).map(([type, icon, label]) => (
+                      <motion.button
+                        key={type}
+                        onClick={() => setNewAccountType(type)}
+                        style={{
+                          flex: 1,
+                          padding: '0.75rem',
+                          borderRadius: '0.5rem',
+                          border: '1px solid',
+                          borderColor: newAccountType === type ? 'var(--accent)' : 'var(--border)',
+                          backgroundColor: newAccountType === type ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                          color: newAccountType === type ? 'var(--accent)' : 'var(--text-secondary)',
+                          fontWeight: 500,
+                          fontSize: '0.875rem',
+                          cursor: 'pointer',
+                          WebkitAppearance: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.375rem',
+                        }}
+                        whileTap={{ scale: 0.97 }}
+                      >
+                        <span>{icon}</span>
+                        <span>{label}</span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
                 <motion.button
-                  onClick={() => createAccountMutation.mutate({ name: newAccountName, currency: newAccountCurrency })}
+                  onClick={() => createAccountMutation.mutate({ name: newAccountName, currency: newAccountCurrency, type: newAccountType })}
                   disabled={!newAccountName.trim() || createAccountMutation.isPending}
                   className="btn-primary"
                   whileTap={{ scale: newAccountName.trim() && !createAccountMutation.isPending ? 0.97 : 1 }}

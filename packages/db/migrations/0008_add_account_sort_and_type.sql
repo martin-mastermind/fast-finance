@@ -1,0 +1,2 @@
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS sort_order integer NOT NULL DEFAULT 0;
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS type text NOT NULL DEFAULT 'checking';

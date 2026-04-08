@@ -1,6 +1,6 @@
 import type { ITransactionRepository } from '../interfaces/transaction-repository.interface'
 import type { IAccountRepository } from '../interfaces/account-repository.interface'
-import type { Transaction, TransactionCreateInput, TransferInput, TransactionStats } from '../entities/transaction.entity'
+import type { Transaction, TransactionCreateInput, TransactionUpdateInput, TransferInput, TransactionStats } from '../entities/transaction.entity'
 import { AccessDeniedError, NotFoundError, InsufficientFundsError } from '../../domain/errors/domain-errors'
 
 export class TransactionUseCases {
@@ -24,6 +24,29 @@ export class TransactionUseCases {
     const transaction = await this.transactionRepository.create(userId, input)
     await this.accountRepository.updateBalance(input.accountId, userId, input.amount)
     return transaction
+  }
+
+  async updateTransaction(userId: number, id: string, input: TransactionUpdateInput): Promise<Transaction> {
+    const existing = await this.transactionRepository.findById(id, userId)
+    if (!existing) throw new NotFoundError('Transaction not found')
+
+    const newAccountId = input.accountId ?? existing.accountId
+    const newAmount = input.amount ?? existing.amount
+    const accountChanged = newAccountId !== existing.accountId
+    const amountChanged = newAmount !== existing.amount
+
+    if (accountChanged || amountChanged) {
+      if (accountChanged) {
+        const newAccount = await this.accountRepository.findById(newAccountId, userId)
+        if (!newAccount) throw new AccessDeniedError('Account not found or access denied')
+        await this.accountRepository.updateBalance(existing.accountId, userId, -existing.amount)
+        await this.accountRepository.updateBalance(newAccountId, userId, newAmount)
+      } else {
+        await this.accountRepository.updateBalance(existing.accountId, userId, newAmount - existing.amount)
+      }
+    }
+
+    return this.transactionRepository.update(id, userId, input)
   }
 
   async deleteTransaction(userId: number, id: string): Promise<Transaction> {

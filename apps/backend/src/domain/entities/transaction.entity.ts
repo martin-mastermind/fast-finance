@@ -23,6 +23,14 @@ export interface TransactionCreateInput {
   currency: Currency
 }
 
+export interface TransactionUpdateInput {
+  accountId?: number
+  categoryId?: number
+  amount?: number
+  description?: string
+  date?: string
+}
+
 export interface TransferInput {
   fromAccountId: number
   toAccountId: number
