@@ -37,7 +37,7 @@ export function Dashboard() {
           <motion.div
             key="dashboard"
             className="safe-bottom-70 no-scrollbar"
-            style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.25rem 0.5rem' }}
+            style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.5rem 1rem' }}
             variants={pageVariants}
             initial="initial"
             animate="animate"
@@ -162,7 +162,7 @@ export function Dashboard() {
           <motion.div
             key="history"
             className="safe-bottom-70 no-scrollbar"
-            style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.25rem 0.5rem' }}
+            style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.5rem 1rem' }}
             variants={pageVariants}
             initial="initial"
             animate="animate"
@@ -187,7 +187,7 @@ export function Dashboard() {
           <motion.div
             key="ai"
             className="safe-bottom-70 no-scrollbar"
-            style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}
+            style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}
             variants={pageVariants}
             initial="initial"
             animate="animate"
@@ -202,7 +202,7 @@ export function Dashboard() {
           <motion.div
             key="settings"
             className="safe-bottom-70 no-scrollbar"
-            style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.25rem 0.5rem' }}
+            style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.5rem 1rem' }}
             variants={pageVariants}
             initial="initial"
             animate="animate"
@@ -226,7 +226,7 @@ export function Dashboard() {
         <SheetContent
           side="bottom"
           className="glass-card-strong rounded-t-[var(--radius)] overflow-y-auto"
-          style={{ maxHeight: '90vh', paddingBottom: 'calc(1.5rem + var(--tg-safe-area-inset-bottom, 0px))' }}
+          style={{ maxHeight: '90vh', padding: '1.25rem 1.5rem', paddingBottom: 'calc(1.5rem + var(--tg-safe-area-inset-bottom, 0px))' }}
         >
           <SheetHeader>
             <SheetTitle>Новая операция</SheetTitle>

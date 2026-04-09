@@ -6,7 +6,7 @@ import { formatCurrency } from '@/lib/utils'
 import { fetchRates, convertToUSD, convertFromUSD } from '@/lib/currency'
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
-import { Eye } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface Props {
@@ -119,7 +119,7 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
             touchAction: 'manipulation',
           }}
         >
-          <Eye size={13} className="text-primary" />
+          <RefreshCw size={13} className="text-primary" />
           <span style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--accent)', textTransform: 'uppercase' }}>
             {mainCurrency}
           </span>

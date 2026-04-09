@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { motion } from 'framer-motion'
-import { Check, Plus, Minus, ArrowLeftRight } from 'lucide-react'
+import { Loader2, Plus, Minus, ArrowLeftRight } from 'lucide-react'
 import { useFinanceStore } from '@/store/finance'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -28,6 +28,7 @@ export function AddTransaction({ userId, onClose }: Props) {
   const { transactionType, setTransactionType } = useFinanceStore()
 
   const [amount, setAmount] = useState('')
+  const [amountError, setAmountError] = useState(false)
   const [description, setDescription] = useState('')
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
@@ -90,9 +91,9 @@ export function AddTransaction({ userId, onClose }: Props) {
   })
 
   function handleSubmit() {
-    if (!amount || !selectedAccountId) return
+    if (!amount || !selectedAccountId) { setAmountError(true); return }
     const numAmount = parseFloat(amount.replace(',', '.'))
-    if (isNaN(numAmount) || numAmount <= 0) return
+    if (isNaN(numAmount) || numAmount <= 0) { setAmountError(true); return }
 
     if (transactionType === 'transfer') {
       if (!toAccountId || toAccountId === selectedAccountId) return
@@ -216,20 +217,24 @@ export function AddTransaction({ userId, onClose }: Props) {
       {/* Amount input */}
       <motion.div
         className="glass-card"
-        style={{ padding: '1.25rem' }}
+        style={{ padding: '1.25rem', border: amountError ? '1px solid var(--red)' : undefined }}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.05 }}
       >
         <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-          Сумма
+          Сумма{amountError && <span style={{ color: 'var(--red)', marginLeft: '0.5rem', textTransform: 'none', letterSpacing: 0 }}>— введите сумму</span>}
         </Label>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Input
             type="text"
             inputMode="decimal"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+              const filtered = e.target.value.replace(/[^0-9.,]/g, '')
+              setAmount(filtered)
+              if (filtered) setAmountError(false)
+            }}
             placeholder="0.00"
             className="flex-1 text-2xl font-light text-right pr-2"
           />
@@ -413,9 +418,9 @@ export function AddTransaction({ userId, onClose }: Props) {
         {createMutation.isPending || transferMutation.isPending ? (
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+            transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
           >
-            <Check size={20} />
+            <Loader2 size={20} />
           </motion.div>
         ) : (
           <span>{transactionType === 'transfer' ? 'Перевести' : 'Сохранить'}</span>

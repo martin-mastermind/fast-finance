@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Clock, ArrowLeftRight, Pencil, Check } from 'lucide-react'
+import { X, Clock, ArrowLeftRight, Pencil, Check, Trash2 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getCategoryIcon } from '@/lib/icon-map'
 import { useState } from 'react'
@@ -83,6 +83,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
   const queryClient = useQueryClient()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValues, setEditValues] = useState<EditValues>({ description: '', date: '', amount: '', categoryId: null })
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['transactions', userId, limit],
@@ -122,6 +123,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
       amount: String(Math.abs(tx.amount)),
       categoryId: tx.categoryId,
     })
+    setDeletingId(null)
     setEditingId(tx.id)
   }
 
@@ -190,13 +192,13 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
 
             {group.items.map((tx: any) => {
               const idx = globalIdx++
-              const desc = tx.description || 'Без описания'
               const category = categoryMap.get(tx.categoryId)
+              const desc = tx.description || category?.name || 'Операция'
               const isIncome = tx.amount > 0
-              
+
               const transfer = parseTransferInfo(tx.description)
               const isTransfer = transfer !== null
-              const displayDesc = transfer?.description ?? desc
+              const displayDesc = isTransfer ? (transfer?.description || 'Перевод') : desc
 
               const getTransactionColor = () => {
                 if (isTransfer) return '#F59E0B'
@@ -263,7 +265,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                         </span>
                       ) : (
                         <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                          {new Date(tx.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                          {category?.name ? `${category.name} • ` : ''}{new Date(tx.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       )}
                     </div>
@@ -285,7 +287,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
 
                     {!isTransfer && (
                       <motion.button
-                        onClick={() => openEdit(tx)}
+                        onClick={() => { setDeletingId(null); openEdit(tx) }}
                         style={{
                           borderRadius: '0.375rem',
                           padding: '0.375rem',
@@ -305,22 +307,29 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                     )}
 
                     <motion.button
-                      onClick={() => deleteMutation.mutate(tx.id)}
+                      onClick={() => {
+                        if (deletingId === tx.id) {
+                          deleteMutation.mutate(tx.id)
+                          setDeletingId(null)
+                        } else {
+                          setDeletingId(tx.id)
+                        }
+                      }}
                       style={{
                         borderRadius: '0.375rem',
                         padding: '0.375rem',
-                        background: 'none',
+                        background: deletingId === tx.id ? 'var(--red-dim)' : 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        color: 'var(--text-muted)',
-                        opacity: 0.5,
-                        transition: 'opacity 150ms ease, color 150ms ease',
+                        color: deletingId === tx.id ? 'var(--red)' : 'var(--text-muted)',
+                        opacity: deletingId === tx.id ? 1 : 0.5,
+                        transition: 'opacity 150ms ease, color 150ms ease, background 150ms ease',
                         WebkitAppearance: 'none',
                       }}
                       whileHover={{ opacity: 1 }}
                       whileTap={{ scale: 0.85 }}
                     >
-                      <X size={14} />
+                      {deletingId === tx.id ? <Trash2 size={14} /> : <X size={14} />}
                     </motion.button>
                   </div>
                 </motion.div>
