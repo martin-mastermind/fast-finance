@@ -48,11 +48,11 @@ function renderMarkdown(text: string): ReactElement[] {
 }
 
 export function AiAssistant() {
-  const { user } = useAuthStore()
+  const { user, token } = useAuthStore()
   const { messages, setMessages, addMessage, clearMessages, isLoading, setIsLoading } = useAiStore()
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const api = createApiClient(user!.id)
+  const api = createApiClient(token || '')
 
   useEffect(() => {
     loadHistory()

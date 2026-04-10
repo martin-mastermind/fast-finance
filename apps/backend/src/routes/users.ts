@@ -1,20 +1,17 @@
 import { Elysia, t } from 'elysia'
 import { db, users } from '@fast-finance/db'
 import { eq } from 'drizzle-orm'
+import { withAuth, parseUserIdFromToken } from '../middleware/auth'
 
 export const usersRouter = new Elysia({ prefix: '/users' })
+  .use(withAuth())
   .patch(
     '/currency',
     async ({ body, set, headers }) => {
-      const userId = headers['x-user-id']
-      if (!userId) {
-        set.status = 401
-        return { error: 'User ID required' }
-      }
-
+      const userId = parseUserIdFromToken(headers.authorization)
       const { currency } = body as { currency: string }
       const validCurrencies = ['RUB', 'BYN', 'USD']
-      
+
       if (!validCurrencies.includes(currency)) {
         set.status = 400
         return { error: 'Invalid currency' }
@@ -23,7 +20,7 @@ export const usersRouter = new Elysia({ prefix: '/users' })
       const [updated] = await db
         .update(users)
         .set({ currency })
-        .where(eq(users.id, parseInt(userId)))
+        .where(eq(users.id, userId))
         .returning()
 
       if (!updated) {

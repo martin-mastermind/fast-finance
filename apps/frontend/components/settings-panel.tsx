@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
 import { formatCurrency } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Trash2, X, Building2, Grid3x3, Pencil, ArrowUp, ArrowDown } from 'lucide-react'
@@ -45,7 +46,8 @@ interface Category {
 }
 
 export function SettingsPanel({ userId }: Props) {
-  const api = createApiClient(userId)
+  const { token } = useAuthStore()
+  const api = createApiClient(token || '')
   const queryClient = useQueryClient()
   const { transactionType, setTransactionType, isAddCategoryModalOpen, setAddCategoryModalOpen } = useFinanceStore()
 
@@ -574,7 +576,8 @@ export function SettingsPanel({ userId }: Props) {
 }
 
 function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => void }) {
-  const api = createApiClient(userId)
+  const { token } = useAuthStore()
+  const api = createApiClient(token || '')
   const queryClient = useQueryClient()
   const { transactionType, setTransactionType } = useFinanceStore()
 
@@ -768,7 +771,8 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
 }
 
 function EditCategoryModal({ userId, category, onClose }: { userId: number; category: Category; onClose: () => void }) {
-  const api = createApiClient(userId)
+  const { token } = useAuthStore()
+  const api = createApiClient(token || '')
   const queryClient = useQueryClient()
 
   const [name, setName] = useState(category.name)

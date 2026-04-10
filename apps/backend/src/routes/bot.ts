@@ -144,7 +144,17 @@ function buildMainMenuKeyboard() {
 
 export const botRouter = new Elysia({ prefix: '/bot' }).post(
   '/webhook',
-  async ({ body }) => {
+  async ({ body, headers, set }) => {
+    // Validate Telegram webhook secret token when configured
+    const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET
+    if (webhookSecret) {
+      const incoming = headers['x-telegram-bot-api-secret-token']
+      if (incoming !== webhookSecret) {
+        set.status = 401
+        return { error: 'Unauthorized' }
+      }
+    }
+
     const update = body as unknown as TelegramUpdate
 
     // Handle callback query (button press)

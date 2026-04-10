@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
 import { motion } from 'framer-motion'
 import { Loader2, Plus, Minus, ArrowLeftRight } from 'lucide-react'
 import { useFinanceStore } from '@/store/finance'
@@ -23,7 +24,8 @@ const CURRENCY_LABELS: Record<string, string> = {
 }
 
 export function AddTransaction({ userId, onClose }: Props) {
-  const api = createApiClient(userId)
+  const { token } = useAuthStore()
+  const api = createApiClient(token || '')
   const queryClient = useQueryClient()
   const { transactionType, setTransactionType } = useFinanceStore()
 

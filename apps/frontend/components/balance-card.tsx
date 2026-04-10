@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
 import { formatCurrency } from '@/lib/utils'
 import { fetchRates, convertToUSD, convertFromUSD } from '@/lib/currency'
 import { motion } from 'framer-motion'
@@ -24,7 +25,8 @@ const CURRENCY_LABELS: Record<string, string> = {
 }
 
 export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }: Props) {
-  const api = createApiClient(userId)
+  const { token } = useAuthStore()
+  const api = createApiClient(token || '')
   const { data: accounts, isLoading } = useQuery({
     queryKey: ['accounts', userId],
     queryFn: () => api.accounts.list(),

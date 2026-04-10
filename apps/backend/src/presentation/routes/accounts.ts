@@ -2,18 +2,18 @@ import { Elysia, t } from 'elysia'
 import { accountRepository } from '../../infrastructure/repositories/account.repository'
 import { AccountUseCases } from '../../application/use-cases/account.use-cases'
 import { AccessDeniedError, NotFoundError } from '../../domain/errors/domain-errors'
+import { withAuth, parseUserIdFromToken } from '../../middleware/auth'
 
 const accountUseCases = new AccountUseCases(accountRepository)
 
 export const accountsRouter = new Elysia({ prefix: '/accounts' })
-  .get('/', async ({ headers, set }) => {
-    const userId = parseInt(headers['x-user-id'] || '0')
-    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+  .use(withAuth())
+  .get('/', async ({ headers }) => {
+    const userId = parseUserIdFromToken(headers.authorization)
     return accountUseCases.getAccounts(userId)
   })
   .get('/:id', async ({ params, headers, set }) => {
-    const userId = parseInt(headers['x-user-id'] || '0')
-    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+    const userId = parseUserIdFromToken(headers.authorization)
     try {
       return await accountUseCases.getAccountById(Number(params.id), userId)
     } catch (e) {
@@ -22,8 +22,7 @@ export const accountsRouter = new Elysia({ prefix: '/accounts' })
     }
   })
   .post('/', async ({ body, headers, set }) => {
-    const userId = parseInt(headers['x-user-id'] || '0')
-    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+    const userId = parseUserIdFromToken(headers.authorization)
     try {
       return await accountUseCases.createAccount(userId, body)
     } catch (e) {
@@ -39,8 +38,7 @@ export const accountsRouter = new Elysia({ prefix: '/accounts' })
     }),
   })
   .patch('/:id', async ({ params, body, headers, set }) => {
-    const userId = parseInt(headers['x-user-id'] || '0')
-    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+    const userId = parseUserIdFromToken(headers.authorization)
     try {
       return await accountUseCases.updateAccount(Number(params.id), userId, body)
     } catch (e) {
@@ -57,8 +55,7 @@ export const accountsRouter = new Elysia({ prefix: '/accounts' })
     }),
   })
   .delete('/:id', async ({ params, headers, set }) => {
-    const userId = parseInt(headers['x-user-id'] || '0')
-    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+    const userId = parseUserIdFromToken(headers.authorization)
     try {
       await accountUseCases.deleteAccount(Number(params.id), userId)
       return { success: true }

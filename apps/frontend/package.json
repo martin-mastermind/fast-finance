@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "next start",
+    "start": "npx serve out -p 3000",
     "lint": "next lint",
     "test": "bun test __tests__/store __tests__/lib",
     "test:watch": "bun test --watch __tests__",

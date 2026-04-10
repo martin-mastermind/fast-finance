@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Clock, ArrowLeftRight, Pencil, Check, Trash2 } from 'lucide-react'
@@ -79,7 +80,8 @@ function parseTransferInfo(raw: string | null): TransferInfo | null {
 }
 
 export function TransactionList({ userId, currency, limit = 50 }: Props) {
-  const api = createApiClient(userId)
+  const { token } = useAuthStore()
+  const api = createApiClient(token || '')
   const queryClient = useQueryClient()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValues, setEditValues] = useState<EditValues>({ description: '', date: '', amount: '', categoryId: null })

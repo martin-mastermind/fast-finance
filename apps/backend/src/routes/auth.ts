@@ -1,41 +1,47 @@
 import { Elysia, t } from 'elysia'
 import { db, users } from '@fast-finance/db'
 import { validateTelegramInitData } from '../lib/telegram-auth'
+import { jwtPlugin } from '../lib/jwt-plugin'
 
 export const authRouter = new Elysia({ prefix: '/auth' })
+  .use(jwtPlugin)
   .post(
     '/telegram',
-    async ({ body, set }) => {
+    async ({ jwt, body, set }) => {
       const { initData } = body
-      const botToken = process.env.TELEGRAM_BOT_TOKEN
+      const botToken = process.env.TELEGRAM_BOT_TOKEN!
 
-      if (!botToken) {
-        set.status = 500
-        return { error: 'Bot token not configured' }
+      let tgUser: { id: number; username?: string } | null = null
+
+      // Dev bypass only in non-production environments
+      if (initData === 'dev_bypass' && process.env.NODE_ENV !== 'production') {
+        tgUser = { id: 12345678, username: 'dev_user' }
+      } else {
+        tgUser = await validateTelegramInitData(initData, botToken)
       }
 
-      const tgUser = await validateTelegramInitData(initData, botToken)
       if (!tgUser) {
         set.status = 401
         return { error: 'Invalid Telegram auth data' }
       }
-      const telegramUserId = tgUser.id
-      const telegramUsername = tgUser.username
 
       const [user] = await db
         .insert(users)
         .values({
-          telegramId: String(telegramUserId),
-          username: telegramUsername || null,
+          telegramId: String(tgUser.id),
+          username: tgUser.username || null,
           currency: 'RUB',
         })
         .onConflictDoUpdate({
           target: users.telegramId,
-          set: { username: telegramUsername || null },
+          set: { username: tgUser.username || null },
         })
         .returning()
 
+      const token = await jwt.sign({ userId: user.id })
+
       return {
+        token,
         user: {
           id: user.id,
           telegramId: user.telegramId,

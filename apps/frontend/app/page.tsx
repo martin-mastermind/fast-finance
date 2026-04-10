@@ -10,11 +10,11 @@ import { SetupWizard } from '@/components/setup-wizard'
 import { createApiClient } from '@/lib/api'
 
 export default function HomePage() {
-  const { user, isLoading, error, initAuth } = useAuthStore()
+  const { user, token, isLoading, error, initAuth } = useAuthStore()
 
   const { data: accounts, isLoading: accountsLoading } = useQuery({
     queryKey: ['accounts', user?.id],
-    queryFn: () => createApiClient(user!.id).accounts.list(),
+    queryFn: () => createApiClient(token!).accounts.list(),
     enabled: !!user,
   })
 

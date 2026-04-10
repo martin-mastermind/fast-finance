@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { swagger } from '@elysiajs/swagger'
+import { rateLimit } from 'elysia-rate-limit'
 import { runMigrations } from '@fast-finance/db'
 import { authRouter } from './routes/auth'
 import { usersRouter } from './routes/users'
@@ -11,41 +12,105 @@ import { botRouter } from './routes/bot'
 import { aiRouter } from './routes/ai'
 import { currencyRouter } from './routes/currency'
 import { CurrencyService } from './domain/currency.service'
+import { client } from './infrastructure/database/connection'
+import { logger } from './lib/logger'
 
-// Validate required environment variables
-const requiredEnvVars = ['DATABASE_URL', 'TELEGRAM_BOT_TOKEN']
+// Validate required environment variables — fail fast before binding any port
+const requiredEnvVars = ['DATABASE_URL', 'TELEGRAM_BOT_TOKEN', 'JWT_SECRET']
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
-    console.error(`Missing required environment variable: ${envVar}`)
+    logger.error({ envVar }, `Missing required environment variable: ${envVar}`)
     process.exit(1)
   }
 }
 
+if (!process.env.FRONTEND_URL && process.env.NODE_ENV === 'production') {
+  logger.warn('FRONTEND_URL is not set; CORS will be restrictive in production')
+}
+
 async function startCronJob() {
   const ONE_DAY = 24 * 60 * 60 * 1000
-  
-  await CurrencyService.updateRates()
-  console.log('Currency rates updated')
-  
+  try {
+    await CurrencyService.updateRates()
+    logger.info('Currency rates updated on startup')
+  } catch (err) {
+    logger.error({ err }, 'Failed to update currency rates on startup')
+  }
   setInterval(async () => {
     try {
       await CurrencyService.updateRates()
-      console.log('Currency rates updated at', new Date().toISOString())
-    } catch (error) {
-      console.error('Failed to update currency rates:', error)
+      logger.info('Currency rates updated (scheduled)')
+    } catch (err) {
+      logger.error({ err }, 'Failed to update currency rates (scheduled)')
     }
   }, ONE_DAY)
 }
 
 const app = new Elysia()
+  // ── Rate limiting ──────────────────────────────────────────────────────────
+  .use(rateLimit({ max: 100, duration: 60_000 }))
+
+  // ── CORS ───────────────────────────────────────────────────────────────────
   .use(
     cors({
-      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+      origin: process.env.FRONTEND_URL || (process.env.NODE_ENV !== 'production' ? 'http://localhost:3000' : false),
       credentials: true,
     }),
   )
+
+  // ── Swagger docs ───────────────────────────────────────────────────────────
   .use(swagger({ path: '/docs' }))
-  .get('/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
+
+  // ── Security headers ───────────────────────────────────────────────────────
+  .onAfterHandle(({ set }) => {
+    set.headers['X-Content-Type-Options'] = 'nosniff'
+    set.headers['X-Frame-Options'] = 'DENY'
+    set.headers['X-XSS-Protection'] = '1; mode=block'
+    set.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    if (process.env.NODE_ENV === 'production') {
+      set.headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains; preload'
+    }
+  })
+
+  // ── Request logging ────────────────────────────────────────────────────────
+  .onRequest(({ request }) => {
+    logger.info({ method: request.method, url: request.url }, 'incoming request')
+  })
+  .onAfterHandle(({ request, set }) => {
+    logger.info({ method: request.method, url: request.url, status: set.status }, 'request completed')
+  })
+
+  // ── Global error handler ───────────────────────────────────────────────────
+  .onError(({ code, error, set, request }) => {
+    logger.error({ code, message: (error as Error).message, url: request.url }, 'unhandled error')
+    if (code === 'VALIDATION') {
+      set.status = 400
+      return { error: 'Invalid request data', details: (error as Error).message }
+    }
+    if (code === 'NOT_FOUND') {
+      set.status = 404
+      return { error: 'Route not found' }
+    }
+    set.status = 500
+    return { error: 'Internal server error' }
+  })
+
+  // ── Health check ───────────────────────────────────────────────────────────
+  .get('/health', async () => {
+    let dbStatus = 'ok'
+    try {
+      await client`SELECT 1`
+    } catch {
+      dbStatus = 'error'
+    }
+    return {
+      status: dbStatus === 'ok' ? 'ok' : 'degraded',
+      timestamp: new Date().toISOString(),
+      services: { database: dbStatus },
+    }
+  })
+
+  // ── Routes ─────────────────────────────────────────────────────────────────
   .use(authRouter)
   .use(usersRouter)
   .use(accountsRouter)
@@ -56,10 +121,10 @@ const app = new Elysia()
   .use(currencyRouter)
 
 await runMigrations()
-startCronJob()
+await startCronJob()
 
 app.listen(process.env.PORT || 3001)
 
-console.log(`Backend running at http://localhost:${app.server?.port}`)
+logger.info({ port: app.server?.port }, 'Backend started')
 
 export type App = typeof app

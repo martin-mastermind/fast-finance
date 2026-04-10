@@ -1,56 +1,79 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+const REQUEST_TIMEOUT_MS = 10_000
 
 async function request<T>(
   path: string,
   options: RequestInit = {},
-  userId?: number,
+  token?: string,
+  retries = 1,
 ): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
   }
 
-  if (userId) {
-    headers['x-user-id'] = String(userId)
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
   }
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers })
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: res.statusText }))
-    throw new Error(error.error || `HTTP ${res.status}`)
+  try {
+    const res = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ error: res.statusText }))
+      throw new Error(error.error || `HTTP ${res.status}`)
+    }
+
+    return res.json()
+  } catch (err: unknown) {
+    clearTimeout(timeoutId)
+    const isNetworkError =
+      err instanceof TypeError ||
+      (err instanceof DOMException && err.name === 'AbortError')
+
+    if (isNetworkError && retries > 0) {
+      return request<T>(path, options, token, retries - 1)
+    }
+    throw err
   }
-
-  return res.json()
 }
 
-export function createApiClient(userId: number) {
+export function createApiClient(token: string) {
   return {
     auth: {
       telegram: (initData: string) =>
-        request<{ user: { id: number; telegramId: string; username: string | null; currency: string } }>(
+        request<{ token: string; user: { id: number; telegramId: string; username: string | null; currency: string } }>(
           '/auth/telegram',
           { method: 'POST', body: JSON.stringify({ initData }) },
         ),
     },
     users: {
       updateCurrency: (currency: string) =>
-        request<{ currency: string }>('/users/currency', { method: 'PATCH', body: JSON.stringify({ currency }) }, userId),
+        request<{ currency: string }>('/users/currency', { method: 'PATCH', body: JSON.stringify({ currency }) }, token),
     },
     accounts: {
-      list: () => request<Array<{ id: number; name: string; balance: number; currency: string; sortOrder: number; type: string }>>('/accounts', {}, userId),
+      list: () => request<Array<{ id: number; name: string; balance: number; currency: string; sortOrder: number; type: string }>>('/accounts', {}, token),
       create: (data: { name: string; balance?: number; currency?: string; type?: string }) =>
-        request('/accounts', { method: 'POST', body: JSON.stringify(data) }, userId),
+        request('/accounts', { method: 'POST', body: JSON.stringify(data) }, token),
       update: (id: number, data: { name?: string; balance?: number; currency?: string; sortOrder?: number; type?: string }) =>
-        request(`/accounts/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, userId),
+        request(`/accounts/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, token),
       delete: (id: number) =>
-        request(`/accounts/${id}`, { method: 'DELETE' }, userId),
+        request(`/accounts/${id}`, { method: 'DELETE' }, token),
     },
     transactions: {
       list: (params?: { limit?: number; offset?: number }) => {
         const qs = new URLSearchParams(params as Record<string, string>).toString()
         return request<{ items: Array<{ id: string; accountId: number; categoryId: number; amount: number; currency: string; description: string | null; date: string }>; total: number; page: number; pageSize: number }>(
-          `/transactions${qs ? `?${qs}` : ''}`, {}, userId,
+          `/transactions${qs ? `?${qs}` : ''}`, {}, token,
         )
       },
       getStats: (period?: string) => {
@@ -62,7 +85,7 @@ export function createApiClient(userId: number) {
           balance: number
           expenseByCategory: Array<{ categoryId: number; categoryName: string; categoryIcon: string; amount: number; percentage: number }>
           incomeByCategory: Array<{ categoryId: number; categoryName: string; categoryIcon: string; amount: number; percentage: number }>
-        }>(`/transactions/stats${qs}`, {}, userId)
+        }>(`/transactions/stats${qs}`, {}, token)
       },
       create: (data: {
         accountId: number
@@ -71,39 +94,39 @@ export function createApiClient(userId: number) {
         currency: string
         description?: string
         date?: string
-      }) => request('/transactions', { method: 'POST', body: JSON.stringify(data) }, userId),
+      }) => request('/transactions', { method: 'POST', body: JSON.stringify(data) }, token),
       transfer: (data: {
         fromAccountId: number
         toAccountId: number
         amount: number
         currency: string
         description?: string
-      }) => request('/transactions/transfer', { method: 'POST', body: JSON.stringify(data) }, userId),
+      }) => request('/transactions/transfer', { method: 'POST', body: JSON.stringify(data) }, token),
       update: (id: string, data: { accountId?: number; categoryId?: number; amount?: number; description?: string; date?: string }) =>
-        request(`/transactions/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, userId),
+        request(`/transactions/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, token),
       delete: (id: string) =>
-        request(`/transactions/${id}`, { method: 'DELETE' }, userId),
+        request(`/transactions/${id}`, { method: 'DELETE' }, token),
     },
     categories: {
-      list: () => request<Array<{ id: number; name: string; icon: string; type: string; userId: number | null }>>('/categories', {}, userId),
+      list: () => request<Array<{ id: number; name: string; icon: string; type: string; userId: number | null }>>('/categories', {}, token),
       create: (data: { name: string; icon: string; type: string }) =>
-        request('/categories', { method: 'POST', body: JSON.stringify(data) }, userId),
+        request('/categories', { method: 'POST', body: JSON.stringify(data) }, token),
       update: (id: number, data: { name: string; icon: string; type: string }) =>
-        request(`/categories/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, userId),
+        request(`/categories/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, token),
       delete: (id: number) =>
-        request(`/categories/${id}`, { method: 'DELETE' }, userId),
+        request(`/categories/${id}`, { method: 'DELETE' }, token),
     },
     ai: {
       chat: (message: string) =>
-        request<{ response: string }>('/ai/chat', { method: 'POST', body: JSON.stringify({ message }) }, userId),
+        request<{ response: string }>('/ai/chat', { method: 'POST', body: JSON.stringify({ message }) }, token),
       getHistory: () =>
-        request<{ messages: Array<{ role: 'user' | 'assistant'; content: string }> }>('/ai/history', {}, userId),
+        request<{ messages: Array<{ role: 'user' | 'assistant'; content: string }> }>('/ai/history', {}, token),
       clearHistory: () =>
-        request<{ success: boolean }>('/ai/history', { method: 'DELETE' }, userId),
+        request<{ success: boolean }>('/ai/history', { method: 'DELETE' }, token),
       getInsights: () =>
-        request<{ insights: Array<{ id: number; type: string; title: string; content: string; isRead: number; createdAt: string }> }>('/ai/insights', {}, userId),
+        request<{ insights: Array<{ id: number; type: string; title: string; content: string; isRead: number; createdAt: string }> }>('/ai/insights', {}, token),
       markInsightRead: (id: number) =>
-        request<{ success: boolean }>(`/ai/insights/${id}/read`, { method: 'PATCH' }, userId),
+        request<{ success: boolean }>(`/ai/insights/${id}/read`, { method: 'PATCH' }, token),
     },
   }
 }

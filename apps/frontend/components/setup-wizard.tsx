@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -22,12 +23,13 @@ const CURRENCIES = [
 ]
 
 export function SetupWizard({ userId }: Props) {
+  const { token } = useAuthStore()
   const [step, setStep] = useState<Step>('welcome')
   const [accountName, setAccountName] = useState('')
   const [balance, setBalance] = useState('')
   const [currency, setCurrency] = useState('RUB')
   const queryClient = useQueryClient()
-  const api = createApiClient(userId)
+  const api = createApiClient(token || '')
 
   const createMutation = useMutation({
     mutationFn: () =>

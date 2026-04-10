@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createApiClient } from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
 import { formatCurrency } from '@/lib/utils'
 import { convertFromUSD } from '@/lib/currency'
 
@@ -28,7 +29,8 @@ const PERIODS = [
 ]
 
 export function TransactionCharts({ userId, currency }: Props) {
-  const api = createApiClient(userId)
+  const { token } = useAuthStore()
+  const api = createApiClient(token || '')
   const [activePeriod, setActivePeriod] = useState('month')
 
   const { data, isLoading } = useQuery({

@@ -3,26 +3,25 @@ import { transactionRepository } from '../../infrastructure/repositories/transac
 import { accountRepository } from '../../infrastructure/repositories/account.repository'
 import { TransactionUseCases } from '../../application/use-cases/transaction.use-cases'
 import { AccessDeniedError, NotFoundError, InsufficientFundsError } from '../../domain/errors/domain-errors'
+import { withAuth, parseUserIdFromToken } from '../../middleware/auth'
 
 const transactionUseCases = new TransactionUseCases(transactionRepository, accountRepository)
 
 export const transactionsRouter = new Elysia({ prefix: '/transactions' })
-  .get('/', async ({ headers, query, set }) => {
-    const userId = parseInt(headers['x-user-id'] || '0')
-    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+  .use(withAuth())
+  .get('/', async ({ headers, query }) => {
+    const userId = parseUserIdFromToken(headers.authorization)
     const limit = parseInt(String(query.limit ?? '50'))
     const offset = parseInt(String(query.offset ?? '0'))
     return transactionUseCases.getTransactions(userId, limit, offset)
   })
-  .get('/stats', async ({ headers, query, set }) => {
-    const userId = parseInt(headers['x-user-id'] || '0')
-    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+  .get('/stats', async ({ headers, query }) => {
+    const userId = parseUserIdFromToken(headers.authorization)
     const period = String(query.period ?? 'month')
     return transactionUseCases.getTransactionStats(userId, period)
   })
   .post('/', async ({ body, headers, set }) => {
-    const userId = parseInt(headers['x-user-id'] || '0')
-    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+    const userId = parseUserIdFromToken(headers.authorization)
     try {
       return await transactionUseCases.createTransaction(userId, body)
     } catch (e) {
@@ -40,8 +39,7 @@ export const transactionsRouter = new Elysia({ prefix: '/transactions' })
     }),
   })
   .patch('/:id', async ({ params, body, headers, set }) => {
-    const userId = parseInt(headers['x-user-id'] || '0')
-    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+    const userId = parseUserIdFromToken(headers.authorization)
     try {
       return await transactionUseCases.updateTransaction(userId, params.id, body)
     } catch (e) {
@@ -59,8 +57,7 @@ export const transactionsRouter = new Elysia({ prefix: '/transactions' })
     }),
   })
   .delete('/:id', async ({ params, headers, set }) => {
-    const userId = parseInt(headers['x-user-id'] || '0')
-    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+    const userId = parseUserIdFromToken(headers.authorization)
     try {
       await transactionUseCases.deleteTransaction(userId, params.id)
       return { success: true }
@@ -70,8 +67,7 @@ export const transactionsRouter = new Elysia({ prefix: '/transactions' })
     }
   })
   .post('/transfer', async ({ body, headers, set }) => {
-    const userId = parseInt(headers['x-user-id'] || '0')
-    if (!userId) { set.status = 401; return { error: 'Unauthorized' } }
+    const userId = parseUserIdFromToken(headers.authorization)
     try {
       return await transactionUseCases.transfer(userId, body)
     } catch (e) {

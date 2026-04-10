@@ -23,9 +23,12 @@ services:
     ports:
       - "3001:3001"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/fast_finance
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/fast_finance}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      NODE_ENV: development
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      NODE_ENV: ${NODE_ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
       postgres:
         condition: service_healthy
