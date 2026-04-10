@@ -109,6 +109,20 @@
     "leaveConfirm": "Tap again to confirm",
     "noOrg": "Not in any group"
   },
+  "plans": {
+    "title": "Plans",
+    "current": "Current",
+    "free": "Free",
+    "pro": "Pro",
+    "perMonth": "/ 30 days",
+    "feature": "Feature",
+    "accounts": "Accounts",
+    "transactionsPerMonth": "Transactions / month",
+    "aiAssistant": "AI Assistant",
+    "unlimited": "Unlimited",
+    "upgrade": "Upgrade to Pro",
+    "alreadyPro": "You're on Pro"
+  },
   "planLimit": {
     "title": "Plan limit reached",
     "subtitle": "Upgrade to Pro for unlimited accounts, transactions, and AI assistant access.",
@@ -148,6 +162,8 @@
     "deleteAccountDesc": "Permanently delete your account and all data",
     "deleteConfirm": "Tap again to confirm deletion",
     "logout": "Log out",
+    "subscription": "Subscription",
+    "viewPlans": "View plans →",
     "language": "Language",
     "checking": "Checking",
     "savings": "Savings",

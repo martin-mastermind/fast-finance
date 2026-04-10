@@ -8,6 +8,7 @@ import { AuthScreen } from '@/components/auth-screen'
 import { LoadingScreen } from '@/components/loading-screen'
 import { SetupWizard } from '@/components/setup-wizard'
 import { PlanLimitModal } from '@/components/plan-limit-modal'
+import { PlansScreen } from '@/components/plans-screen'
 import { createApiClient } from '@/lib/api'
 
 export default function HomePage() {
@@ -33,6 +34,7 @@ export default function HomePage() {
     <>
       <Dashboard />
       <PlanLimitModal />
+      <PlansScreen />
     </>
   )
 }

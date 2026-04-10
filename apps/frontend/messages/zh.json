@@ -109,6 +109,20 @@
     "leaveConfirm": "再次点击确认",
     "noOrg": "未加入任何群组"
   },
+  "plans": {
+    "title": "套餐",
+    "current": "当前",
+    "free": "免费",
+    "pro": "专业版",
+    "perMonth": "/ 30天",
+    "feature": "功能",
+    "accounts": "账户",
+    "transactionsPerMonth": "每月交易数",
+    "aiAssistant": "AI助手",
+    "unlimited": "无限制",
+    "upgrade": "升级到专业版",
+    "alreadyPro": "您已是专业版"
+  },
   "planLimit": {
     "title": "已达到套餐限制",
     "subtitle": "升级到专业版，享受无限账户、交易和AI助手访问权限。",
@@ -148,6 +162,8 @@
     "deleteAccountDesc": "永久删除您的账户和所有数据",
     "deleteConfirm": "再次点击确认删除",
     "logout": "退出登录",
+    "subscription": "订阅",
+    "viewPlans": "查看套餐 →",
     "language": "语言",
     "checking": "活期",
     "savings": "储蓄",

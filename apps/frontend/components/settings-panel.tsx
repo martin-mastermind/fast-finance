@@ -6,7 +6,7 @@ import { createApiClient } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
 import { formatCurrency } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, X, Building2, Grid3x3, Pencil, ArrowUp, ArrowDown, Download, ShieldAlert, Shield, Users, Copy, LogOut } from 'lucide-react'
+import { Plus, Trash2, X, Building2, Grid3x3, Pencil, ArrowUp, ArrowDown, Download, ShieldAlert, Shield, Users, Copy, LogOut, Zap } from 'lucide-react'
 import { useFinanceStore } from '@/store/finance'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -59,7 +59,7 @@ export function SettingsPanel({ userId }: Props) {
   const locale = useLocale()
   const { locale: currentLocale, setLocale } = useLocaleStore()
   const queryClient = useQueryClient()
-  const { transactionType, setTransactionType, isAddCategoryModalOpen, setAddCategoryModalOpen, setPlanLimitModalOpen } = useFinanceStore()
+  const { transactionType, setTransactionType, isAddCategoryModalOpen, setAddCategoryModalOpen, setPlanLimitModalOpen, setIsPlansScreenOpen } = useFinanceStore()
 
   const [isAddAccountOpen, setIsAddAccountOpen] = useState(false)
   const [newAccountName, setNewAccountName] = useState('')
@@ -535,6 +535,38 @@ export function SettingsPanel({ userId }: Props) {
               ))}
             </div>
           </div>}
+        </div>
+      </motion.div>
+
+      {/* Subscription Section */}
+      <motion.div
+        className="glass-card"
+        style={{ padding: '1.25rem' }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.14 }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Zap size={18} className="text-primary" />
+            <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>
+              {t('subscription')}
+            </span>
+          </div>
+          <button
+            onClick={() => setIsPlansScreenOpen(true)}
+            style={{
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              color: 'var(--accent)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '0.25rem 0.5rem',
+            }}
+          >
+            {t('viewPlans')}
+          </button>
         </div>
       </motion.div>
 

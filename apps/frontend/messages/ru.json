@@ -109,6 +109,20 @@
     "leaveConfirm": "Нажмите ещё раз для подтверждения",
     "noOrg": "Не состоите в группе"
   },
+  "plans": {
+    "title": "Планы",
+    "current": "Текущий",
+    "free": "Бесплатный",
+    "pro": "Pro",
+    "perMonth": "/ 30 дней",
+    "feature": "Функция",
+    "accounts": "Счета",
+    "transactionsPerMonth": "Транзакций / месяц",
+    "aiAssistant": "AI ассистент",
+    "unlimited": "Безлимитно",
+    "upgrade": "Перейти на Pro",
+    "alreadyPro": "Вы на Pro"
+  },
   "planLimit": {
     "title": "Лимит плана достигнут",
     "subtitle": "Перейдите на Pro для неограниченного количества счетов, транзакций и AI-ассистента.",
@@ -148,6 +162,8 @@
     "deleteAccountDesc": "Навсегда удалить ваш аккаунт и все данные",
     "deleteConfirm": "Нажмите ещё раз для подтверждения",
     "logout": "Выйти",
+    "subscription": "Подписка",
+    "viewPlans": "Смотреть планы →",
     "language": "Язык",
     "checking": "Расчётный",
     "savings": "Накопительный",

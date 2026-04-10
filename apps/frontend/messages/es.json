@@ -109,6 +109,20 @@
     "leaveConfirm": "Toca de nuevo para confirmar",
     "noOrg": "No estás en ningún grupo"
   },
+  "plans": {
+    "title": "Planes",
+    "current": "Actual",
+    "free": "Gratis",
+    "pro": "Pro",
+    "perMonth": "/ 30 días",
+    "feature": "Función",
+    "accounts": "Cuentas",
+    "transactionsPerMonth": "Transacciones / mes",
+    "aiAssistant": "Asistente IA",
+    "unlimited": "Ilimitado",
+    "upgrade": "Actualizar a Pro",
+    "alreadyPro": "Estás en Pro"
+  },
   "planLimit": {
     "title": "Límite del plan alcanzado",
     "subtitle": "Actualiza a Pro para cuentas, transacciones y asistente de IA ilimitados.",
@@ -148,6 +162,8 @@
     "deleteAccountDesc": "Eliminar permanentemente tu cuenta y todos los datos",
     "deleteConfirm": "Toca de nuevo para confirmar la eliminación",
     "logout": "Cerrar sesión",
+    "subscription": "Suscripción",
+    "viewPlans": "Ver planes →",
     "language": "Idioma",
     "checking": "Corriente",
     "savings": "Ahorro",
