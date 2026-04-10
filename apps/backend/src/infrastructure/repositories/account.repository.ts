@@ -1,5 +1,5 @@
 import { db, accounts } from '@fast-finance/db'
-import { eq, and, sql, asc } from 'drizzle-orm'
+import { eq, and, sql, asc, isNull } from 'drizzle-orm'
 import type { IAccountRepository } from '../../domain/interfaces/account-repository.interface'
 import type { Account, AccountCreateInput, AccountUpdateInput } from '../../domain/entities/account.entity'
 import { toAccount } from '../../domain/entities/account.entity'
@@ -10,18 +10,20 @@ export class DrizzleAccountRepository implements IAccountRepository {
     const [account] = await db
       .select()
       .from(accounts)
-      .where(and(eq(accounts.id, id), eq(accounts.userId, userId)))
+      .where(and(eq(accounts.id, id), eq(accounts.userId, userId), isNull(accounts.deletedAt)))
       .limit(1)
-    
+
     return account ? toAccount(account) : null
   }
 
-  async findByUserId(userId: number): Promise<Account[]> {
+  async findByUserId(userId: number, limit = 100, offset = 0): Promise<Account[]> {
     const result = await db
       .select()
       .from(accounts)
-      .where(eq(accounts.userId, userId))
+      .where(and(eq(accounts.userId, userId), isNull(accounts.deletedAt)))
       .orderBy(asc(accounts.sortOrder), asc(accounts.id))
+      .limit(limit)
+      .offset(offset)
 
     return result.map(toAccount)
   }
@@ -45,17 +47,19 @@ export class DrizzleAccountRepository implements IAccountRepository {
     const [updated] = await db
       .update(accounts)
       .set(input)
-      .where(and(eq(accounts.id, id), eq(accounts.userId, userId)))
+      .where(and(eq(accounts.id, id), eq(accounts.userId, userId), isNull(accounts.deletedAt)))
       .returning()
-    
+
     if (!updated) throw new NotFoundError('Account not found')
     return toAccount(updated)
   }
 
   async delete(id: number, userId: number): Promise<void> {
+    // Soft delete
     const [deleted] = await db
-      .delete(accounts)
-      .where(and(eq(accounts.id, id), eq(accounts.userId, userId)))
+      .update(accounts)
+      .set({ deletedAt: new Date() })
+      .where(and(eq(accounts.id, id), eq(accounts.userId, userId), isNull(accounts.deletedAt)))
       .returning()
 
     if (!deleted) throw new NotFoundError('Account not found')
@@ -65,7 +69,7 @@ export class DrizzleAccountRepository implements IAccountRepository {
     await db
       .update(accounts)
       .set({ balance: sql`${accounts.balance} + ${delta}` })
-      .where(and(eq(accounts.id, id), eq(accounts.userId, userId)))
+      .where(and(eq(accounts.id, id), eq(accounts.userId, userId), isNull(accounts.deletedAt)))
   }
 }
 

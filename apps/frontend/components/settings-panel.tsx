@@ -6,13 +6,17 @@ import { createApiClient } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
 import { formatCurrency } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, X, Building2, Grid3x3, Pencil, ArrowUp, ArrowDown } from 'lucide-react'
+import { Plus, Trash2, X, Building2, Grid3x3, Pencil, ArrowUp, ArrowDown, Download, ShieldAlert, Shield, Users, Copy, LogOut } from 'lucide-react'
 import { useFinanceStore } from '@/store/finance'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MotionButton } from '@/components/ui/motion-button'
 import { getCategoryIcon } from '@/lib/icon-map'
+import { toast } from 'sonner'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useTranslations, useLocale } from 'next-intl'
+import { useLocaleStore, SUPPORTED_LOCALES, LOCALE_LABELS } from '@/store/locale'
 
 interface Props {
   userId: number
@@ -46,23 +50,34 @@ interface Category {
 }
 
 export function SettingsPanel({ userId }: Props) {
-  const { token } = useAuthStore()
+  const { token, logout, currentSessionId } = useAuthStore()
   const api = createApiClient(token || '')
+  const t = useTranslations('settings')
+  const tTx = useTranslations('transactions')
+  const tWiz = useTranslations('wizard')
+  const tOrg = useTranslations('org')
+  const locale = useLocale()
+  const { locale: currentLocale, setLocale } = useLocaleStore()
   const queryClient = useQueryClient()
-  const { transactionType, setTransactionType, isAddCategoryModalOpen, setAddCategoryModalOpen } = useFinanceStore()
+  const { transactionType, setTransactionType, isAddCategoryModalOpen, setAddCategoryModalOpen, setPlanLimitModalOpen } = useFinanceStore()
 
   const [isAddAccountOpen, setIsAddAccountOpen] = useState(false)
   const [newAccountName, setNewAccountName] = useState('')
   const [newAccountCurrency, setNewAccountCurrency] = useState('RUB')
   const [newAccountType, setNewAccountType] = useState<'checking' | 'savings'>('checking')
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [orgView, setOrgView] = useState<'none' | 'create' | 'join'>('none')
+  const [orgNewName, setOrgNewName] = useState('')
+  const [orgInviteInput, setOrgInviteInput] = useState('')
+  const [confirmLeave, setConfirmLeave] = useState(false)
 
-  const { data: accounts } = useQuery({
+  const { data: accounts, isLoading: accountsLoading } = useQuery({
     queryKey: ['accounts', userId],
     queryFn: () => api.accounts.list(),
   })
 
-  const { data: categories } = useQuery({
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories', userId],
     queryFn: () => api.categories.list(),
   })
@@ -76,6 +91,14 @@ export function SettingsPanel({ userId }: Props) {
       setNewAccountName('')
       setNewAccountCurrency('RUB')
       setNewAccountType('checking')
+      toast.success('Account created')
+    },
+    onError: (err: Error) => {
+      if (err.message.includes('Plan limit reached')) {
+        setPlanLimitModalOpen(true)
+      } else {
+        toast.error(err.message || 'Failed to create account')
+      }
     },
   })
 
@@ -83,7 +106,9 @@ export function SettingsPanel({ userId }: Props) {
     mutationFn: (id: number) => api.accounts.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accounts', userId] })
+      toast.success('Account deleted')
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to delete account'),
   })
 
   const updateAccountMutation = useMutation({
@@ -92,6 +117,7 @@ export function SettingsPanel({ userId }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accounts', userId] })
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to update account'),
   })
 
   function moveAccount(idx: number, direction: -1 | 1) {
@@ -106,7 +132,103 @@ export function SettingsPanel({ userId }: Props) {
     mutationFn: (id: number) => api.categories.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories', userId] })
+      toast.success('Category deleted')
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to delete category'),
+  })
+
+  const exportMutation = useMutation({
+    mutationFn: () => api.users.exportData(),
+    onSuccess: (data) => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `fast-finance-export-${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success('Data exported')
+    },
+    onError: (err: Error) => toast.error(err.message || 'Export failed'),
+  })
+
+  const deleteUserMutation = useMutation({
+    mutationFn: () => api.users.deleteAccount(),
+    onSuccess: () => {
+      toast.success('Account deleted')
+      logout()
+    },
+    onError: (err: Error) => toast.error(err.message || 'Failed to delete account'),
+  })
+
+  const { data: sessions, isLoading: sessionsLoading } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => api.auth.getSessions(),
+    enabled: !!token,
+  })
+
+  const revokeSessionMutation = useMutation({
+    mutationFn: (id: string) => api.auth.revokeSession(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      toast.success('Сессия завершена')
+    },
+    onError: (err: Error) => toast.error(err.message || 'Не удалось завершить сессию'),
+  })
+
+  const { data: myOrg, isLoading: orgLoading, refetch: refetchOrg } = useQuery({
+    queryKey: ['myOrg', userId],
+    queryFn: () => api.orgs.getMyOrg(),
+    retry: false,
+    enabled: !!token,
+  })
+
+  const { data: orgMembersData, refetch: refetchMembers } = useQuery({
+    queryKey: ['orgMembers', myOrg?.orgId],
+    queryFn: () => api.orgs.getMembers(myOrg!.orgId),
+    enabled: !!myOrg?.orgId,
+  })
+
+  const createOrgMutation = useMutation({
+    mutationFn: (name: string) => api.orgs.create(name),
+    onSuccess: () => {
+      refetchOrg()
+      setOrgView('none')
+      setOrgNewName('')
+      toast.success('Group created')
+    },
+    onError: (err: Error) => toast.error(err.message || 'Failed to create group'),
+  })
+
+  const joinOrgMutation = useMutation({
+    mutationFn: (code: string) => api.orgs.join(code),
+    onSuccess: () => {
+      refetchOrg()
+      setOrgView('none')
+      setOrgInviteInput('')
+      toast.success('Joined group')
+    },
+    onError: (err: Error) => toast.error(err.message || 'Failed to join group'),
+  })
+
+  const leaveOrgMutation = useMutation({
+    mutationFn: () => api.orgs.leave(),
+    onSuccess: () => {
+      refetchOrg()
+      setConfirmLeave(false)
+      toast.success('Left group')
+    },
+    onError: (err: Error) => toast.error(err.message || 'Failed to leave group'),
+  })
+
+  const removeOrgMemberMutation = useMutation({
+    mutationFn: ({ orgId, memberId }: { orgId: number; memberId: number }) =>
+      api.orgs.removeMember(orgId, memberId),
+    onSuccess: () => {
+      refetchMembers()
+      toast.success('Member removed')
+    },
+    onError: (err: Error) => toast.error(err.message || 'Failed to remove member'),
   })
 
   const userCategories = categories?.filter(c => c.userId !== null) || []
@@ -130,7 +252,7 @@ export function SettingsPanel({ userId }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Building2 size={18} className="text-primary" />
             <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>
-              Счета
+              {t('accounts')}
             </span>
           </div>
           <Button
@@ -140,11 +262,14 @@ export function SettingsPanel({ userId }: Props) {
             className="gap-1 text-primary bg-[var(--accent-dim)] border border-[var(--accent-glow)]"
           >
             <Plus size={16} />
-            Добавить
+            {t('add')}
           </Button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {accountsLoading && [...Array(2)].map((_, i) => (
+            <Skeleton key={i} className="h-14 rounded-[var(--radius-xs)]" />
+          ))}
           {accounts?.map((account, idx) => (
             <motion.div
               key={account.id}
@@ -243,7 +368,7 @@ export function SettingsPanel({ userId }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Grid3x3 size={18} className="text-primary" />
             <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>
-              Категории
+              {t('categories')}
             </span>
           </div>
           <Button
@@ -253,20 +378,27 @@ export function SettingsPanel({ userId }: Props) {
             className="gap-1 text-primary bg-[var(--accent-dim)] border border-[var(--accent-glow)]"
           >
             <Plus size={16} />
-            Добавить
+            {t('add')}
           </Button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {categoriesLoading && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-8 w-20 rounded-lg" />
+              ))}
+            </div>
+          )}
           {/* Expense Categories */}
-          <div>
+          {!categoriesLoading && <div>
             <p style={{ fontSize: '0.6875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-              Расходы
+              {t('expenses')}
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
               {expenseCategories.length === 0 && (
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0.5rem 0' }}>
-                  Нет категорий
+                  {t('noCategories')}
                 </p>
               )}
               {expenseCategories.map((cat, idx) => (
@@ -329,17 +461,17 @@ export function SettingsPanel({ userId }: Props) {
                 </motion.div>
               ))}
             </div>
-          </div>
+          </div>}
 
           {/* Income Categories */}
-          <div>
+          {!categoriesLoading && <div>
             <p style={{ fontSize: '0.6875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-              Доходы
+              {t('income')}
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
               {incomeCategories.length === 0 && (
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0.5rem 0' }}>
-                  Нет категорий
+                  {t('noCategories')}
                 </p>
               )}
               {incomeCategories.map((cat, idx) => (
@@ -402,9 +534,374 @@ export function SettingsPanel({ userId }: Props) {
                 </motion.div>
               ))}
             </div>
-          </div>
+          </div>}
         </div>
       </motion.div>
+
+      {/* Data & Privacy Section */}
+      <motion.div
+        className="glass-card"
+        style={{ padding: '1.25rem' }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+          <ShieldAlert size={18} className="text-primary" />
+          <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>
+            {t('gdpr')}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => exportMutation.mutate()}
+            disabled={exportMutation.isPending}
+            className="w-full justify-start gap-2 text-left"
+          >
+            <Download size={16} />
+            {exportMutation.isPending ? '...' : t('exportData')}
+          </Button>
+
+          {!confirmDelete ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setConfirmDelete(true)}
+              className="w-full justify-start gap-2 text-[var(--expense)]"
+            >
+              <Trash2 size={16} />
+              {t('deleteAccount')}
+            </Button>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--expense)', padding: '0.25rem 0' }}>
+                {t('deleteConfirm')}
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirmDelete(false)}
+                  className="flex-1"
+                >
+                  {tTx('cancel')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => deleteUserMutation.mutate()}
+                  disabled={deleteUserMutation.isPending}
+                  className="flex-1 text-[var(--expense)] border border-[var(--expense)]"
+                >
+                  {deleteUserMutation.isPending ? '...' : t('deleteAccount')}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Sessions Section */}
+      <motion.div
+        className="glass-card"
+        style={{ padding: '1.25rem' }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+          <Shield size={18} className="text-primary" />
+          <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>
+            {t('sessions')}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {sessionsLoading && [...Array(2)].map((_, i) => (
+            <Skeleton key={i} className="h-12 rounded-[var(--radius-xs)]" />
+          ))}
+          {sessions?.map((session) => {
+            const isCurrent = session.id === currentSessionId
+            const created = new Date(session.createdAt).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
+            const expires = new Date(session.expiresAt).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
+            return (
+              <div
+                key={session.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0.625rem 0.75rem',
+                  borderRadius: '0.625rem',
+                  background: 'var(--glass-bg)',
+                  border: isCurrent ? '1px solid var(--accent-glow)' : '1px solid var(--border)',
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--text)' }}>
+                      {created}
+                    </span>
+                    {isCurrent && (
+                      <span style={{
+                        fontSize: '0.6875rem',
+                        fontWeight: 600,
+                        color: 'var(--primary)',
+                        background: 'var(--accent-dim)',
+                        padding: '0.1rem 0.4rem',
+                        borderRadius: '0.25rem',
+                      }}>
+                        {t('current')}
+                      </span>
+                    )}
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    {t('expires')} {expires}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => revokeSessionMutation.mutate(session.id)}
+                  disabled={isCurrent || revokeSessionMutation.isPending}
+                  className="text-[var(--expense)] h-8 px-2"
+                >
+                  <X size={14} />
+                </Button>
+              </div>
+            )
+          })}
+          {!sessionsLoading && sessions?.length === 0 && (
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', textAlign: 'center', padding: '0.5rem' }}>
+              {t('noSessions')}
+            </p>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Language Section */}
+      <motion.div
+        className="glass-card"
+        style={{ padding: '1.25rem' }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+          <span style={{ fontSize: '1.125rem' }}>🌐</span>
+          <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>
+            {t('language')}
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {SUPPORTED_LOCALES.map((loc) => (
+            <motion.button
+              key={loc}
+              onClick={() => setLocale(loc)}
+              style={{
+                padding: '0.5rem 0.875rem',
+                borderRadius: '0.5rem',
+                border: '1px solid',
+                borderColor: currentLocale === loc ? 'var(--accent)' : 'var(--border)',
+                backgroundColor: currentLocale === loc ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                color: currentLocale === loc ? 'var(--accent)' : 'var(--text-secondary)',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                WebkitAppearance: 'none',
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {LOCALE_LABELS[loc]}
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Org / Family Section */}
+      <motion.div
+        className="glass-card"
+        style={{ padding: '1.25rem' }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+          <Users size={18} className="text-primary" />
+          <div>
+            <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>{tOrg('title')}</span>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>{tOrg('hint')}</p>
+          </div>
+        </div>
+
+        {orgLoading && <Skeleton className="h-10 rounded-[var(--radius-xs)]" />}
+
+        {!orgLoading && !myOrg && orgView === 'none' && (
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => setOrgView('create')}>
+              {tOrg('create')}
+            </Button>
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => setOrgView('join')}>
+              {tOrg('join')}
+            </Button>
+          </div>
+        )}
+
+        {!orgLoading && !myOrg && orgView === 'create' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+            <Input
+              value={orgNewName}
+              onChange={(e) => setOrgNewName(e.target.value)}
+              placeholder={tOrg('namePlaceholder')}
+            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <Button
+                variant="default"
+                size="sm"
+                className="flex-1"
+                disabled={!orgNewName.trim() || createOrgMutation.isPending}
+                onClick={() => createOrgMutation.mutate(orgNewName.trim())}
+              >
+                {createOrgMutation.isPending ? tOrg('creating') : tOrg('create')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setOrgView('none')}>
+                <X size={14} />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!orgLoading && !myOrg && orgView === 'join' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+            <Input
+              value={orgInviteInput}
+              onChange={(e) => setOrgInviteInput(e.target.value.toUpperCase())}
+              placeholder={tOrg('inviteCodePlaceholder')}
+              maxLength={6}
+            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <Button
+                variant="default"
+                size="sm"
+                className="flex-1"
+                disabled={orgInviteInput.length < 6 || joinOrgMutation.isPending}
+                onClick={() => joinOrgMutation.mutate(orgInviteInput)}
+              >
+                {joinOrgMutation.isPending ? tOrg('joining') : tOrg('join')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setOrgView('none')}>
+                <X size={14} />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!orgLoading && myOrg && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.625rem 0.75rem',
+              borderRadius: '0.625rem',
+              background: 'var(--glass-bg)',
+              border: '1px solid var(--border)',
+            }}>
+              <div>
+                <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)', margin: 0 }}>{myOrg.orgName}</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
+                  {tOrg('inviteCode')}: <span style={{ fontWeight: 600, letterSpacing: '0.1em' }}>{myOrg.inviteCode}</span>
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(myOrg.inviteCode)
+                  toast.success(tOrg('codeCopied'))
+                }}
+              >
+                <Copy size={14} />
+              </Button>
+            </div>
+
+            {orgMembersData && orgMembersData.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>{tOrg('members')}</p>
+                {orgMembersData.map((m) => (
+                  <div key={m.id} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.375rem 0.625rem',
+                    borderRadius: '0.5rem',
+                    background: 'var(--bg-elevated)',
+                  }}>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--text)' }}>
+                      user #{m.userId}
+                      <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginLeft: '0.375rem' }}>
+                        {tOrg(m.role as 'owner' | 'member')}
+                      </span>
+                    </span>
+                    {myOrg.role === 'owner' && m.userId !== userId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-[var(--expense)] h-6 px-1.5"
+                        onClick={() => removeOrgMemberMutation.mutate({ orgId: myOrg.orgId, memberId: m.userId })}
+                      >
+                        <X size={12} />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {myOrg.role === 'member' && (
+              confirmLeave ? (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => leaveOrgMutation.mutate()}
+                    disabled={leaveOrgMutation.isPending}
+                  >
+                    <LogOut size={14} />
+                    {tOrg('leaveConfirm')}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setConfirmLeave(false)}><X size={14} /></Button>
+                </div>
+              ) : (
+                <Button variant="outline" size="sm" onClick={() => setConfirmLeave(true)} className="gap-1 text-muted-foreground">
+                  <LogOut size={14} />
+                  {tOrg('leave')}
+                </Button>
+              )
+            )}
+          </div>
+        )}
+      </motion.div>
+
+      {/* Footer */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', paddingBottom: '0.5rem' }}>
+        <a
+          href="/terms"
+          style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: 'none' }}
+        >
+          Условия использования
+        </a>
+        <a
+          href="/privacy"
+          style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: 'none' }}
+        >
+          Политика конфиденциальности
+        </a>
+      </div>
 
       {/* Add Account Modal */}
       <AnimatePresence>
@@ -441,7 +938,7 @@ export function SettingsPanel({ userId }: Props) {
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)' }}>
-                  Новый счёт
+                  {t('add')} {t('accounts').toLowerCase()}
                 </h2>
                 <button
                   onClick={() => setIsAddAccountOpen(false)}
@@ -460,19 +957,19 @@ export function SettingsPanel({ userId }: Props) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div className="glass-card" style={{ padding: '1.25rem' }}>
                   <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-                    Название счёта
+                    {t('accounts')}
                   </Label>
                   <Input
                     type="text"
                     value={newAccountName}
                     onChange={(e) => setNewAccountName(e.target.value)}
-                    placeholder="Например: Наличка"
+                    placeholder={t('accounts')}
                   />
                 </div>
 
                 <div className="glass-card" style={{ padding: '1.25rem' }}>
                   <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-                    Валюта
+                    {tWiz('currencyLabel')}
                   </Label>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     {CURRENCIES.map((curr) => (
@@ -502,10 +999,10 @@ export function SettingsPanel({ userId }: Props) {
 
                 <div className="glass-card" style={{ padding: '1.25rem' }}>
                   <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-                    Тип счёта
+                    {t('accountType')}
                   </Label>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    {([['checking', '🏦', 'Текущий'], ['savings', '🐷', 'Накопительный']] as const).map(([type, icon, label]) => (
+                    {([['checking', '🏦', t('checking')], ['savings', '🐷', t('savings')]] as const).map(([type, icon, label]) => (
                       <motion.button
                         key={type}
                         onClick={() => setNewAccountType(type)}
@@ -543,7 +1040,7 @@ export function SettingsPanel({ userId }: Props) {
                   className="w-full"
                   whileTap={{ scale: newAccountName.trim() && !createAccountMutation.isPending ? 0.97 : 1 }}
                 >
-                  {createAccountMutation.isPending ? 'Создание...' : 'Создать счёт'}
+                  {createAccountMutation.isPending ? '...' : tWiz('create')}
                 </MotionButton>
               </div>
             </motion.div>
@@ -580,6 +1077,8 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
   const api = createApiClient(token || '')
   const queryClient = useQueryClient()
   const { transactionType, setTransactionType } = useFinanceStore()
+  const t = useTranslations('settings')
+  const tDash = useTranslations('dashboard')
 
   const [name, setName] = useState('')
   const [icon, setIcon] = useState('📁')
@@ -589,8 +1088,10 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
       api.categories.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories', userId] })
+      toast.success('Category created')
       onClose()
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to create category'),
   })
 
   return (
@@ -627,7 +1128,7 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)' }}>
-            Новая категория
+            {t('addCategory')}
           </h2>
           <button
             onClick={onClose}
@@ -668,7 +1169,7 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
               }}
               whileTap={{ scale: 0.97 }}
             >
-              Доход
+              {tDash('income')}
             </motion.button>
             <motion.button
               onClick={() => setTransactionType('expense')}
@@ -692,27 +1193,27 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
               }}
               whileTap={{ scale: 0.97 }}
             >
-              Расход
+              {tDash('expense')}
             </motion.button>
           </div>
 
           {/* Name input */}
           <div className="glass-card" style={{ padding: '1.25rem' }}>
             <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-              Название категории
+              {t('categoryNameLabel')}
             </Label>
             <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Например: Продукты"
+              placeholder={t('categoryNamePlaceholder')}
             />
           </div>
 
           {/* Icon selector */}
           <div className="glass-card" style={{ padding: '1.25rem' }}>
             <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-3">
-              Иконка
+              {t('icon')}
             </Label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.375rem' }}>
               {EMOJI_ICONS.map((emoji) => (
@@ -740,7 +1241,7 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
           {/* Preview */}
           <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <span style={{ fontSize: '1.5rem' }}>{icon}</span>
-            <span style={{ fontSize: '1rem', color: 'var(--text)' }}>{name || 'Название'}</span>
+            <span style={{ fontSize: '1rem', color: 'var(--text)' }}>{name || t('categoryNameLabel')}</span>
             <span style={{
               fontSize: '0.6875rem',
               color: transactionType === 'income' ? 'var(--green)' : 'var(--red)',
@@ -749,7 +1250,7 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
               background: transactionType === 'income' ? 'var(--green-dim)' : 'var(--red-dim)',
               borderRadius: '0.375rem',
             }}>
-              {transactionType === 'income' ? 'Доход' : 'Расход'}
+              {transactionType === 'income' ? tDash('income') : tDash('expense')}
             </span>
           </div>
 
@@ -762,7 +1263,7 @@ function AddCategoryModal({ userId, onClose }: { userId: number; onClose: () => 
             style={{ backgroundColor: transactionType === 'income' ? 'var(--green)' : 'var(--red)' }}
             whileTap={{ scale: name.trim() && !createMutation.isPending ? 0.97 : 1 }}
           >
-            {createMutation.isPending ? 'Создание...' : 'Создать категорию'}
+            {createMutation.isPending ? '...' : t('addCategory')}
           </MotionButton>
         </div>
       </motion.div>
@@ -774,6 +1275,8 @@ function EditCategoryModal({ userId, category, onClose }: { userId: number; cate
   const { token } = useAuthStore()
   const api = createApiClient(token || '')
   const queryClient = useQueryClient()
+  const t = useTranslations('settings')
+  const tDash = useTranslations('dashboard')
 
   const [name, setName] = useState(category.name)
   const [icon, setIcon] = useState(category.icon)
@@ -784,8 +1287,10 @@ function EditCategoryModal({ userId, category, onClose }: { userId: number; cate
       api.categories.update(category.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories', userId] })
+      toast.success('Category updated')
       onClose()
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to update category'),
   })
 
   return (
@@ -822,7 +1327,7 @@ function EditCategoryModal({ userId, category, onClose }: { userId: number; cate
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)' }}>
-            Редактировать категорию
+            {t('editCategory')}
           </h2>
           <button
             onClick={onClose}
@@ -863,7 +1368,7 @@ function EditCategoryModal({ userId, category, onClose }: { userId: number; cate
               }}
               whileTap={{ scale: 0.97 }}
             >
-              Доход
+              {tDash('income')}
             </motion.button>
             <motion.button
               onClick={() => setType('expense')}
@@ -887,27 +1392,27 @@ function EditCategoryModal({ userId, category, onClose }: { userId: number; cate
               }}
               whileTap={{ scale: 0.97 }}
             >
-              Расход
+              {tDash('expense')}
             </motion.button>
           </div>
 
           {/* Name input */}
           <div className="glass-card" style={{ padding: '1.25rem' }}>
             <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-              Название категории
+              {t('categoryNameLabel')}
             </Label>
             <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Например: Продукты"
+              placeholder={t('categoryNamePlaceholder')}
             />
           </div>
 
           {/* Icon selector */}
           <div className="glass-card" style={{ padding: '1.25rem' }}>
             <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-3">
-              Иконка
+              {t('icon')}
             </Label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.375rem' }}>
               {EMOJI_ICONS.map((emoji) => (
@@ -935,7 +1440,7 @@ function EditCategoryModal({ userId, category, onClose }: { userId: number; cate
           {/* Preview */}
           <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <span style={{ fontSize: '1.5rem' }}>{icon}</span>
-            <span style={{ fontSize: '1rem', color: 'var(--text)' }}>{name || 'Название'}</span>
+            <span style={{ fontSize: '1rem', color: 'var(--text)' }}>{name || t('categoryNameLabel')}</span>
             <span style={{
               fontSize: '0.6875rem',
               color: type === 'income' ? 'var(--green)' : 'var(--red)',
@@ -944,7 +1449,7 @@ function EditCategoryModal({ userId, category, onClose }: { userId: number; cate
               background: type === 'income' ? 'var(--green-dim)' : 'var(--red-dim)',
               borderRadius: '0.375rem',
             }}>
-              {type === 'income' ? 'Доход' : 'Расход'}
+              {type === 'income' ? tDash('income') : tDash('expense')}
             </span>
           </div>
 
@@ -957,7 +1462,7 @@ function EditCategoryModal({ userId, category, onClose }: { userId: number; cate
             style={{ backgroundColor: type === 'income' ? 'var(--green)' : 'var(--red)' }}
             whileTap={{ scale: name.trim() && !updateMutation.isPending ? 0.97 : 1 }}
           >
-            {updateMutation.isPending ? 'Сохранение...' : 'Сохранить'}
+            {updateMutation.isPending ? '...' : t('saveCategory')}
           </MotionButton>
         </div>
       </motion.div>

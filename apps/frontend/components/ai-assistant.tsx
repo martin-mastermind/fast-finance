@@ -7,6 +7,8 @@ import { createApiClient } from '@/lib/api'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Trash2, Brain } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useTranslations } from 'next-intl'
+import { useFinanceStore } from '@/store/finance'
 
 function renderMarkdown(text: string): ReactElement[] {
   const lines = text.split('\n')
@@ -50,9 +52,11 @@ function renderMarkdown(text: string): ReactElement[] {
 export function AiAssistant() {
   const { user, token } = useAuthStore()
   const { messages, setMessages, addMessage, clearMessages, isLoading, setIsLoading } = useAiStore()
+  const { setPlanLimitModalOpen } = useFinanceStore()
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const api = createApiClient(token || '')
+  const t = useTranslations('ai')
 
   useEffect(() => {
     loadHistory()
@@ -84,7 +88,11 @@ export function AiAssistant() {
       addMessage({ role: 'assistant', content: response })
     } catch (error) {
       console.error('Chat error:', error)
-      addMessage({ role: 'assistant', content: 'Извините, произошла ошибка. Попробуйте ещё раз.' })
+      if (error instanceof Error && error.message.includes('Plan limit reached')) {
+        setPlanLimitModalOpen(true)
+      } else {
+        addMessage({ role: 'assistant', content: t('error') })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -106,12 +114,7 @@ export function AiAssistant() {
     }
   }
 
-  const quickQuestions = [
-    'Сколько я потратил на еду?',
-    'Дай совет по экономии',
-    'Как составить бюджет?',
-    'Мой финансовый отчёт',
-  ]
+  const quickQuestions = [t('q1'), t('q2'), t('q3'), t('q4')]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -136,7 +139,7 @@ export function AiAssistant() {
           </div>
           <div>
             <h2 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
-              AI Ассистент
+              {t('title')}
             </h2>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>
               Groq Llama 3.1 8B
@@ -151,7 +154,7 @@ export function AiAssistant() {
             className="gap-1 text-muted-foreground"
           >
             <Trash2 size={14} />
-            Очистить
+            {t('clear')}
           </Button>
         )}
       </div>
@@ -160,7 +163,7 @@ export function AiAssistant() {
       {messages.length === 0 && (
         <div style={{ marginBottom: '1rem' }}>
           <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-            Быстрые вопросы:
+            {t('quickQuestions')}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
             {quickQuestions.map((q) => (
@@ -239,7 +242,7 @@ export function AiAssistant() {
                 fontSize: '0.875rem',
               }}
             >
-              Думаю...
+              {t('thinking')}
             </div>
           </motion.div>
         )}
@@ -260,7 +263,7 @@ export function AiAssistant() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Спросите о финансах..."
+          placeholder={t('placeholder')}
           disabled={isLoading}
           style={{
             flex: 1,

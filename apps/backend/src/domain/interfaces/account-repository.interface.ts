@@ -2,7 +2,7 @@ import type { Account, AccountCreateInput, AccountUpdateInput } from '../entitie
 
 export interface IAccountRepository {
   findById(id: number, userId: number): Promise<Account | null>
-  findByUserId(userId: number): Promise<Account[]>
+  findByUserId(userId: number, limit?: number, offset?: number): Promise<Account[]>
   create(userId: number, input: AccountCreateInput): Promise<Account>
   update(id: number, userId: number, input: AccountUpdateInput): Promise<Account>
   delete(id: number, userId: number): Promise<void>

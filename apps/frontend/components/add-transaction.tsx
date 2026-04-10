@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MotionButton } from '@/components/ui/motion-button'
 import { getCategoryIcon } from '@/lib/icon-map'
+import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   userId: number
@@ -26,8 +28,11 @@ const CURRENCY_LABELS: Record<string, string> = {
 export function AddTransaction({ userId, onClose }: Props) {
   const { token } = useAuthStore()
   const api = createApiClient(token || '')
+  const t = useTranslations('addTransaction')
+  const tDash = useTranslations('dashboard')
+  const tTx = useTranslations('transactions')
   const queryClient = useQueryClient()
-  const { transactionType, setTransactionType } = useFinanceStore()
+  const { transactionType, setTransactionType, setPlanLimitModalOpen } = useFinanceStore()
 
   const [amount, setAmount] = useState('')
   const [amountError, setAmountError] = useState(false)
@@ -67,10 +72,18 @@ export function AddTransaction({ userId, onClose }: Props) {
       setAmount('')
       setDescription('')
       setSelectedCategoryId(null)
+      toast.success('Transaction added')
       onClose?.()
 
       if (typeof window !== 'undefined' && window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success')
+      }
+    },
+    onError: (err: Error) => {
+      if (err.message.includes('Plan limit reached')) {
+        setPlanLimitModalOpen(true)
+      } else {
+        toast.error(err.message || 'Failed to add transaction')
       }
     },
   })
@@ -84,12 +97,14 @@ export function AddTransaction({ userId, onClose }: Props) {
       setAmount('')
       setDescription('')
       setToAccountId(null)
+      toast.success('Transfer completed')
       onClose?.()
 
       if (typeof window !== 'undefined' && window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success')
       }
     },
+    onError: (err: Error) => toast.error(err.message || 'Failed to complete transfer'),
   })
 
   function handleSubmit() {
@@ -104,7 +119,7 @@ export function AddTransaction({ userId, onClose }: Props) {
         toAccountId,
         amount: numAmount,
         currency,
-        description: description || 'Перевод между счетами',
+        description: description || tTx('transferBetween'),
       })
       return
     }
@@ -162,7 +177,7 @@ export function AddTransaction({ userId, onClose }: Props) {
           whileTap={{ scale: 0.97 }}
         >
           <Plus size={18} />
-          Доход
+          {tDash('income')}
         </motion.button>
         <motion.button
           onClick={() => setTransactionType('expense')}
@@ -187,7 +202,7 @@ export function AddTransaction({ userId, onClose }: Props) {
           whileTap={{ scale: 0.97 }}
         >
           <Minus size={18} />
-          Расход
+          {tDash('expense')}
         </motion.button>
         <motion.button
           onClick={() => setTransactionType('transfer')}
@@ -212,7 +227,7 @@ export function AddTransaction({ userId, onClose }: Props) {
           whileTap={{ scale: 0.97 }}
         >
           <ArrowLeftRight size={18} />
-          Перевод
+          {tDash('transfer')}
         </motion.button>
       </motion.div>
 
@@ -225,7 +240,7 @@ export function AddTransaction({ userId, onClose }: Props) {
         transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.05 }}
       >
         <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-          Сумма{amountError && <span style={{ color: 'var(--red)', marginLeft: '0.5rem', textTransform: 'none', letterSpacing: 0 }}>— введите сумму</span>}
+          {tTx('amount')}{amountError && <span style={{ color: 'var(--red)', marginLeft: '0.5rem', textTransform: 'none', letterSpacing: 0 }}>{tTx('enterAmount')}</span>}
         </Label>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Input
@@ -255,13 +270,13 @@ export function AddTransaction({ userId, onClose }: Props) {
         transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.1 }}
       >
         <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-          Описание (необязательно)
+          {t('descriptionLabel')}
         </Label>
         <Input
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Комментарий"
+          placeholder={t('commentPlaceholder')}
         />
       </motion.div>
 
@@ -272,7 +287,7 @@ export function AddTransaction({ userId, onClose }: Props) {
         transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.15 }}
       >
         <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-          {transactionType === 'transfer' ? 'Откуда' : 'Счёт'}
+          {transactionType === 'transfer' ? t('from') : t('account')}
         </Label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
           {accounts?.map((a, idx) => {
@@ -318,7 +333,7 @@ export function AddTransaction({ userId, onClose }: Props) {
           transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.18 }}
         >
           <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-            Куда
+            {t('to')}
           </Label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {accounts?.filter(a => a.id !== selectedAccountId).map((a, idx) => {
@@ -362,7 +377,7 @@ export function AddTransaction({ userId, onClose }: Props) {
           transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.2 }}
         >
           <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-            Категория
+            {tTx('category')}
           </Label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {filteredCategories.map((c, idx) => {
@@ -425,7 +440,7 @@ export function AddTransaction({ userId, onClose }: Props) {
             <Loader2 size={20} />
           </motion.div>
         ) : (
-          <span>{transactionType === 'transfer' ? 'Перевести' : 'Сохранить'}</span>
+          <span>{transactionType === 'transfer' ? t('submitTransfer') : t('submit')}</span>
         )}
       </MotionButton>
 
@@ -437,7 +452,7 @@ export function AddTransaction({ userId, onClose }: Props) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <p className="text-hint" style={{ fontSize: '0.875rem' }}>Сначала создайте счёт в настройках</p>
+          <p className="text-hint" style={{ fontSize: '0.875rem' }}>{t('noAccounts')}</p>
         </motion.div>
       )}
     </motion.div>

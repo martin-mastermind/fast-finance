@@ -16,22 +16,24 @@ import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   userId: number
   currency: string
 }
 
-const PERIODS = [
-  { id: 'week', label: 'Неделя' },
-  { id: 'month', label: 'Месяц' },
-  { id: 'year', label: 'Год' },
-]
-
 export function TransactionCharts({ userId, currency }: Props) {
   const { token } = useAuthStore()
   const api = createApiClient(token || '')
   const [activePeriod, setActivePeriod] = useState('month')
+  const t = useTranslations('charts')
+
+  const PERIODS = [
+    { id: 'week', label: t('week') },
+    { id: 'month', label: t('month') },
+    { id: 'year', label: t('year') },
+  ]
 
   const { data, isLoading } = useQuery({
     queryKey: ['transaction-stats', userId, activePeriod, currency],
@@ -86,7 +88,7 @@ export function TransactionCharts({ userId, currency }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '0.5rem' }}>
             <TrendingUp size={16} className="text-[var(--green)]" />
             <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              Доходы
+              {t('income')}
             </span>
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--green)' }}>
@@ -104,7 +106,7 @@ export function TransactionCharts({ userId, currency }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '0.5rem' }}>
             <TrendingDown size={16} className="text-[var(--red)]" />
             <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              Расходы
+              {t('expenses')}
             </span>
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--red)' }}>
@@ -123,7 +125,7 @@ export function TransactionCharts({ userId, currency }: Props) {
           animate={{ opacity: 1 }}
         >
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            Нет данных за выбранный период
+            {t('noData')}
           </p>
         </motion.div>
       )}

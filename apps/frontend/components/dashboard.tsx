@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Settings, Plus, Minus, ArrowLeftRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { useTranslations } from 'next-intl'
 
 const pageVariants = {
   initial: { opacity: 0, y: 6 },
@@ -20,15 +21,16 @@ const pageVariants = {
   exit: { opacity: 0, y: -4 },
 }
 
-const ACTION_BUTTONS = [
-  { label: 'Доход', icon: Plus, color: 'var(--green)' },
-  { label: 'Перевести', icon: ArrowLeftRight, color: '#F59E0B' },
-  { label: 'Расход', icon: Minus, color: 'var(--red)' },
+const ACTION_BUTTON_DEFS = [
+  { id: 'income' as const, icon: Plus, color: 'var(--green)' },
+  { id: 'transfer' as const, icon: ArrowLeftRight, color: '#F59E0B' },
+  { id: 'expense' as const, icon: Minus, color: 'var(--red)' },
 ]
 
 export function Dashboard() {
   const { user, setCurrency } = useAuthStore()
   const { activeTab, setActiveTab, setTransactionType, isAddModalOpen, setAddModalOpen, isAddCategoryModalOpen, setAddCategoryModalOpen } = useFinanceStore()
+  const t = useTranslations('dashboard')
 
   return (
     <div className="safe-top" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 70px)', overflow: 'hidden', background: 'var(--bg)' }}>
@@ -52,7 +54,7 @@ export function Dashboard() {
               transition={{ delay: 0.05 }}
             >
               <h1 style={{ fontSize: '1.375rem', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.02em' }}>
-                Привет, {user?.username || 'Пользователь'}!
+                {t('greeting', { name: user?.username || 'User' })}
               </h1>
 
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -76,9 +78,9 @@ export function Dashboard() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              {ACTION_BUTTONS.map(({ label, icon: Icon, color }, i) => (
+              {ACTION_BUTTON_DEFS.map(({ id, icon: Icon, color }, i) => (
                 <motion.button
-                  key={label}
+                  key={id}
                   className="hover-lift"
                   style={{
                     flex: 1,
@@ -100,9 +102,7 @@ export function Dashboard() {
                   transition={{ delay: 0.22 + i * 0.06, type: 'spring', stiffness: 300, damping: 28 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => {
-                    if (label === 'Доход') setTransactionType('income')
-                    else if (label === 'Расход') setTransactionType('expense')
-                    else setTransactionType('transfer')
+                    setTransactionType(id)
                     setAddModalOpen(true)
                   }}
                 >
@@ -128,7 +128,7 @@ export function Dashboard() {
                     <Icon size={20} color="#050507" />
                   </div>
                   <span style={{ fontSize: '0.6875rem', color: 'var(--text-secondary)', fontWeight: 500, letterSpacing: '0.01em' }}>
-                    {label}
+                    {t(id)}
                   </span>
                 </motion.button>
               ))}
@@ -143,14 +143,14 @@ export function Dashboard() {
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                 <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text)' }}>
-                  Последние операции
+                  {t('recentOps')}
                 </h2>
                 <Button
                   variant="link"
                   className="text-primary text-[0.8125rem] font-medium p-0 h-auto"
                   onClick={() => setActiveTab('history')}
                 >
-                  Все
+                  {t('all')}
                 </Button>
               </div>
               <TransactionList userId={user!.id} currency={user?.currency || 'USD'} limit={5} />
@@ -174,7 +174,7 @@ export function Dashboard() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              История
+              {t('historyTitle')}
             </motion.h1>
             <TransactionCharts userId={user!.id} currency={user?.currency || 'USD'} />
             <div style={{ marginTop: '1.5rem' }}>
@@ -214,7 +214,7 @@ export function Dashboard() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              Настройки
+              {t('settingsTitle')}
             </motion.h1>
             <SettingsPanel userId={user!.id} />
           </motion.div>
@@ -229,7 +229,7 @@ export function Dashboard() {
           style={{ maxHeight: '90vh', padding: '1.25rem 1.5rem', paddingBottom: 'calc(1.5rem + var(--tg-safe-area-inset-bottom, 0px))' }}
         >
           <SheetHeader>
-            <SheetTitle>Новая операция</SheetTitle>
+            <SheetTitle>{t('newOp')}</SheetTitle>
           </SheetHeader>
           <AddTransaction userId={user!.id} onClose={() => setAddModalOpen(false)} />
         </SheetContent>

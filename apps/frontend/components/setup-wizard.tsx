@@ -9,6 +9,7 @@ import { CheckCircle2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MotionButton } from '@/components/ui/motion-button'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   userId: number
@@ -17,14 +18,15 @@ interface Props {
 type Step = 'welcome' | 'create' | 'success'
 
 const CURRENCIES = [
-  { code: 'RUB', label: 'Рубль (₽)', flag: '🇷🇺' },
-  { code: 'BYN', label: 'Бел. рубль (Br)', flag: '🇧🇾' },
-  { code: 'USD', label: 'Доллар ($)', flag: '🇺🇸' },
+  { code: 'RUB', flag: '🇷🇺' },
+  { code: 'BYN', flag: '🇧🇾' },
+  { code: 'USD', flag: '🇺🇸' },
 ]
 
 export function SetupWizard({ userId }: Props) {
   const { token } = useAuthStore()
   const [step, setStep] = useState<Step>('welcome')
+  const t = useTranslations('wizard')
   const [accountName, setAccountName] = useState('')
   const [balance, setBalance] = useState('')
   const [currency, setCurrency] = useState('RUB')
@@ -34,7 +36,7 @@ export function SetupWizard({ userId }: Props) {
   const createMutation = useMutation({
     mutationFn: () =>
       api.accounts.create({
-        name: accountName || 'Основной',
+        name: accountName || t('accountNamePlaceholder'),
         balance: balance ? parseFloat(balance) : 0,
         currency,
       }),
@@ -70,11 +72,11 @@ export function SetupWizard({ userId }: Props) {
               <h1 style={{ fontSize: '2.25rem', fontWeight: 300, color: 'var(--text)', marginBottom: '0.75rem' }}>
                 Fast Finance
               </h1>
-              <p className="text-hint" style={{ fontSize: '0.875rem' }}>Быстрый учёт личных финансов</p>
+              <p className="text-hint" style={{ fontSize: '0.875rem' }}>{t('subtitle')}</p>
             </div>
 
             <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              Создайте счёт и начните отслеживать свои расходы прямо здесь или через бота.
+              {t('description')}
             </p>
 
             <MotionButton
@@ -84,7 +86,7 @@ export function SetupWizard({ userId }: Props) {
               className="w-full"
               whileTap={{ scale: 0.97 }}
             >
-              Начать
+              {t('start')}
             </MotionButton>
           </motion.div>
         )}
@@ -100,12 +102,12 @@ export function SetupWizard({ userId }: Props) {
             transition={{ duration: 0.2 }}
           >
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.02em' }}>
-              Создайте счёт
+              {t('createAccount')}
             </h2>
 
             <div>
               <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-                Валюта
+                {t('currencyLabel')}
               </Label>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 {CURRENCIES.map((c) => {
@@ -142,19 +144,19 @@ export function SetupWizard({ userId }: Props) {
 
             <div>
               <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-                Название счёта
+                {t('accountNameLabel')}
               </Label>
               <Input
                 type="text"
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value)}
-                placeholder="Основной, Кредитная карта и т.д."
+                placeholder={t('accountNamePlaceholder')}
               />
             </div>
 
             <div>
               <Label className="block text-[0.65rem] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-                Начальный баланс
+                {t('initialBalance')}
               </Label>
               <Input
                 type="number"
@@ -172,7 +174,7 @@ export function SetupWizard({ userId }: Props) {
               className="w-full"
               whileTap={{ scale: !(!accountName.trim() || createMutation.isPending) ? 0.97 : 1 }}
             >
-              {createMutation.isPending ? 'Создание...' : 'Создать счёт'}
+              {createMutation.isPending ? t('creating') : t('create')}
             </MotionButton>
 
             <MotionButton
@@ -182,7 +184,7 @@ export function SetupWizard({ userId }: Props) {
               className="w-full"
               whileTap={{ scale: 0.97 }}
             >
-              Назад
+              {t('back')}
             </MotionButton>
           </motion.div>
         )}
@@ -205,8 +207,8 @@ export function SetupWizard({ userId }: Props) {
             </motion.div>
 
             <div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.25rem' }}>Готово</h2>
-              <p className="text-hint" style={{ fontSize: '0.875rem' }}>Счёт создан. Добро пожаловать!</p>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.25rem' }}>{t('done')}</h2>
+              <p className="text-hint" style={{ fontSize: '0.875rem' }}>{t('doneSubtitle')}</p>
             </div>
 
             <motion.div
@@ -216,7 +218,7 @@ export function SetupWizard({ userId }: Props) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              Вы можете добавлять операции прямо здесь или через кнопки бота в Telegram
+              {t('doneHint')}
             </motion.div>
 
             <MotionButton
@@ -226,7 +228,7 @@ export function SetupWizard({ userId }: Props) {
               className="w-full"
               whileTap={{ scale: 0.97 }}
             >
-              Начать пользоваться
+              {t('startUsing')}
             </MotionButton>
           </motion.div>
         )}

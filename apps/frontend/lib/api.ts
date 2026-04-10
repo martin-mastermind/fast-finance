@@ -1,4 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+const VERSION_PREFIX = '/v1'
 const REQUEST_TIMEOUT_MS = 10_000
 
 async function request<T>(
@@ -20,7 +21,7 @@ async function request<T>(
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
   try {
-    const res = await fetch(`${API_URL}${path}`, {
+    const res = await fetch(`${API_URL}${VERSION_PREFIX}${path}`, {
       ...options,
       headers,
       signal: controller.signal,
@@ -32,6 +33,9 @@ async function request<T>(
       const error = await res.json().catch(() => ({ error: res.statusText }))
       throw new Error(error.error || `HTTP ${res.status}`)
     }
+
+    // Handle 204 No Content
+    if (res.status === 204) return undefined as T
 
     return res.json()
   } catch (err: unknown) {
@@ -51,14 +55,32 @@ export function createApiClient(token: string) {
   return {
     auth: {
       telegram: (initData: string) =>
-        request<{ token: string; user: { id: number; telegramId: string; username: string | null; currency: string } }>(
+        request<{ token: string; refreshToken: string; sessionId: string; user: { id: number; telegramId: string; username: string | null; currency: string } }>(
           '/auth/telegram',
           { method: 'POST', body: JSON.stringify({ initData }) },
         ),
+      refresh: (refreshToken: string) =>
+        request<{ token: string; refreshToken: string }>(
+          '/auth/refresh',
+          { method: 'POST', body: JSON.stringify({ refreshToken }) },
+        ),
+      logout: (refreshToken: string) =>
+        request<void>(
+          '/auth/logout',
+          { method: 'POST', body: JSON.stringify({ refreshToken }) },
+        ),
+      getSessions: () =>
+        request<Array<{ id: string; createdAt: string; expiresAt: string }>>('/auth/sessions', {}, token),
+      revokeSession: (id: string) =>
+        request<void>(`/auth/sessions/${id}`, { method: 'DELETE' }, token),
     },
     users: {
       updateCurrency: (currency: string) =>
         request<{ currency: string }>('/users/currency', { method: 'PATCH', body: JSON.stringify({ currency }) }, token),
+      exportData: () =>
+        request<Record<string, unknown>>('/users/me/export', {}, token),
+      deleteAccount: () =>
+        request<void>('/users/me', { method: 'DELETE' }, token),
     },
     accounts: {
       list: () => request<Array<{ id: number; name: string; balance: number; currency: string; sortOrder: number; type: string }>>('/accounts', {}, token),
@@ -127,6 +149,30 @@ export function createApiClient(token: string) {
         request<{ insights: Array<{ id: number; type: string; title: string; content: string; isRead: number; createdAt: string }> }>('/ai/insights', {}, token),
       markInsightRead: (id: number) =>
         request<{ success: boolean }>(`/ai/insights/${id}/read`, { method: 'PATCH' }, token),
+    },
+    billing: {
+      getPlans: () =>
+        request<Array<{ id: number; name: string; maxAccounts: number; maxTransactionsPerMonth: number; aiChatEnabled: number; price: number }>>('/billing/plans', {}, token),
+      getSubscription: () =>
+        request<{ plan: { id: number; name: string; maxAccounts: number; maxTransactionsPerMonth: number; aiChatEnabled: number; price: number } | null; status: string; currentPeriodEnd: string | null }>('/billing/subscription', {}, token),
+      getStarsInvoice: () =>
+        request<{ invoiceLink: string; stars: number }>('/billing/stars/invoice', { method: 'POST', body: '{}' }, token),
+    },
+    orgs: {
+      getMyOrg: () =>
+        request<{ orgId: number; role: string; orgName: string; inviteCode: string; ownerId: number; createdAt: string }>('/orgs/me', {}, token),
+      create: (name: string) =>
+        request<{ id: number; name: string; inviteCode: string }>('/orgs', { method: 'POST', body: JSON.stringify({ name }) }, token),
+      join: (inviteCode: string) =>
+        request<{ orgId: number; orgName: string }>('/orgs/join', { method: 'POST', body: JSON.stringify({ inviteCode }) }, token),
+      getMembers: (orgId: number) =>
+        request<Array<{ id: number; userId: number; role: string; joinedAt: string }>>(`/orgs/${orgId}/members`, {}, token),
+      removeMember: (orgId: number, memberId: number) =>
+        request<void>(`/orgs/${orgId}/members/${memberId}`, { method: 'DELETE' }, token),
+      leave: () =>
+        request<void>('/orgs/me', { method: 'DELETE' }, token),
+      deleteOrg: (orgId: number) =>
+        request<void>(`/orgs/${orgId}`, { method: 'DELETE' }, token),
     },
   }
 }

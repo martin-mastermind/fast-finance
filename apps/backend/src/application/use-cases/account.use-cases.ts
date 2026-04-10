@@ -5,8 +5,8 @@ import { AccessDeniedError } from '../../domain/errors/domain-errors'
 export class AccountUseCases {
   constructor(private readonly accountRepository: IAccountRepository) {}
 
-  async getAccounts(userId: number): Promise<Account[]> {
-    return this.accountRepository.findByUserId(userId)
+  async getAccounts(userId: number, limit = 100, offset = 0): Promise<Account[]> {
+    return this.accountRepository.findByUserId(userId, limit, offset)
   }
 
   async getAccountById(id: number, userId: number): Promise<Account> {

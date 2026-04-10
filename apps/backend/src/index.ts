@@ -11,6 +11,8 @@ import { categoriesRouter } from './routes/categories'
 import { botRouter } from './routes/bot'
 import { aiRouter } from './routes/ai'
 import { currencyRouter } from './routes/currency'
+import { billingRouter } from './routes/billing'
+import { orgsRouter } from './routes/orgs'
 import { CurrencyService } from './domain/currency.service'
 import { client } from './infrastructure/database/connection'
 import { logger } from './lib/logger'
@@ -45,6 +47,20 @@ async function startCronJob() {
     }
   }, ONE_DAY)
 }
+
+// All versioned API routes under /v1
+// NOTE: botRouter stays unversioned — Telegram webhook URL is registered externally
+//       and cannot be changed without re-registering with the Telegram API.
+const v1 = new Elysia({ prefix: '/v1' })
+  .use(authRouter)
+  .use(usersRouter)
+  .use(accountsRouter)
+  .use(transactionsRouter)
+  .use(categoriesRouter)
+  .use(aiRouter)
+  .use(currencyRouter)
+  .use(billingRouter)
+  .use(orgsRouter)
 
 const app = new Elysia()
   // ── Rate limiting ──────────────────────────────────────────────────────────
@@ -95,7 +111,7 @@ const app = new Elysia()
     return { error: 'Internal server error' }
   })
 
-  // ── Health check ───────────────────────────────────────────────────────────
+  // ── Health check (unversioned) ─────────────────────────────────────────────
   .get('/health', async () => {
     let dbStatus = 'ok'
     try {
@@ -110,15 +126,11 @@ const app = new Elysia()
     }
   })
 
-  // ── Routes ─────────────────────────────────────────────────────────────────
-  .use(authRouter)
-  .use(usersRouter)
-  .use(accountsRouter)
-  .use(transactionsRouter)
-  .use(categoriesRouter)
+  // ── Versioned API routes ───────────────────────────────────────────────────
+  .use(v1)
+
+  // ── Bot webhook (unversioned — Telegram URL is externally registered) ──────
   .use(botRouter)
-  .use(aiRouter)
-  .use(currencyRouter)
 
 await runMigrations()
 await startCronJob()

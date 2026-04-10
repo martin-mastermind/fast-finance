@@ -1,12 +1,15 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   error?: string
 }
 
 export function AuthScreen({ error }: Props) {
+  const t = useTranslations('auth')
+
   return (
     <div className="flex h-screen items-center justify-center bg-background px-6">
       <motion.div
@@ -21,7 +24,7 @@ export function AuthScreen({ error }: Props) {
         {error ? (
           <p className="text-sm text-expense">{error}</p>
         ) : (
-          <p className="text-sm text-hint">Откройте приложение через Telegram</p>
+          <p className="text-sm text-hint">{t('openViaTelegram')}</p>
         )}
       </motion.div>
     </div>

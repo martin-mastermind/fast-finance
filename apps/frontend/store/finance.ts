@@ -11,6 +11,8 @@ interface FinanceStore {
   setAddModalOpen: (open: boolean) => void
   isAddCategoryModalOpen: boolean
   setAddCategoryModalOpen: (open: boolean) => void
+  isPlanLimitModalOpen: boolean
+  setPlanLimitModalOpen: (open: boolean) => void
 }
 
 export const useFinanceStore = create<FinanceStore>((set) => ({
@@ -24,4 +26,6 @@ export const useFinanceStore = create<FinanceStore>((set) => ({
   setAddModalOpen: (open) => set({ isAddModalOpen: open }),
   isAddCategoryModalOpen: false,
   setAddCategoryModalOpen: (open) => set({ isAddCategoryModalOpen: open }),
+  isPlanLimitModalOpen: false,
+  setPlanLimitModalOpen: (open) => set({ isPlanLimitModalOpen: open }),
 }))

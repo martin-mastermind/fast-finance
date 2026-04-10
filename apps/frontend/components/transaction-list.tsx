@@ -9,6 +9,7 @@ import { X, Clock, ArrowLeftRight, Pencil, Check, Trash2 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getCategoryIcon } from '@/lib/icon-map'
 import { useState } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface Props {
   userId: number
@@ -23,7 +24,12 @@ interface EditValues {
   categoryId: number | null
 }
 
-function groupByDate(items: any[]): { label: string; key: string; items: any[] }[] {
+function groupByDate(
+  items: any[],
+  todayLabel: string,
+  yesterdayLabel: string,
+  locale: string,
+): { label: string; key: string; items: any[] }[] {
   const now = new Date()
   const todayStr = now.toDateString()
   const yesterday = new Date(now)
@@ -46,12 +52,12 @@ function groupByDate(items: any[]): { label: string; key: string; items: any[] }
   return groupOrder.map((dayStr) => {
     let label: string
     if (dayStr === todayStr) {
-      label = 'Сегодня'
+      label = todayLabel
     } else if (dayStr === yesterdayStr) {
-      label = 'Вчера'
+      label = yesterdayLabel
     } else {
       const d = new Date(dayStr)
-      label = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
+      label = d.toLocaleDateString(locale, { day: 'numeric', month: 'long' })
     }
     return { label, key: dayStr, items: groups[dayStr] }
   })
@@ -82,6 +88,8 @@ function parseTransferInfo(raw: string | null): TransferInfo | null {
 export function TransactionList({ userId, currency, limit = 50 }: Props) {
   const { token } = useAuthStore()
   const api = createApiClient(token || '')
+  const t = useTranslations('transactions')
+  const locale = useLocale()
   const queryClient = useQueryClient()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValues, setEditValues] = useState<EditValues>({ description: '', date: '', amount: '', categoryId: null })
@@ -161,13 +169,13 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <p className="text-hint" style={{ fontSize: '0.875rem' }}>Транзакций пока нет</p>
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Добавьте первую операцию</p>
+        <p className="text-hint" style={{ fontSize: '0.875rem' }}>{t('noTransactions')}</p>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{t('addFirst')}</p>
       </motion.div>
     )
   }
 
-  const groups = groupByDate(data.items)
+  const groups = groupByDate(data.items, t('today'), t('yesterday'), locale)
   let globalIdx = 0
 
   return (
@@ -195,7 +203,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
             {group.items.map((tx: any) => {
               const idx = globalIdx++
               const category = categoryMap.get(tx.categoryId)
-              const desc = tx.description || category?.name || 'Операция'
+              const desc = tx.description || category?.name || t('transfer')
               const isIncome = tx.amount > 0
 
               const transfer = parseTransferInfo(tx.description)
@@ -267,7 +275,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                         </span>
                       ) : (
                         <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                          {new Date(tx.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })} • {new Date(tx.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(tx.date).toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' })} • {new Date(tx.date).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       )}
                     </div>
@@ -359,7 +367,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                       }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                           <div>
-                            <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Сумма</p>
+                            <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>{t('amount')}</p>
                             <input
                               type="number"
                               step="0.01"
@@ -378,7 +386,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                             />
                           </div>
                           <div>
-                            <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Дата</p>
+                            <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>{t('date')}</p>
                             <input
                               type="datetime-local"
                               value={editValues.date}
@@ -398,12 +406,12 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                         </div>
 
                         <div>
-                          <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Описание</p>
+                          <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>{t('description')}</p>
                           <input
                             type="text"
                             value={editValues.description}
                             onChange={e => setEditValues(v => ({ ...v, description: e.target.value }))}
-                            placeholder="Без описания"
+                            placeholder={t('noDescription')}
                             style={{
                               width: '100%',
                               padding: '0.375rem 0.5rem',
@@ -418,7 +426,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                         </div>
 
                         <div>
-                          <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Категория</p>
+                          <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>{t('category')}</p>
                           <select
                             value={editValues.categoryId ?? ''}
                             onChange={e => setEditValues(v => ({ ...v, categoryId: e.target.value ? Number(e.target.value) : null }))}
@@ -433,7 +441,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                               boxSizing: 'border-box',
                             }}
                           >
-                            <option value="">— без категории —</option>
+                            <option value="">{t('noCategory')}</option>
                             {categories?.map(cat => (
                               <option key={cat.id} value={cat.id}>{cat.name}</option>
                             ))}
@@ -455,7 +463,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                               WebkitAppearance: 'none',
                             }}
                           >
-                            Отмена
+                            {t('cancel')}
                           </motion.button>
                           <motion.button
                             onClick={() => saveEdit(tx.id, tx.amount)}
@@ -477,7 +485,7 @@ export function TransactionList({ userId, currency, limit = 50 }: Props) {
                             }}
                           >
                             <Check size={14} />
-                            Сохранить
+                            {t('save')}
                           </motion.button>
                         </div>
                       </div>

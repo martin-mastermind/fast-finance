@@ -1,11 +1,30 @@
 import { Elysia } from 'elysia'
+import { eq } from 'drizzle-orm'
 import { jwtPlugin } from '../lib/jwt-plugin'
+import { db, users } from '@fast-finance/db'
 
-// Paths that do not require a JWT token
-const PUBLIC_PATHS = ['/health', '/auth/telegram', '/bot/webhook', '/currency/rates', '/docs']
+// CSRF PROTECTION NOTE:
+// This application uses JWT tokens passed via the Authorization header (Bearer scheme).
+// Since authentication is NOT cookie-based, there is no CSRF attack vector — cross-site
+// requests cannot set the Authorization header from a third-party origin.
+// Therefore no CSRF token implementation is required.
+// Reference: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+
+// Paths that do not require a JWT access token
+const PUBLIC_PATHS = [
+  '/health',
+  '/auth/telegram',
+  '/auth/refresh',
+  '/auth/logout',
+  '/bot/webhook',
+  '/currency/rates',
+  '/docs',
+]
 
 export function isPublicPath(path: string) {
-  return PUBLIC_PATHS.some((p) => path === p || path.startsWith(p + '/'))
+  // Strip API version prefix (e.g. /v1) before checking public paths
+  const normalizedPath = path.replace(/^\/v\d+/, '')
+  return PUBLIC_PATHS.some((p) => normalizedPath === p || normalizedPath.startsWith(p + '/'))
 }
 
 /**
@@ -46,6 +65,31 @@ export function withAuth() {
       if (!payload || typeof payload.userId !== 'number') {
         set.status = 401
         return { error: 'Unauthorized' }
+      }
+    })
+}
+
+/**
+ * RBAC middleware — requires a specific role in addition to valid JWT.
+ * Adds one DB query per request; use only for admin routes.
+ */
+export function withRole(requiredRole: 'admin' | 'user') {
+  return new Elysia()
+    .use(withAuth())
+    .onBeforeHandle(async ({ headers, set }) => {
+      const userId = parseUserIdFromToken(headers.authorization)
+      if (!userId) {
+        set.status = 401
+        return { error: 'Unauthorized' }
+      }
+      const [user] = await db
+        .select({ role: users.role })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1)
+      if (!user || user.role !== requiredRole) {
+        set.status = 403
+        return { error: 'Forbidden' }
       }
     })
 }

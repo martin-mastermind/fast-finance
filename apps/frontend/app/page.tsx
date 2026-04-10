@@ -7,6 +7,7 @@ import { Dashboard } from '@/components/dashboard'
 import { AuthScreen } from '@/components/auth-screen'
 import { LoadingScreen } from '@/components/loading-screen'
 import { SetupWizard } from '@/components/setup-wizard'
+import { PlanLimitModal } from '@/components/plan-limit-modal'
 import { createApiClient } from '@/lib/api'
 
 export default function HomePage() {
@@ -22,10 +23,16 @@ export default function HomePage() {
     initAuth()
   }, [initAuth])
 
+
   if (isLoading) return <LoadingScreen />
   if (error) return <AuthScreen error={error} />
   if (!user) return <AuthScreen />
   if (accountsLoading) return <LoadingScreen />
   if (!accounts || accounts.length === 0) return <SetupWizard userId={user.id} />
-  return <Dashboard />
+  return (
+    <>
+      <Dashboard />
+      <PlanLimitModal />
+    </>
+  )
 }

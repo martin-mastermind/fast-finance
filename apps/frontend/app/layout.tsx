@@ -4,6 +4,7 @@ import './globals.css'
 import { Providers } from '@/components/providers'
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { Toaster } from 'sonner'
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>{children}</Providers>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   )

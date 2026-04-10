@@ -1,39 +1,36 @@
 import { Elysia } from 'elysia'
-import { db, users, accounts, transactions, categories } from '@fast-finance/db'
-import { eq, and } from 'drizzle-orm'
+import { db, users, accounts, transactions, categories, subscriptionPlans, userSubscriptions } from '@fast-finance/db'
+import { eq } from 'drizzle-orm'
 import { parseSmartInput } from '@fast-finance/shared'
 
 interface TelegramUpdate {
   update_id: number
   callback_query?: {
     id: string
-    from: {
-      id: number
-      is_bot: boolean
-      first_name: string
-      username?: string
-    }
-    message?: {
-      message_id: number
-      chat: { id: number }
-      text?: string
-    }
+    from: { id: number; is_bot: boolean; first_name: string; username?: string }
+    message?: { message_id: number; chat: { id: number }; text?: string }
     data: string
+  }
+  pre_checkout_query?: {
+    id: string
+    from: { id: number; username?: string }
+    currency: string
+    total_amount: number
+    invoice_payload: string
   }
   message?: {
     message_id: number
-    from: {
-      id: number
-      is_bot: boolean
-      first_name: string
-      username?: string
-    }
-    chat: {
-      id: number
-      type: string
-    }
+    from: { id: number; is_bot: boolean; first_name: string; username?: string }
+    chat: { id: number; type: string }
     date: number
     text?: string
+    successful_payment?: {
+      currency: string
+      total_amount: number
+      invoice_payload: string
+      telegram_payment_charge_id: string
+      provider_payment_charge_id: string
+    }
   }
 }
 
@@ -99,6 +96,34 @@ async function editTelegramMessage(chatId: number, messageId: number, text: stri
   }
 }
 
+async function answerPreCheckoutQuery(queryId: string, ok: boolean, errorMessage?: string): Promise<void> {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN
+  if (!botToken) return
+  await fetch(`https://api.telegram.org/bot${botToken}/answerPreCheckoutQuery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pre_checkout_query_id: queryId, ok, ...(!ok && { error_message: errorMessage }) }),
+  })
+}
+
+async function activateProSubscription(userId: number): Promise<void> {
+  const [proPlan] = await db
+    .select()
+    .from(subscriptionPlans)
+    .where(eq(subscriptionPlans.name, 'pro'))
+    .limit(1)
+  if (!proPlan) return
+
+  const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  await db
+    .insert(userSubscriptions)
+    .values({ userId, planId: proPlan.id, status: 'active', currentPeriodEnd: periodEnd })
+    .onConflictDoUpdate({
+      target: userSubscriptions.userId,
+      set: { planId: proPlan.id, status: 'active', currentPeriodEnd: periodEnd },
+    })
+}
+
 const typeKeyboard = {
   inline_keyboard: [
     [{ text: '💰 Доход', callback_data: 'type_income' }, { text: '💸 Расход', callback_data: 'type_expense' }],
@@ -156,6 +181,47 @@ export const botRouter = new Elysia({ prefix: '/bot' }).post(
     }
 
     const update = body as unknown as TelegramUpdate
+
+    // ── Telegram Stars: pre-checkout (must answer within 10s) ──────────────
+    if (update.pre_checkout_query) {
+      const pcq = update.pre_checkout_query
+      try {
+        const payload = JSON.parse(pcq.invoice_payload) as { userId?: number }
+        if (!payload.userId) {
+          await answerPreCheckoutQuery(pcq.id, false, 'Invalid payment data')
+          return { ok: true }
+        }
+        // Verify user exists
+        const [user] = await db.select().from(users).where(eq(users.id, payload.userId)).limit(1)
+        if (!user) {
+          await answerPreCheckoutQuery(pcq.id, false, 'User not found')
+          return { ok: true }
+        }
+        await answerPreCheckoutQuery(pcq.id, true)
+      } catch {
+        await answerPreCheckoutQuery(pcq.id, false, 'Internal error')
+      }
+      return { ok: true }
+    }
+
+    // ── Telegram Stars: successful payment → activate Pro ─────────────────
+    if (update.message?.successful_payment) {
+      const payment = update.message.successful_payment
+      const chatId = update.message.chat.id
+      try {
+        const payload = JSON.parse(payment.invoice_payload) as { userId?: number }
+        if (payload.userId) {
+          await activateProSubscription(payload.userId)
+          await sendTelegramMessage(
+            chatId,
+            '⭐ Thank you! Your Fast Finance Pro is now active for 30 days.\n\nEnjoy unlimited accounts, transactions, and AI assistant!',
+          )
+        }
+      } catch (err) {
+        console.error('Failed to activate Pro after Stars payment:', err)
+      }
+      return { ok: true }
+    }
 
     // Handle callback query (button press)
     if (update.callback_query) {

@@ -3,16 +3,18 @@
 import { useFinanceStore } from '@/store/finance'
 import { Home, Brain, History, Settings } from 'lucide-react'
 import { motion } from 'framer-motion'
-
-const tabs = [
-  { id: 'dashboard' as const, icon: Home, label: 'Главная' },
-  { id: 'ai' as const, icon: Brain, label: 'AI' },
-  { id: 'history' as const, icon: History, label: 'История' },
-  { id: 'settings' as const, icon: Settings, label: 'Настройки' },
-]
+import { useTranslations } from 'next-intl'
 
 export function BottomNav() {
   const { activeTab, setActiveTab } = useFinanceStore()
+  const t = useTranslations('nav')
+
+  const tabs = [
+    { id: 'dashboard' as const, icon: Home, label: t('home') },
+    { id: 'ai' as const, icon: Brain, label: t('ai') },
+    { id: 'history' as const, icon: History, label: t('history') },
+    { id: 'settings' as const, icon: Settings, label: t('settings') },
+  ]
 
   return (
     <nav className="glass-card-strong" style={{

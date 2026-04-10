@@ -3,9 +3,11 @@ import { db, aiInsights } from '@fast-finance/db'
 import { eq, desc, and } from 'drizzle-orm'
 import { AiService } from '../domain/ai.service'
 import { withAuth, parseUserIdFromToken } from '../middleware/auth'
+import { withPlanLimit } from '../middleware/plan-limits'
 
 export const aiRouter = new Elysia({ prefix: '/ai' })
   .use(withAuth())
+  .use(withPlanLimit('ai_chat'))
   .post('/chat', async ({ body, headers, set }) => {
     const userId = parseUserIdFromToken(headers.authorization)
     const { message } = body
@@ -47,19 +49,28 @@ export const aiRouter = new Elysia({ prefix: '/ai' })
       return { error: 'Failed to clear history' }
     }
   })
-  .get('/insights', async ({ headers, set }) => {
+  .get('/insights', async ({ headers, query, set }) => {
     const userId = parseUserIdFromToken(headers.authorization)
+    const limit = Math.min(parseInt(String(query.limit ?? '50')), 200)
+    const offset = parseInt(String(query.offset ?? '0'))
     try {
       const insights = await db
         .select()
         .from(aiInsights)
         .where(eq(aiInsights.userId, userId))
         .orderBy(desc(aiInsights.createdAt))
+        .limit(limit)
+        .offset(offset)
       return { insights }
     } catch {
       set.status = 500
       return { error: 'Failed to get insights' }
     }
+  }, {
+    query: t.Object({
+      limit: t.Optional(t.Numeric()),
+      offset: t.Optional(t.Numeric()),
+    }),
   })
   .patch('/insights/:id/read', async ({ params, headers, set }) => {
     const userId = parseUserIdFromToken(headers.authorization)

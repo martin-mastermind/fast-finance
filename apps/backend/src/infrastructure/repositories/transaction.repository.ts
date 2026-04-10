@@ -1,5 +1,5 @@
 import { db, transactions, accounts, categories } from '@fast-finance/db'
-import { eq, and, desc, count, sql, gte, lt, inArray } from 'drizzle-orm'
+import { eq, and, desc, count, sql, gte, lt, inArray, isNull } from 'drizzle-orm'
 import { CurrencyService } from '../../domain/currency.service'
 import type { ITransactionRepository } from '../../domain/interfaces/transaction-repository.interface'
 import type { Transaction, TransactionCreateInput, TransactionUpdateInput, TransferInput, TransactionStats } from '../../domain/entities/transaction.entity'
@@ -34,12 +34,12 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
     const [{ total }] = await db
       .select({ total: count() })
       .from(transactions)
-      .where(eq(transactions.userId, userId))
+      .where(and(eq(transactions.userId, userId), isNull(transactions.deletedAt)))
 
     const items = await db
       .select()
       .from(transactions)
-      .where(eq(transactions.userId, userId))
+      .where(and(eq(transactions.userId, userId), isNull(transactions.deletedAt)))
       .orderBy(desc(transactions.date), desc(transactions.id))
       .limit(limit)
       .offset(offset)
@@ -51,7 +51,7 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
     const [tx] = await db
       .select()
       .from(transactions)
-      .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
+      .where(and(eq(transactions.id, id), eq(transactions.userId, userId), isNull(transactions.deletedAt)))
       .limit(1)
 
     return tx ? toTransaction(tx) : null
@@ -85,7 +85,7 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
     const [updated] = await db
       .update(transactions)
       .set(updateData)
-      .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
+      .where(and(eq(transactions.id, id), eq(transactions.userId, userId), isNull(transactions.deletedAt)))
       .returning()
 
     if (!updated) throw new NotFoundError('Transaction not found')
@@ -93,9 +93,11 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
   }
 
   async delete(id: string, userId: number): Promise<Transaction> {
+    // Soft delete
     const [deleted] = await db
-      .delete(transactions)
-      .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
+      .update(transactions)
+      .set({ deletedAt: new Date() })
+      .where(and(eq(transactions.id, id), eq(transactions.userId, userId), isNull(transactions.deletedAt)))
       .returning()
 
     if (!deleted) throw new NotFoundError('Transaction not found')
@@ -117,6 +119,7 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
       .from(transactions)
       .where(and(
         eq(transactions.userId, userId),
+        isNull(transactions.deletedAt),
         sql`${transactions.categoryId} IS NOT NULL`,
         gte(transactions.date, start),
         lt(transactions.date, end)
@@ -129,15 +132,17 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
       const rate = getRate(tx.currency)
       const usdAmount = tx.amount * rate
 
+      // categoryId is guaranteed non-null by the IS NOT NULL SQL filter above
+      const categoryId = tx.categoryId!
       if (usdAmount < 0) {
         expenseByCategoryMap.set(
-          tx.categoryId,
-          (expenseByCategoryMap.get(tx.categoryId) ?? 0) + usdAmount
+          categoryId,
+          (expenseByCategoryMap.get(categoryId) ?? 0) + usdAmount
         )
       } else if (usdAmount > 0) {
         incomeByCategoryMap.set(
-          tx.categoryId,
-          (incomeByCategoryMap.get(tx.categoryId) ?? 0) + usdAmount
+          categoryId,
+          (incomeByCategoryMap.get(categoryId) ?? 0) + usdAmount
         )
       }
     })
@@ -194,6 +199,7 @@ export class DrizzleTransactionRepository implements ITransactionRepository {
       incomeByCategory,
     }
   }
+
   async transfer(userId: number, input: TransferInput, fromAccountName: string, toAccountName: string): Promise<Transaction> {
     return await db.transaction(async (dbTx) => {
       const [transaction] = await dbTx

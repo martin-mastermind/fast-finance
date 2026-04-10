@@ -4,11 +4,13 @@ import { accountRepository } from '../../infrastructure/repositories/account.rep
 import { TransactionUseCases } from '../../application/use-cases/transaction.use-cases'
 import { AccessDeniedError, NotFoundError, InsufficientFundsError } from '../../domain/errors/domain-errors'
 import { withAuth, parseUserIdFromToken } from '../../middleware/auth'
+import { withPlanLimit } from '../../middleware/plan-limits'
 
 const transactionUseCases = new TransactionUseCases(transactionRepository, accountRepository)
 
 export const transactionsRouter = new Elysia({ prefix: '/transactions' })
   .use(withAuth())
+  .use(withPlanLimit('transactions'))
   .get('/', async ({ headers, query }) => {
     const userId = parseUserIdFromToken(headers.authorization)
     const limit = parseInt(String(query.limit ?? '50'))

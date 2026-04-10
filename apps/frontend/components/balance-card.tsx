@@ -9,6 +9,7 @@ import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   userId: number
@@ -27,6 +28,7 @@ const CURRENCY_LABELS: Record<string, string> = {
 export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }: Props) {
   const { token } = useAuthStore()
   const api = createApiClient(token || '')
+  const t = useTranslations('balanceCard')
   const { data: accounts, isLoading } = useQuery({
     queryKey: ['accounts', userId],
     queryFn: () => api.accounts.list(),
@@ -128,7 +130,7 @@ export function BalanceCard({ userId, currency: userCurrency, onCurrencyChange }
         </motion.button>
 
         <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
-          Общий баланс
+          {t('totalBalance')}
         </p>
       </div>
 

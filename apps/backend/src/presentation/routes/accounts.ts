@@ -3,14 +3,23 @@ import { accountRepository } from '../../infrastructure/repositories/account.rep
 import { AccountUseCases } from '../../application/use-cases/account.use-cases'
 import { AccessDeniedError, NotFoundError } from '../../domain/errors/domain-errors'
 import { withAuth, parseUserIdFromToken } from '../../middleware/auth'
+import { withPlanLimit } from '../../middleware/plan-limits'
 
 const accountUseCases = new AccountUseCases(accountRepository)
 
 export const accountsRouter = new Elysia({ prefix: '/accounts' })
   .use(withAuth())
-  .get('/', async ({ headers }) => {
+  .use(withPlanLimit('accounts'))
+  .get('/', async ({ headers, query }) => {
     const userId = parseUserIdFromToken(headers.authorization)
-    return accountUseCases.getAccounts(userId)
+    const limit = Math.min(parseInt(String(query.limit ?? '100')), 500)
+    const offset = parseInt(String(query.offset ?? '0'))
+    return accountUseCases.getAccounts(userId, limit, offset)
+  }, {
+    query: t.Object({
+      limit: t.Optional(t.Numeric()),
+      offset: t.Optional(t.Numeric()),
+    }),
   })
   .get('/:id', async ({ params, headers, set }) => {
     const userId = parseUserIdFromToken(headers.authorization)
