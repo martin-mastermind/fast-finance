@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { eq, and, isNull, gt, desc } from 'drizzle-orm'
-import { db, users, refreshTokens } from '@fast-finance/db'
+import { db, users, refreshTokens, subscriptionPlans, userSubscriptions } from '@fast-finance/db'
 import { validateTelegramInitData } from '../lib/telegram-auth'
 import { jwtPlugin, refreshJwtPlugin } from '../lib/jwt-plugin'
 import { parseUserIdFromToken } from '../middleware/auth'
@@ -40,6 +40,19 @@ export const authRouter = new Elysia({ prefix: '/auth' })
           set: { username: tgUser.username || null },
         })
         .returning()
+
+      // Ensure user has a free plan subscription row (idempotent — safe for existing users)
+      const [freePlan] = await db
+        .select({ id: subscriptionPlans.id })
+        .from(subscriptionPlans)
+        .where(eq(subscriptionPlans.name, 'free'))
+        .limit(1)
+      if (freePlan) {
+        await db
+          .insert(userSubscriptions)
+          .values({ userId: user.id, planId: freePlan.id, status: 'active' })
+          .onConflictDoNothing({ target: userSubscriptions.userId })
+      }
 
       const token = await jwt.sign({ userId: user.id })
 

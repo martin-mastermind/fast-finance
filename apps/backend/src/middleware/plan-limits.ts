@@ -5,7 +5,7 @@ import { parseUserIdFromToken } from './auth'
 
 type PlanResource = 'accounts' | 'transactions' | 'ai_chat'
 
-async function getUserPlan(userId: number) {
+export async function getUserPlan(userId: number) {
   const [sub] = await db
     .select({
       maxAccounts: subscriptionPlans.maxAccounts,
@@ -33,6 +33,35 @@ async function getUserPlan(userId: number) {
   return freePlan ?? { maxAccounts: 3, maxTransactionsPerMonth: 100, aiChatEnabled: 0 }
 }
 
+/** Returns null if allowed, or an error message string if the account limit is reached. */
+export async function checkAccountLimit(userId: number): Promise<string | null> {
+  const plan = await getUserPlan(userId)
+  if (plan.maxAccounts < 0) return null // unlimited
+  const [{ value }] = await db
+    .select({ value: count() })
+    .from(accounts)
+    .where(and(eq(accounts.userId, userId), isNull(accounts.deletedAt)))
+  return value >= plan.maxAccounts ? 'Plan limit reached: maximum accounts' : null
+}
+
+/** Returns null if allowed, or an error message string if the monthly transaction limit is reached. */
+export async function checkTransactionLimit(userId: number): Promise<string | null> {
+  const plan = await getUserPlan(userId)
+  if (plan.maxTransactionsPerMonth < 0) return null // unlimited
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0, 0, 0, 0)
+  const [{ value }] = await db
+    .select({ value: count() })
+    .from(transactions)
+    .where(and(
+      eq(transactions.userId, userId),
+      isNull(transactions.deletedAt),
+      gte(transactions.date, startOfMonth),
+    ))
+  return value >= plan.maxTransactionsPerMonth ? 'Plan limit reached: monthly transaction limit' : null
+}
+
 /**
  * Plan limits middleware — enforces subscription plan limits on resource creation.
  * Must be added AFTER withAuth() on the router. Only fires on POST requests.
@@ -46,40 +75,24 @@ export function withPlanLimit(resource: PlanResource) {
       const userId = parseUserIdFromToken(headers.authorization)
       if (!userId) return
 
-      const plan = await getUserPlan(userId)
-
       if (resource === 'accounts') {
-        if (plan.maxAccounts < 0) return // unlimited
-        const [{ value }] = await db
-          .select({ value: count() })
-          .from(accounts)
-          .where(and(eq(accounts.userId, userId), isNull(accounts.deletedAt)))
-        if (value >= plan.maxAccounts) {
+        const err = await checkAccountLimit(userId)
+        if (err) {
           set.status = 403
-          return { error: 'Plan limit reached: maximum accounts', upgrade: '/v1/billing/subscription' }
+          return { error: err, upgrade: '/v1/billing/subscription' }
         }
       }
 
       if (resource === 'transactions') {
-        if (plan.maxTransactionsPerMonth < 0) return // unlimited
-        const startOfMonth = new Date()
-        startOfMonth.setDate(1)
-        startOfMonth.setHours(0, 0, 0, 0)
-        const [{ value }] = await db
-          .select({ value: count() })
-          .from(transactions)
-          .where(and(
-            eq(transactions.userId, userId),
-            isNull(transactions.deletedAt),
-            gte(transactions.date, startOfMonth),
-          ))
-        if (value >= plan.maxTransactionsPerMonth) {
+        const err = await checkTransactionLimit(userId)
+        if (err) {
           set.status = 403
-          return { error: 'Plan limit reached: monthly transaction limit', upgrade: '/v1/billing/subscription' }
+          return { error: err, upgrade: '/v1/billing/subscription' }
         }
       }
 
       if (resource === 'ai_chat') {
+        const plan = await getUserPlan(userId)
         if (!plan.aiChatEnabled) {
           set.status = 403
           return { error: 'Plan limit reached: AI chat requires Pro plan', upgrade: '/v1/billing/subscription' }

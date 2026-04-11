@@ -2,6 +2,7 @@ import { Elysia } from 'elysia'
 import { db, users, accounts, transactions, categories, subscriptionPlans, userSubscriptions } from '@fast-finance/db'
 import { eq } from 'drizzle-orm'
 import { parseSmartInput } from '@fast-finance/shared'
+import { checkTransactionLimit } from '../middleware/plan-limits'
 
 interface TelegramUpdate {
   update_id: number
@@ -283,6 +284,13 @@ export const botRouter = new Elysia({ prefix: '/bot' }).post(
             return { ok: true }
           }
 
+          const txLimitErr = await checkTransactionLimit(user.id)
+          if (txLimitErr) {
+            await sendTelegramMessage(chatId, '❌ Лимит транзакций достигнут. Обновите план в приложении.')
+            userSessions.delete(telegramUserId)
+            return { ok: true }
+          }
+
           const sign = session.type === 'income' ? '+' : '-'
           await db.insert(transactions).values({
             userId: user.id,
@@ -427,6 +435,12 @@ export const botRouter = new Elysia({ prefix: '/bot' }).post(
 
       if (!matchedCategory) {
         await sendTelegramMessage(chatId, '❌ Категория не найдена')
+        return { ok: true }
+      }
+
+      const smartTxLimitErr = await checkTransactionLimit(user.id)
+      if (smartTxLimitErr) {
+        await sendTelegramMessage(chatId, '❌ Лимит транзакций достигнут. Обновите план в приложении.')
         return { ok: true }
       }
 
